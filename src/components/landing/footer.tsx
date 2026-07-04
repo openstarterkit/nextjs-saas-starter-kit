@@ -34,9 +34,9 @@ export function Footer() {
               {siteConfig.tagline}. Production-ready boilerplate with no vendor lock-in.
             </p>
             <div className="mt-4 flex items-center gap-2">
-              {(siteConfig.links.github ?? siteConfig.links.githubOrg) && (
+              {(siteConfig.links.githubOrg ?? siteConfig.links.github) && (
                 <a
-                  href={siteConfig.links.github ?? siteConfig.links.githubOrg}
+                  href={siteConfig.links.githubOrg ?? siteConfig.links.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="GitHub"
@@ -89,7 +89,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href={siteConfig.links.github ?? siteConfig.links.githubOrg}
+                  href={siteConfig.links.githubOrg ?? siteConfig.links.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition-colors hover:text-foreground"

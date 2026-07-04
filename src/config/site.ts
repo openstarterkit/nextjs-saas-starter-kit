@@ -20,8 +20,9 @@ export const siteConfig = {
     /** Public repository — footer/pricing buttons hide when unset. */
     github: process.env.NEXT_PUBLIC_GITHUB_URL || null,
     /**
-     * General GitHub presence (org/profile) — the footer "Open Source" link
-     * falls back to this until the repository URL above is set.
+     * General GitHub presence (org/profile) — used by the footer icon and
+     * "Open Source" link; the repository URL above drives the hero button
+     * and the License link.
      */
     githubOrg: "https://github.com/openstarterkit",
     /** X / Twitter profile — the footer icon hides when null. */
