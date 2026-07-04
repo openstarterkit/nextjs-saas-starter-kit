@@ -1,0 +1,31 @@
+import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
+import { SessionProvider } from "@/components/auth/session-provider"
+import { Toaster } from "@/components/ui/sonner"
+import { siteConfig } from "@/config/site"
+import "./globals.css"
+
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
+
+export const metadata: Metadata = {
+  title: `${siteConfig.name} | ${siteConfig.tagline}`,
+  description: siteConfig.description,
+}
+
+// Applies the stored/system theme before first paint — inline and blocking
+// on purpose, so a dark-mode visitor never sees a light flash.
+const themeInit =
+  "(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}})()"
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col">
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        <SessionProvider>{children}</SessionProvider>
+        <Toaster />
+      </body>
+    </html>
+  )
+}
