@@ -3,8 +3,47 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
 import Credentials from "next-auth/providers/credentials"
+import Resend from "next-auth/providers/resend"
 import { prisma } from "@/lib/prisma"
+import { verifyPassword } from "@/lib/password"
+import { checkRateLimit } from "@/lib/rate-limit"
 import type { Role } from "@prisma/client"
+
+// Magic link sign-in. Auth.js stores the verification token via the Prisma
+// adapter; we only override the email itself so it ships with the same
+// branded template as the transactional emails (see src/lib/email.ts).
+const magicLinkProvider = Resend({
+  from: process.env.EMAIL_FROM,
+  maxAge: 15 * 60, // link valid for 15 minutes
+  async sendVerificationRequest({ identifier, url }) {
+    const { sendMagicLinkEmail } = await import("@/lib/email")
+    await sendMagicLinkEmail(identifier, url)
+  },
+})
+
+// Production email+password sign-in. Separate from the dev/demo providers
+// below: always on, verifies against the bcrypt hash in User.passwordHash,
+// and answers with the same `null` for every failure mode (unknown email,
+// OAuth-only account, wrong password) so callers can't enumerate users.
+const credentialsProvider = Credentials({
+  id: "credentials",
+  name: "Email & Password",
+  credentials: {
+    email: { type: "email" },
+    password: { type: "password" },
+  },
+  async authorize(credentials) {
+    const email =
+      typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : ""
+    const password = typeof credentials?.password === "string" ? credentials.password : ""
+    if (!email || !password) return null
+    if (!checkRateLimit(`login:${email}`)) return null
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (!user?.passwordHash) return null
+    if (!(await verifyPassword(password, user.passwordHash))) return null
+    return { id: user.id, email: user.email, name: user.name, role: user.role }
+  },
+})
 
 // Dev-only credentials provider — never active in production
 const devProvider = Credentials({
@@ -51,18 +90,27 @@ const demoProvider = Credentials({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  // JWT strategy is required for the Credentials (dev) provider to work.
-  // OAuth still persists users/accounts to the DB via the adapter.
+  // JWT strategy is required for the Credentials providers to work.
+  // OAuth and magic-link still persist users/accounts to the DB via the adapter.
   session: { strategy: "jwt" },
   providers: [
+    // allowDangerousEmailAccountLinking: Google and GitHub both verify email
+    // ownership, so linking accounts that share an email is safe here. The
+    // scary name guards against providers that DON'T verify emails.
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
+    // Magic link needs Resend configured; without a key the form is hidden
+    // in the UI and the provider is not registered.
+    ...(process.env.RESEND_API_KEY ? [magicLinkProvider] : []),
+    credentialsProvider,
     ...(process.env.NODE_ENV === "development" ? [devProvider] : []),
     ...(process.env.DEMO_MODE === "true" ? [demoProvider] : []),
   ],
@@ -99,5 +147,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
     error: "/login",
+    verifyRequest: "/verify-request",
   },
 })

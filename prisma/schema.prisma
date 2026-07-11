@@ -30,19 +30,23 @@ enum SubscriptionStatus {
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
-  id               String        @id @default(cuid())
-  name             String?
-  email            String        @unique
-  emailVerified    DateTime?
-  image            String?
-  role             Role          @default(USER)
-  stripeCustomerId String?       @unique
-  accounts         Account[]
-  sessions         Session[]
-  subscription     Subscription?
-  projects         Project[]
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  image               String?
+  // Set only for email+password accounts (bcrypt). OAuth/magic-link users
+  // have null here until they add a password from Settings.
+  passwordHash        String?
+  role                Role                 @default(USER)
+  stripeCustomerId    String?              @unique
+  accounts            Account[]
+  sessions            Session[]
+  subscription        Subscription?
+  projects            Project[]
+  passwordResetTokens PasswordResetToken[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 }
 
 model Account {
@@ -77,6 +81,20 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Single-use tokens for the "forgot password" flow. The raw token only ever
+// travels in the emailed link; the DB stores its SHA-256 hash.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expires   DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Plan {

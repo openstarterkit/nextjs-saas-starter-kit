@@ -1,8 +1,19 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 
-const PUBLIC_ROUTES = ["/", "/pricing", "/login", "/privacy", "/terms", "/cookies"]
-const AUTH_ROUTES = ["/login"]
+const PUBLIC_ROUTES = [
+  "/",
+  "/pricing",
+  "/login",
+  "/signup",
+  "/verify-request",
+  "/forgot-password",
+  "/reset-password",
+  "/privacy",
+  "/terms",
+  "/cookies",
+]
+const AUTH_ROUTES = ["/login", "/signup"]
 const ADMIN_ROUTES = ["/admin"]
 
 export default auth((req) => {
@@ -12,7 +23,8 @@ export default auth((req) => {
 
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r))
   const isAdminRoute = ADMIN_ROUTES.some((r) => pathname.startsWith(r))
-  const isPublicRoute = PUBLIC_ROUTES.some((r) => pathname === r)
+  // /docs has nested pages, so it matches by prefix instead of exactly.
+  const isPublicRoute = PUBLIC_ROUTES.some((r) => pathname === r) || pathname.startsWith("/docs")
   const isApiAuthRoute = pathname.startsWith("/api/auth")
   // Inbound webhooks (e.g. Stripe) are server-to-server and carry no session —
   // they must bypass auth or they'd be redirected to /login and never run.

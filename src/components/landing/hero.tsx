@@ -39,7 +39,7 @@ export function Hero() {
         {/* Animated badge pill */}
         <div className="mb-7 inline-flex animate-fade-in-up items-center gap-2 rounded-full border border-border bg-background/70 py-1.5 pl-2 pr-4 text-sm font-medium shadow-soft backdrop-blur">
           <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-            <Sparkles className="h-3 w-3" /> v1.0
+            <Sparkles className="h-3 w-3" /> v{siteConfig.version}
           </span>
           <span className="text-muted-foreground">Now open source &amp; free</span>
         </div>

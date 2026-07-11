@@ -21,6 +21,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // The /docs pages render the repo's docs/*.md at request time (the navbar
+  // session check makes them dynamic), so the files must ship with the
+  // serverless bundle.
+  outputFileTracingIncludes: {
+    "/docs/[slug]": ["./docs/**"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -66,6 +66,7 @@ export function Footer() {
                   page, but the sections only exist on the home page. */}
               <li><Link href="/#features" className="transition-colors hover:text-foreground">Features</Link></li>
               <li><Link href="/#pricing" className="transition-colors hover:text-foreground">Pricing</Link></li>
+              <li><Link href="/docs" className="transition-colors hover:text-foreground">Docs</Link></li>
               <li>
                 <Link href={siteConfig.links.demo ?? "/login"} className="transition-colors hover:text-foreground">
                   Demo
@@ -106,25 +107,23 @@ export function Footer() {
               <li><Link href="/privacy" className="transition-colors hover:text-foreground">Privacy Policy</Link></li>
               <li><Link href="/terms" className="transition-colors hover:text-foreground">Terms of Service</Link></li>
               <li><Link href="/cookies" className="transition-colors hover:text-foreground">Cookie Policy</Link></li>
-              {siteConfig.links.github && (
-                <li>
-                  <a
-                    href={`${siteConfig.links.github}/blob/main/LICENSE`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="transition-colors hover:text-foreground"
-                  >
-                    License
-                  </a>
-                </li>
-              )}
+              <li>
+                <a
+                  href="https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/LICENSE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors hover:text-foreground"
+                >
+                  License
+                </a>
+              </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted-foreground md:flex-row">
           <p>© {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
-          <p>MIT License · Built with Next.js</p>
+          <p>v{siteConfig.version} · MIT License · Built with Next.js</p>
         </div>
 
         <div className="mt-8 flex justify-center">

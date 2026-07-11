@@ -1,13 +1,38 @@
+import Link from "next/link"
 import { redirect } from "next/navigation"
 import { signIn } from "@/auth"
+import { signInWithPassword, signInWithMagicLink } from "@/app/actions/auth"
 import { LogoMark } from "@/components/logo"
 import { PendingButton } from "@/components/auth/pending-button"
+import { Input } from "@/components/ui/input"
 import { siteConfig } from "@/config/site"
 
-export default function LoginPage() {
+// Human copy for every error code this page can land with: our own action
+// redirects (credentials, email, rate) plus the Auth.js built-ins (e.g.
+// Verification for an expired magic link).
+const ERROR_MESSAGES: Record<string, string> = {
+  credentials: "Invalid email or password.",
+  email: "Enter a valid email address.",
+  rate: "Too many attempts. Try again in a few minutes.",
+  Verification: "That sign-in link is invalid or has expired. Request a new one.",
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; reset?: string }>
+}) {
+  const { error, reset } = await searchParams
+  const errorMessage = error
+    ? (ERROR_MESSAGES[error] ?? "Something went wrong. Try again.")
+    : null
+
   // Demo deployments disable real OAuth (no personal data collected) and
   // offer one-click sign-in to shared fixture accounts instead.
   const isDemo = process.env.DEMO_MODE === "true"
+  // Magic link needs Resend configured; without it the kit still offers
+  // OAuth and email+password.
+  const hasMagicLink = !!process.env.RESEND_API_KEY
 
   // Marketing deployments delegate sign-in to the demo deployment
   // (same place the navbar and footer already point).
@@ -67,9 +92,72 @@ export default function LoginPage() {
           {isDemo && (
             <p className="text-center text-xs text-muted-foreground">
               OAuth sign-in is enabled in your own deployment — this demo uses shared accounts.
+              <br />
+              Curious about the email flows?{" "}
+              <Link href="/signup" className="underline underline-offset-4 hover:text-foreground">
+                Preview sign-up
+              </Link>{" "}
+              and{" "}
+              <Link href="/forgot-password" className="underline underline-offset-4 hover:text-foreground">
+                password reset
+              </Link>
+              .
             </p>
           )}
         </div>
+
+        {!isDemo && (
+          <>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-background px-2 text-xs text-muted-foreground">or continue with email</span>
+              </div>
+            </div>
+
+            {errorMessage && (
+              <p className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-center text-sm text-destructive">
+                {errorMessage}
+              </p>
+            )}
+            {reset === "1" && (
+              <p className="mb-4 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2.5 text-center text-sm text-primary">
+                Password updated. Sign in with your new password.
+              </p>
+            )}
+
+            <form action={signInWithPassword} className="flex flex-col gap-3">
+              <Input name="email" type="email" placeholder="you@example.com" autoComplete="email" required className="h-12 rounded-full px-4" />
+              <Input name="password" type="password" placeholder="Password" autoComplete="current-password" required className="h-12 rounded-full px-4" />
+              <PendingButton className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-all hover:-translate-y-0.5 hover:shadow-soft disabled:pointer-events-none disabled:opacity-80">
+                Sign in
+              </PendingButton>
+              {hasMagicLink && (
+                // Same email field, different submit: sends a one-time sign-in
+                // link instead of checking the password. formNoValidate because
+                // the password field is irrelevant for this path.
+                <PendingButton
+                  formAction={signInWithMagicLink}
+                  formNoValidate
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-border px-4 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:bg-secondary hover:shadow-soft disabled:pointer-events-none disabled:opacity-80"
+                >
+                  ✉️ Email me a sign-in link
+                </PendingButton>
+              )}
+            </form>
+
+            <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+              <Link href="/forgot-password" className="underline underline-offset-4 hover:text-foreground">
+                Forgot password?
+              </Link>
+              <Link href="/signup" className="underline underline-offset-4 hover:text-foreground">
+                No account? Sign up
+              </Link>
+            </div>
+          </>
+        )}
 
         {isDemo && (
           <>

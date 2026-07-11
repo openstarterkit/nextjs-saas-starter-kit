@@ -18,11 +18,17 @@ export const metadata: Metadata = {
 const themeInit =
   "(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}})()"
 
+// Same trick for the dashboard sidebar: restore the collapsed state before
+// first paint (toggled by SidebarCollapseToggle, styled via the
+// `sidebar-collapsed:` variant).
+const sidebarInit =
+  "try{if(localStorage.getItem('sidebar-collapsed')==='1')document.documentElement.classList.add('sidebar-collapsed')}catch(e){}"
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
-        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        <script dangerouslySetInnerHTML={{ __html: `${themeInit};${sidebarInit}` }} />
         <SessionProvider>{children}</SessionProvider>
         <Toaster />
       </body>

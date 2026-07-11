@@ -1,0 +1,71 @@
+# Configuration
+
+Every variable lives in [.env.example](../.env.example) with inline comments. Copy it to `.env.local` and fill in what you need: each feature turns on when its variables are set, and stays quietly off when they are not.
+
+## Database
+
+| Variable | Notes |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string. With Neon, use the pooled connection string here. |
+| `DIRECT_URL` | Direct (non-pooled) connection, used by Prisma migrations. Optional on providers without pooling. |
+
+## Auth core
+
+| Variable | Notes |
+|---|---|
+| `AUTH_SECRET` | Signs the session JWTs. Generate with `npx auth secret` (or `openssl rand -base64 32`). |
+| `NEXT_PUBLIC_APP_URL` | Canonical URL of the app (`http://localhost:3000` in dev). Used in emails and reset links. |
+
+## OAuth providers
+
+Both providers are optional; configure the ones you want on the login page.
+
+**Google** ([console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → OAuth 2.0 Client ID)
+
+- Authorized redirect URI: `http://localhost:3000/api/auth/callback/google` (repeat with your production domain when you deploy)
+- Copy the client ID and secret into `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+
+**GitHub** ([github.com/settings/developers](https://github.com/settings/developers) → OAuth Apps → New OAuth App)
+
+- Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
+- Copy the values into `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`
+
+## Email (Resend)
+
+| Variable | Notes |
+|---|---|
+| `RESEND_API_KEY` | Enables all outgoing email: welcome, subscription, **magic link sign-in** and **password reset**. Without it, those two auth flows hide themselves in the UI. |
+| `EMAIL_FROM` | Sender identity, e.g. `"YourApp <hello@yourdomain.com>"`. The domain must be verified in Resend. |
+
+Setup: create an account at [resend.com](https://resend.com), verify your domain, create an API key.
+
+## Stripe
+
+1. Create an account at [stripe.com](https://stripe.com) and copy the **Secret key** into `STRIPE_SECRET_KEY` (and the publishable key into `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`).
+2. Create your product and recurring prices in the Stripe dashboard. The seed ships two example prices (monthly + yearly) so checkout works out of the box; replace them with your own.
+3. Copy the Price IDs into `STRIPE_PRO_PRICE_ID` / `STRIPE_PRO_YEARLY_PRICE_ID` (or edit `prisma/seed.ts`), then run `npx prisma db seed`.
+4. Webhooks locally, with the [Stripe CLI](https://stripe.com/docs/stripe-cli):
+
+   ```bash
+   stripe listen --forward-to localhost:3000/api/webhooks/stripe
+   ```
+
+   Copy the signing secret into `STRIPE_WEBHOOK_SECRET`. Production webhooks are covered in [Deployment](./deployment.md).
+
+## Flags and extras
+
+| Variable | Notes |
+|---|---|
+| `DEMO_MODE` | `"true"` turns the deployment into a public demo: one-click shared accounts, real OAuth disabled, email-based auth forms hidden. Use an isolated database. |
+| `NEXT_PUBLIC_DEMO_URL` | On a marketing deployment, points the sign-in links at your demo instance. |
+| `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` removes the "Built with" footer badge. Free to use, no unlock. |
+| `NEXT_PUBLIC_GITHUB_URL` | Repo link shown in the navbar/footer. |
+
+## Branding
+
+Your identity lives in exactly two files; everything else reads from them:
+
+- `src/config/site.ts`: name, tagline, description, contact email, links
+- `src/components/logo.tsx`: logo mark and wordmark
+
+Swap those, rewrite the landing copy and the `/privacy` + `/terms` placeholders, and the kit is fully yours. The code is MIT; the OpenStarterKit name and wordmark are the kit's brand, so replace them in your production app.

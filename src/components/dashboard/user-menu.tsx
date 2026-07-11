@@ -36,7 +36,7 @@ export function UserMenu({ name, email, image, side = "top", hideDetails = false
           className={
             hideDetails
               ? "flex items-center rounded-full transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              : "flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              : "flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sidebar-collapsed:justify-center"
           }
         >
           <Avatar>
@@ -45,11 +45,11 @@ export function UserMenu({ name, email, image, side = "top", hideDetails = false
           </Avatar>
           {!hideDetails && (
             <>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 sidebar-collapsed:hidden">
                 <p className="truncate text-sm font-medium text-foreground">{name ?? "User"}</p>
                 <p className="truncate text-xs text-muted-foreground">{email}</p>
               </div>
-              <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground sidebar-collapsed:hidden" />
             </>
           )}
         </DropdownMenuTrigger>

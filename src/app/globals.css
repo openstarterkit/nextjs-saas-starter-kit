@@ -1,7 +1,49 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+/* Typography (/docs prose) wired to the design tokens: colors follow the
+   theme in both light and dark mode, no prose-invert juggling needed.
+   These must stay UN-LAYERED so they beat the @tailwindcss/typography
+   defaults that are emitted inside the utilities layer. */
+.prose {
+  --tw-prose-body: var(--muted-foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-links: var(--primary);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+/* In dark mode the default link/primary blue is too dim on the dark
+   background: use a lighter blue for legible links. */
+.dark .prose {
+  --tw-prose-links: #60a5fa;
+}
+/* Inline code (not the fenced blocks): a subtle boxed style so it reads
+   as code in both themes. */
+.prose :not(pre) > code {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.85em;
+  font-weight: 500;
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
+/* Active while the dashboard sidebar is collapsed to icons (class set on <html>
+   by SidebarCollapseToggle, persisted in localStorage). */
+@custom-variant sidebar-collapsed (&:where(html.sidebar-collapsed *));
 
 :root {
   --background: #ffffff;
@@ -110,6 +152,11 @@
 @keyframes shine {
   0% { transform: translateX(-120%) skewX(-12deg); }
   100% { transform: translateX(220%) skewX(-12deg); }
+}
+
+html {
+  scroll-padding-top: 6.5rem;
+  scroll-behavior: smooth;
 }
 
 body {

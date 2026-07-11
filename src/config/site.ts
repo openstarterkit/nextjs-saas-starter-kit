@@ -7,6 +7,7 @@
 export const siteConfig = {
   name: "OpenStarterKit",
   tagline: "Ship your SaaS this weekend",
+  version: "1.1.0",
   description:
     "Production-ready SaaS boilerplate with Next.js 16, Auth.js, Stripe, Prisma, and Tailwind 4. No vendor lock-in.",
 

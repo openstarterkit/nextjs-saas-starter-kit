@@ -28,11 +28,17 @@ const menus = {
 
 function linkClass(active: boolean) {
   return cn(
-    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors sidebar-collapsed:justify-center sidebar-collapsed:px-2",
     active
       ? "bg-primary/10 text-primary"
       : "text-muted-foreground hover:bg-muted hover:text-foreground"
   )
+}
+
+// Hidden while the sidebar is collapsed to icons; the link keeps a `title`
+// so the label survives as a tooltip.
+function NavLabel({ children }: { children: React.ReactNode }) {
+  return <span className="sidebar-collapsed:hidden">{children}</span>
 }
 
 export function SidebarNav({
@@ -53,25 +59,25 @@ export function SidebarNav({
       {menus[variant].map((item) => {
         const Icon = item.icon
         return (
-          <Link key={item.href} href={item.href} className={linkClass(isActive(item))}>
-            <Icon className="h-4 w-4" />
-            {item.label}
+          <Link key={item.href} href={item.href} title={item.label} className={linkClass(isActive(item))}>
+            <Icon className="h-4 w-4 shrink-0" />
+            <NavLabel>{item.label}</NavLabel>
           </Link>
         )
       })}
       {variant === "dashboard" && showAdminLink && (
         <div className="mt-4 border-t border-border pt-4">
-          <Link href="/admin" className={linkClass(false)}>
-            <Shield className="h-4 w-4" />
-            Admin Panel
+          <Link href="/admin" title="Admin Panel" className={linkClass(false)}>
+            <Shield className="h-4 w-4 shrink-0" />
+            <NavLabel>Admin Panel</NavLabel>
           </Link>
         </div>
       )}
       {variant === "admin" && (
         <div className="mt-4 border-t border-border pt-4">
-          <Link href="/dashboard" className={linkClass(false)}>
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+          <Link href="/dashboard" title="Back to Dashboard" className={linkClass(false)}>
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            <NavLabel>Back to Dashboard</NavLabel>
           </Link>
         </div>
       )}

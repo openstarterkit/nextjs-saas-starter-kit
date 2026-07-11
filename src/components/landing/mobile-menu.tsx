@@ -44,6 +44,9 @@ export function MobileMenu({
             </Link>
           </DropdownMenuItem>
         ))}
+        <DropdownMenuItem asChild>
+          <Link href="/docs">Docs</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {isAuthenticated ? (
           <DropdownMenuItem asChild>

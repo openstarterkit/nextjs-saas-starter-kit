@@ -41,6 +41,26 @@ export async function sendSubscriptionConfirmation(
   })
 }
 
+export async function sendMagicLinkEmail(to: string, url: string) {
+  const resend = getInstance()
+  return resend.emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: `Sign in to ${siteConfig.name}`,
+    html: magicLinkTemplate(url),
+  })
+}
+
+export async function sendPasswordResetEmail(to: string, url: string) {
+  const resend = getInstance()
+  return resend.emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: `Reset your ${siteConfig.name} password`,
+    html: passwordResetTemplate(url),
+  })
+}
+
 export async function sendSubscriptionCancelledEmail(to: string, name: string, endDate: string) {
   const resend = getInstance()
   return resend.emails.send({
@@ -103,6 +123,24 @@ function welcomeTemplate(name: string) {
     <p>Ready to explore?</p>
     <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Go to Dashboard →</a>
     <p style="margin-top:24px">If you have any questions, just reply to this email. We're happy to help.</p>
+  `)
+}
+
+function magicLinkTemplate(url: string) {
+  return baseTemplate(`
+    <p>Hey there 👋</p>
+    <p>Click the button below to sign in to ${siteConfig.name}. The link is valid for 15 minutes and can be used once.</p>
+    <a href="${url}" class="btn">Sign in to ${siteConfig.name} →</a>
+    <p style="margin-top:24px">If you didn't request this email, you can safely ignore it: nothing happens unless the link is clicked.</p>
+  `)
+}
+
+function passwordResetTemplate(url: string) {
+  return baseTemplate(`
+    <p>Hey there,</p>
+    <p>We received a request to reset your ${siteConfig.name} password. Click the button below to choose a new one. The link is valid for 30 minutes and can be used once.</p>
+    <a href="${url}" class="btn">Reset password →</a>
+    <p style="margin-top:24px">If you didn't request a password reset, you can safely ignore this email: your password will not change.</p>
   `)
 }
 

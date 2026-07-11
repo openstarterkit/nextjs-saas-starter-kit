@@ -5,11 +5,11 @@
 
 <p align="center">
   <strong>The free, open-source Next.js SaaS starter kit.</strong><br/>
-  Auth, payments, admin and emails — wired up and production-ready. Ship your product this weekend.
+  Auth, payments, admin and emails, wired up and production-ready. Ship your product this weekend.
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.0.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.1.0-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -36,6 +36,7 @@
   <a href="#-features">Features</a> ·
   <a href="#-tech-stack">Tech stack</a> ·
   <a href="#-quick-start">Quick start</a> ·
+  <a href="./docs/README.md">Docs</a> ·
   <a href="#-deploy">Deploy</a> ·
   <a href="#-project-structure">Structure</a> ·
   <a href="./ROADMAP.md">Roadmap</a>
@@ -47,10 +48,10 @@
 
 Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones demo. **OpenStarterKit is different:**
 
-- 💳 **Payments included in the free tier** — full Stripe Checkout, Customer Portal and webhooks, not paywalled behind a Pro plan.
-- 🔓 **No vendor lock-in** — plain PostgreSQL, Prisma and Auth.js. Host it anywhere, own your data.
-- 🧩 **A complete SaaS, not a starter demo** — auth, billing, an admin panel with real MRR metrics, transactional emails and a polished landing page.
-- 📖 **MIT licensed** — use it for anything, commercial included. No license keys, no unlock fees.
+- 💳 **Payments included in the free tier**: full Stripe Checkout, Customer Portal and webhooks, not paywalled behind a Pro plan.
+- 🔓 **No vendor lock-in**: plain PostgreSQL, Prisma and Auth.js. Host it anywhere, own your data.
+- 🧩 **A complete SaaS, not a starter demo**: auth, billing, an admin panel with real MRR metrics, transactional emails and a polished landing page.
+- 📖 **MIT licensed**: use it for anything, commercial included. No license keys, no unlock fees.
 
 ---
 
@@ -58,12 +59,12 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 
 | | Feature | What you get |
 |---|---|---|
-| 🔐 | **Authentication** | Auth.js v5 with Google + GitHub OAuth, JWT sessions, protected routes |
+| 🔐 | **Authentication** | Auth.js v5: Google + GitHub OAuth, magic link, email + password with reset, account linking |
 | 💳 | **Payments** | Stripe Checkout, Customer Portal, signature-verified webhooks, monthly + yearly plans |
 | 🛠️ | **Admin panel** | User management, search + pagination, live MRR metrics, role toggling |
 | 📊 | **User dashboard** | Plan status, billing history, profile & settings |
 | 📁 | **Projects CRUD** | A ready example resource with ownership checks to build on |
-| 📧 | **Transactional email** | Resend-powered welcome, subscription & cancellation emails |
+| 📧 | **Transactional email** | Resend-powered welcome, subscription, magic link & password reset emails |
 | 🎨 | **Design system** | Custom Tailwind v4 UI (Button, Card, Badge, Input, Table) + dark mode |
 | 🌗 | **Dark mode** | System-aware theme with no flash of unstyled content |
 | 🧱 | **Landing page** | Hero, Features, Pricing and FAQ sections ready to edit |
@@ -75,30 +76,34 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 
 | Layer | Choice |
 |---|---|
-| **Framework** | Next.js 16.2 — App Router, Turbopack |
-| **Language** | TypeScript — strict mode |
+| **Framework** | Next.js 16.2 (App Router, Turbopack) |
+| **Language** | TypeScript (strict mode) |
 | **Styling** | Tailwind CSS v4 + dark mode |
-| **Auth** | Auth.js v5 — Google + GitHub OAuth |
+| **Auth** | Auth.js v5 (OAuth, magic link, email + password) |
 | **Database** | Prisma 7 + PostgreSQL (Neon recommended) |
-| **Payments** | Stripe — Checkout + Customer Portal + Webhooks |
-| **Emails** | Resend — welcome + subscription emails |
-| **UI** | Custom design system — Button, Card, Badge, Input, Table |
+| **Payments** | Stripe (Checkout + Customer Portal + Webhooks) |
+| **Emails** | Resend (welcome + subscription emails) |
+| **UI** | Custom design system (Button, Card, Badge, Input, Table) |
 
 ### Routes
 
 ```
 /                    → Landing page (Hero, Features, Pricing, FAQ)
 /pricing             → Dedicated pricing page
-/login               → OAuth sign-in
+/login               → Sign in (OAuth, magic link, email + password)
+/signup              → Create an account
+/forgot-password     → Password reset request (+ /reset-password)
 /dashboard           → User overview + plan status
 /dashboard/billing   → Subscription management + invoice history
-/dashboard/settings  → Profile settings
+/dashboard/settings  → Profile, sign-in methods & password
 /admin               → Admin panel (ADMIN role required)
 ```
 
 ---
 
 ## ⚡ Quick start
+
+> 📚 Prefer step-by-step guides? The full documentation lives in [docs/](./docs/README.md) and is rendered at [openstarterkit.dev/docs](https://openstarterkit.dev/docs): getting started, configuration, authentication, deployment.
 
 ### 1. Clone and install
 
@@ -114,11 +119,11 @@ npm install
 cp .env.example .env.local
 ```
 
-Fill in all variables — see [.env.example](.env.example) for the full list with comments.
+Fill in all variables: see [.env.example](.env.example) for the full list with comments.
 
 ### 3. Database setup
 
-Create a PostgreSQL database (Neon recommended — free tier available at [neon.tech](https://neon.tech)), then apply the committed migrations and seed the example data:
+Create a PostgreSQL database (Neon recommended, free tier available at [neon.tech](https://neon.tech)), then apply the committed migrations and seed the example data:
 
 ```bash
 npx prisma migrate deploy   # applies the committed migrations
@@ -140,7 +145,7 @@ npx prisma db seed          # seeds two example plans (edit prisma/seed.ts for y
 2. Copy your **Secret key** → `STRIPE_SECRET_KEY`
 3. Create your product(s) in the Stripe dashboard. The seed ships two **example**
    recurring prices (monthly + yearly) just so the checkout flow works out of the
-   box — replace them with your own product's plans.
+   box; replace them with your own product's plans.
 4. Copy your **Price IDs** → set `STRIPE_PRO_PRICE_ID` / `STRIPE_PRO_YEARLY_PRICE_ID`
    (or edit `prisma/seed.ts` directly), then run `npx prisma db seed`
 5. For webhooks locally, install [Stripe CLI](https://stripe.com/docs/stripe-cli):
@@ -149,7 +154,7 @@ npx prisma db seed          # seeds two example plans (edit prisma/seed.ts for y
    ```
    Copy the webhook signing secret → `STRIPE_WEBHOOK_SECRET`
 
-### 6. Resend (optional — email)
+### 6. Resend (email, optional)
 
 1. Create account at [resend.com](https://resend.com)
 2. Add and verify your domain
@@ -166,7 +171,7 @@ Open [http://localhost:3000](http://localhost:3000). 🎉
 
 ### 8. Make it yours
 
-Your brand lives in **two files** — swap them and the whole app follows:
+Your brand lives in **two files**. Swap them and the whole app follows:
 
 ```
 src/config/site.ts        # name, tagline, description, contact email, links
@@ -202,14 +207,14 @@ Find your user in the `User` table and set `role` to `ADMIN`. You'll then see th
 
 ## 🎨 Make it yours
 
-Your app's identity lives in **two files** — everything else (metadata, navbar, footer, emails, legal pages) reads from them:
+Your app's identity lives in **two files**. Everything else (metadata, navbar, footer, emails, legal pages) reads from them:
 
-- `src/config/site.ts` — name, tagline, description, contact email, links
-- `src/components/logo.tsx` — the logo mark and wordmark
+- `src/config/site.ts`: name, tagline, description, contact email, links
+- `src/components/logo.tsx`: the logo mark and wordmark
 
 Change those, replace the landing copy, and the kit is fully yours. The only intentional exception is the optional ["Built with" badge](#%EF%B8%8F-attribution--the-badge), which credits the kit itself.
 
-One boundary worth stating plainly: the **code is MIT** — use it for anything, no strings attached. The **OpenStarterKit name and wordmark are our brand**: replace them in your production app (it's the two files above, ~5 minutes).
+One boundary worth stating plainly: the **code is MIT**, use it for anything, no strings attached. The **OpenStarterKit name and wordmark are our brand**: replace them in your production app (it's the two files above, ~5 minutes).
 
 ---
 
@@ -222,10 +227,10 @@ DEMO_MODE="true"          # on the demo deployment
 NEXT_PUBLIC_DEMO_URL=""   # on the marketing deployment → points "Sign in"/"Demo" at the demo
 ```
 
-With `DEMO_MODE` on, the OAuth buttons are disabled and the login page offers **one-click shared accounts** instead — *Explore as User* and *Explore as Admin* (so visitors can see the admin panel too). Fill the demo database with believable fake users, subscriptions and projects:
+With `DEMO_MODE` on, the OAuth buttons are disabled and the login page offers **one-click shared accounts** instead: *Explore as User* and *Explore as Admin* (so visitors can see the admin panel too). Fill the demo database with believable fake users, subscriptions and projects:
 
 ```bash
-npm run db:seed:demo   # ⚠️ wipes users/projects and recreates fixtures — re-run to reset
+npm run db:seed:demo   # ⚠️ wipes users/projects and recreates fixtures; re-run to reset
 ```
 
 No real emails, no real payments (use Stripe test keys), nothing to GDPR-worry about.
@@ -237,8 +242,8 @@ No real emails, no real payments (use Stripe test keys), nothing to GDPR-worry a
 ```
 src/
 ├── app/
-│   ├── (public)/          # Landing pages — no auth required
-│   ├── (auth)/            # Login page
+│   ├── (public)/          # Landing pages (no auth required)
+│   ├── (auth)/            # Login, signup, magic link & password reset pages
 │   ├── (dashboard)/       # Protected user area
 │   ├── (admin)/           # Admin panel (ADMIN role)
 │   └── api/               # API routes (auth, checkout, billing, webhooks)
@@ -264,7 +269,7 @@ prisma/
 
 ## 🧠 Tech decisions
 
-**Why Prisma 7?** New WASM engine requires a driver adapter — we use `@prisma/adapter-pg`. See `src/lib/prisma.ts`.
+**Why Prisma 7?** New WASM engine requires a driver adapter; we use `@prisma/adapter-pg`. See `src/lib/prisma.ts`.
 
 **Why Stripe lazy proxy?** `new Stripe("")` throws at module load time. The proxy defers instantiation to first request. See `src/lib/stripe.ts`.
 
@@ -276,7 +281,7 @@ prisma/
 
 ## 🏷️ Attribution & the badge
 
-OpenStarterKit ships with a small **"Built with OpenStarterKit"** badge in the app footer. It's on by default — it costs you nothing and helps other makers find the kit.
+OpenStarterKit ships with a small **"Built with OpenStarterKit"** badge in the app footer. It's on by default: it costs you nothing and helps other makers find the kit.
 
 **Want to remove it?** You're completely free to. Just set:
 
@@ -284,7 +289,7 @@ OpenStarterKit ships with a small **"Built with OpenStarterKit"** badge in the a
 NEXT_PUBLIC_REMOVE_BRANDING="true"
 ```
 
-No license to buy, no fee, no unlock — the badge simply disappears.
+No license to buy, no fee, no unlock: the badge simply disappears.
 
 If the kit saved you a weekend, the nicest way to say thanks is a coffee.
 Totally optional: ☕ [buy us a coffee](https://buymeacoffee.com/openstarterkit).
@@ -293,18 +298,18 @@ Totally optional: ☕ [buy us a coffee](https://buymeacoffee.com/openstarterkit)
 
 ## 🗺️ Roadmap & changelog
 
-OpenStarterKit ships continuously and stays free — pull `main` for updates. A paid **Pro** tier (teams & scale) is coming later.
+OpenStarterKit ships continuously and stays free: pull `main` for updates. A paid **Pro** tier (teams & scale) is coming later.
 
-- 📍 [ROADMAP.md](./ROADMAP.md) — what's next
-- 📝 [CHANGELOG.md](./CHANGELOG.md) — what shipped
+- 📍 [ROADMAP.md](./ROADMAP.md): what's next
+- 📝 [CHANGELOG.md](./CHANGELOG.md): what shipped
 
 ## 🔒 Security
 
-Found a vulnerability? Please **don't** open a public issue — see [SECURITY.md](./SECURITY.md) for private reporting.
+Found a vulnerability? Please **don't** open a public issue: see [SECURITY.md](./SECURITY.md) for private reporting.
 
 ## 📄 License
 
-[MIT](./LICENSE) — free for personal and commercial use.
+[MIT](./LICENSE), free for personal and commercial use.
 
 ---
 

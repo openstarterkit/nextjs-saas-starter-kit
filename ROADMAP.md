@@ -2,38 +2,39 @@
 
 OpenStarterKit is **free and open source**, and ships continuously. Pull `main` to get every update and fix.
 
-> This roadmap is indicative and reorder-able based on community feedback — open an issue and tell us what matters to you.
+> This roadmap is indicative and reorder-able based on community feedback: open an issue and tell us what matters to you.
 
 ---
 
-## ✅ v1.0 — Foundation *(current)*
+## ✅ v1.0 - Foundation
 The complete, production-ready core: auth, payments, dashboard, admin, projects, dark mode, emails. Free & MIT-licensed.
 See [CHANGELOG.md](./CHANGELOG.md).
 
-## 🔜 v1.1 — Auth expansion
+## ✅ v1.1 - Auth expansion & docs *(current)*
 - Magic link / email sign-in (passwordless)
-- Email + password credentials (production-grade, not just dev)
-- Account linking across providers
+- Email + password credentials (production-grade, not just dev) with password reset
+- Account linking across providers, managed from Settings
+- Base documentation in [docs/](./docs/README.md): getting started, configuration, authentication, deploy guide
 
-## 🔜 v1.2 — Payments & polish
+## 🔜 v1.2 - Payments & polish
 - One-time payments (not just subscriptions)
 - Multiple pricing tiers out of the box
 - Usage-based billing example
 - Polished onboarding flow
 
-## 🔜 v1.3 — Content & SEO
+## 🔜 v1.3 - Content & SEO
 - MDX blog with categories & RSS
 - SEO: sitemap, robots, dynamic OG images
 - Marketing pages scaffold (about, changelog, legal)
 - Contact form done right (Resend + Zod validation + honeypot anti-spam + privacy notice slot)
-- Generic placeholder landing (neutral brand, ready to customize — the live demo will use it too)
+- Generic placeholder landing (neutral brand, ready to customize; the live demo will use it too)
 
-## 🔜 v1.4 — UI kit expansion
+## 🔜 v1.4 - UI kit expansion
 - 20+ additional components (modal, dropdown, toast, tabs, tooltip…)
 - Dashboard chart components
 - Form library with validation patterns
 
-## 🎯 Pro — Teams & scale *(paid, coming)*
+## 🎯 Pro - Teams & scale *(paid, coming)*
 The paid tier, built for teams. Everything in the free kit, plus:
 - Multi-tenancy / teams & organizations
 - Role-based permissions (beyond USER/ADMIN)
@@ -43,4 +44,4 @@ The paid tier, built for teams. Everything in the free kit, plus:
 ---
 
 ## 💡 Have a request?
-Community feedback reorders this roadmap. Open an issue or reply to any OpenStarterKit email — the features people actually ask for get built first.
+Community feedback reorders this roadmap. Open an issue or reply to any OpenStarterKit email: the features people actually ask for get built first.

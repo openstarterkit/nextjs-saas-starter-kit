@@ -7,12 +7,13 @@ import { LogoLink } from "@/components/landing/logo-link"
 import { MobileMenu } from "@/components/landing/mobile-menu"
 import { NavLinks } from "@/components/landing/nav-links"
 import { siteConfig } from "@/config/site"
+import { NavbarWrapper } from "@/components/landing/navbar-wrapper"
 
 export async function Navbar() {
   const session = await auth()
 
   return (
-    <header className="sticky top-0 z-50 w-full px-4 pt-4">
+    <NavbarWrapper>
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 rounded-full border border-border bg-background/70 px-4 pl-5 shadow-soft backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
         <LogoLink className="flex items-center gap-2">
           <Logo wordmarkClassName="text-base font-bold" />
@@ -39,6 +40,6 @@ export async function Navbar() {
           <MobileMenu signInHref={siteConfig.links.demo ?? "/login"} isAuthenticated={!!session} />
         </div>
       </div>
-    </header>
+    </NavbarWrapper>
   )
 }

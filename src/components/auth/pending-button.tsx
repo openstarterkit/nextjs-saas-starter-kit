@@ -12,15 +12,27 @@ export function PendingButton({
   className,
   children,
   disabled,
+  formAction,
+  formNoValidate,
 }: {
   className?: string
   children: React.ReactNode
   disabled?: boolean
+  /** Alternative server action for this button within a shared form. */
+  formAction?: string | ((formData: FormData) => void | Promise<void>)
+  formNoValidate?: boolean
 }) {
   const { pending } = useFormStatus()
 
   return (
-    <button type="submit" disabled={disabled || pending} aria-busy={pending} className={className}>
+    <button
+      type="submit"
+      formAction={formAction}
+      formNoValidate={formNoValidate}
+      disabled={disabled || pending}
+      aria-busy={pending}
+      className={className}
+    >
       {pending ? <Spinner className="h-[18px] w-[18px]" /> : children}
     </button>
   )
