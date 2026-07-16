@@ -67,6 +67,7 @@ export function Footer() {
               <li><Link href="/#features" className="transition-colors hover:text-foreground">Features</Link></li>
               <li><Link href="/#pricing" className="transition-colors hover:text-foreground">Pricing</Link></li>
               <li><Link href="/docs" className="transition-colors hover:text-foreground">Docs</Link></li>
+              <li><Link href="/changelog" className="transition-colors hover:text-foreground">Changelog</Link></li>
               <li>
                 <Link href={siteConfig.links.demo ?? "/login"} className="transition-colors hover:text-foreground">
                   Demo
@@ -123,7 +124,12 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted-foreground md:flex-row">
           <p>© {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
-          <p>v{siteConfig.version} · MIT License · Built with Next.js</p>
+          <p>
+            <Link href="/changelog" className="transition-colors hover:text-foreground">
+              v{siteConfig.version}
+            </Link>{" "}
+            · MIT License · Built with Next.js
+          </p>
         </div>
 
         <div className="mt-8 flex justify-center">

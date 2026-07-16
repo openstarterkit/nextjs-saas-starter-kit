@@ -15,7 +15,7 @@ export function DemoBanner() {
       className="group flex items-center justify-center gap-2 bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
     >
       <span aria-hidden="true">👋</span>
-      <span>You&apos;re viewing the live demo — jump into the app</span>
+      <span>You&apos;re viewing the live demo - jump into the app</span>
       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
     </Link>
   )

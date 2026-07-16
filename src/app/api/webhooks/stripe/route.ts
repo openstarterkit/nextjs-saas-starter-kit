@@ -41,6 +41,11 @@ export async function POST(req: NextRequest) {
         await handlePaymentFailed(invoice)
         break
       }
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge
+        await handleChargeRefunded(charge)
+        break
+      }
     }
   } catch (err) {
     console.error(`Webhook handler error for ${event.type}:`, err)
@@ -51,6 +56,11 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  if (session.mode === "payment") {
+    await handleOneTimeCheckout(session)
+    return
+  }
+
   if (!session.subscription || !session.metadata?.userId) return
 
   const subscription = await stripe.subscriptions.retrieve(
@@ -125,6 +135,60 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 }
 
+// One-time (mode: "payment") checkouts become a Purchase row. The PaymentIntent
+// id is the idempotency key: Stripe delivers events at least once, and a replay
+// finds the existing row, so the grant and the email both happen exactly once.
+async function handleOneTimeCheckout(session: Stripe.Checkout.Session) {
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id
+  const userId = session.metadata?.userId
+  const planId = session.metadata?.planId
+  // A payment session without our metadata wasn't created by /api/checkout
+  // (e.g. a Payment Link): acknowledge it so Stripe doesn't retry.
+  if (!paymentIntentId || !userId || !planId) return
+
+  const plan = await prisma.plan.findUnique({ where: { id: planId } })
+  if (!plan) return
+
+  const existing = await prisma.purchase.findUnique({
+    where: { stripePaymentIntentId: paymentIntentId },
+    select: { id: true },
+  })
+  const isNewPurchase = !existing
+
+  await prisma.purchase.upsert({
+    where: { stripePaymentIntentId: paymentIntentId },
+    update: {},
+    create: {
+      userId,
+      planId,
+      stripePaymentIntentId: paymentIntentId,
+      stripeCheckoutSessionId: session.id,
+      amount: session.amount_total ?? plan.price,
+      currency: session.currency ?? "usd",
+    },
+  })
+
+  if (isNewPurchase && process.env.RESEND_API_KEY) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true },
+    })
+    if (user) {
+      const { sendPurchaseConfirmation } = await import("@/lib/email")
+      sendPurchaseConfirmation(
+        user.email,
+        user.name ?? "",
+        plan.name,
+        session.amount_total ?? plan.price,
+        session.currency ?? "usd"
+      ).catch(console.error)
+    }
+  }
+}
+
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const existing = await prisma.subscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
@@ -184,6 +248,21 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   await prisma.subscription.updateMany({
     where: { stripeSubscriptionId: subscriptionId },
     data: { status: "PAST_DUE" },
+  })
+}
+
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  // charge.refunded is only true when FULLY refunded; a partial refund keeps
+  // the purchase (and the access it grants) intact.
+  if (!charge.refunded) return
+
+  const paymentIntentId =
+    typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id
+  if (!paymentIntentId) return
+
+  await prisma.purchase.updateMany({
+    where: { stripePaymentIntentId: paymentIntentId },
+    data: { status: "REFUNDED" },
   })
 }
 

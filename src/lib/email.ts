@@ -41,6 +41,22 @@ export async function sendSubscriptionConfirmation(
   })
 }
 
+export async function sendPurchaseConfirmation(
+  to: string,
+  name: string,
+  planName: string,
+  amount: number,
+  currency: string
+) {
+  const resend = getInstance()
+  return resend.emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: `Your ${planName} purchase is confirmed`,
+    html: purchaseTemplate(name, planName, amount, currency),
+  })
+}
+
 export async function sendMagicLinkEmail(to: string, url: string) {
   const resend = getInstance()
   return resend.emails.send({
@@ -116,9 +132,9 @@ function welcomeTemplate(name: string) {
     <p>Welcome to ${siteConfig.name}! Your account is ready. You're now part of a community of developers shipping SaaS products faster.</p>
     <p>Here's what you can do right now:</p>
     <div class="highlight">
-      <p>🔐 <strong>Authentication</strong> — Google & GitHub OAuth, fully configured</p>
-      <p>💳 <strong>Billing</strong> — Stripe checkout ready to go</p>
-      <p>📊 <strong>Dashboard</strong> — Track your subscription and account</p>
+      <p>🔐 <strong>Authentication</strong>: Google & GitHub OAuth, fully configured</p>
+      <p>💳 <strong>Billing</strong>: Stripe checkout ready to go</p>
+      <p>📊 <strong>Dashboard</strong>: Track your subscription and account</p>
     </div>
     <p>Ready to explore?</p>
     <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Go to Dashboard →</a>
@@ -170,6 +186,25 @@ function subscriptionTemplate(
   `)
 }
 
+function purchaseTemplate(name: string, planName: string, amount: number, currency: string) {
+  const formatted = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  }).format(amount / 100)
+
+  return baseTemplate(`
+    <p>Hey ${name || "there"} 👋</p>
+    <p>Your <strong>${planName}</strong> purchase is confirmed. It was a one-time payment: no renewals, no recurring billing.</p>
+    <div class="highlight">
+      <p><strong>Plan:</strong> ${planName}</p>
+      <p><strong>Amount:</strong> ${formatted} (one time)</p>
+    </div>
+    <p>You now have full access to all ${siteConfig.name} features.</p>
+    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing" class="btn">View billing →</a>
+    <p style="margin-top:24px">Your receipt is available on the billing page. Questions? Just reply to this email.</p>
+  `)
+}
+
 function cancellationTemplate(name: string, endDate: string) {
   return baseTemplate(`
     <p>Hey ${name || "there"},</p>
@@ -180,6 +215,6 @@ function cancellationTemplate(name: string, endDate: string) {
     </div>
     <p>Changed your mind? You can resubscribe anytime before your access expires.</p>
     <a href="${process.env.NEXT_PUBLIC_APP_URL}/pricing" class="btn">Resubscribe →</a>
-    <p style="margin-top:24px">If you'd like to share feedback on why you cancelled, just reply to this email — we read every response.</p>
+    <p style="margin-top:24px">If you'd like to share feedback on why you cancelled, just reply to this email - we read every response.</p>
   `)
 }

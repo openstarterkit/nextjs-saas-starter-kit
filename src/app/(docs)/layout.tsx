@@ -5,8 +5,10 @@ import { DemoBanner } from "@/components/landing/demo-banner"
 export default function DocsRootLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <DemoBanner />
-      <Navbar />
+      <div className="sticky top-0 z-50">
+        <DemoBanner />
+        <Navbar />
+      </div>
       <main className="flex-1">{children}</main>
       <BackToTop />
     </div>

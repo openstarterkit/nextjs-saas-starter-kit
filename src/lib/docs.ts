@@ -26,6 +26,12 @@ export const DOCS = [
     file: "authentication.md",
   },
   {
+    slug: "billing",
+    title: "Billing & payments",
+    description: "Subscriptions, one-time payments, usage-based billing and entitlements.",
+    file: "billing.md",
+  },
+  {
     slug: "deployment",
     title: "Deployment",
     description: "Ship to Vercel: production env, migrations, webhooks, going admin.",

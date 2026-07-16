@@ -47,7 +47,7 @@ export default async function LoginPage({
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome back</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {isDemo ? "This is a live demo — jump straight in" : "Sign in to your account to continue"}
+            {isDemo ? "This is a live demo - jump straight in" : "Sign in to your account to continue"}
           </p>
         </div>
 
@@ -91,7 +91,7 @@ export default async function LoginPage({
 
           {isDemo && (
             <p className="text-center text-xs text-muted-foreground">
-              OAuth sign-in is enabled in your own deployment — this demo uses shared accounts.
+              OAuth sign-in is enabled in your own deployment - this demo uses shared accounts.
               <br />
               Curious about the email flows?{" "}
               <Link href="/signup" className="underline underline-offset-4 hover:text-foreground">
@@ -196,7 +196,7 @@ export default async function LoginPage({
               </form>
 
               <p className="text-center text-xs text-muted-foreground">
-                One click, no email — shared accounts with fake data, reset periodically.
+                One click, no email - shared accounts with fake data, reset periodically.
               </p>
             </div>
           </>

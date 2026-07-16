@@ -139,8 +139,14 @@ export async function resetPassword(formData: FormData) {
 
   const passwordHash = await hashPassword(parsed.data)
   // Swap the hash and burn the token atomically: a replayed link must fail.
+  // Bumping sessionVersion revokes every existing JWT session (~60s worst
+  // case, see the jwt callback in src/auth.ts): whoever resets the password
+  // is the only one who stays in control of the account.
   await prisma.$transaction([
-    prisma.user.update({ where: { id: record.userId }, data: { passwordHash } }),
+    prisma.user.update({
+      where: { id: record.userId },
+      data: { passwordHash, sessionVersion: { increment: 1 } },
+    }),
     prisma.passwordResetToken.update({
       where: { id: record.id },
       data: { usedAt: new Date() },

@@ -29,7 +29,7 @@ Sign-in, signup, magic link and reset requests go through a small fixed-window i
 
 ### A note on JWT sessions
 
-Sessions are stateless JWTs, so they cannot be revoked server-side: after a password reset, sessions that are already issued stay valid until they expire. If your threat model needs instant revocation, switch to database sessions or add a session-version claim.
+Sessions are stateless JWTs, which normally makes them impossible to revoke server-side. The kit closes the gap that matters: every user has a `sessionVersion` counter that is stamped into the token and re-checked against the database at most once a minute. A password reset bumps the counter, so every other session dies within about 60 seconds; the check fails open on database errors (availability first) and is throttled because the middleware runs on nearly every request. Changing the password from Settings deliberately does NOT bump the counter, so the session doing the change stays signed in. If your threat model needs instant revocation, switch to database sessions.
 
 ## Account linking
 

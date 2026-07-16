@@ -6,7 +6,7 @@ product, so we take reports seriously and try to make the defaults safe.
 ## Supported versions
 
 The kit is distributed as source you clone and own. We provide security fixes on
-the latest `main`. There is no backport guarantee for older snapshots — pull the
+the latest `main`. There is no backport guarantee for older snapshots: pull the
 latest `main` to get fixes.
 
 | Version        | Supported |
@@ -40,21 +40,21 @@ Please include:
 
 A quick map of where security-relevant logic lives, so you can review it:
 
-- **Authentication** — Auth.js v5 (`src/auth.ts`), JWT session strategy. The
+- **Authentication**: Auth.js v5 (`src/auth.ts`), JWT session strategy. The
   dev-only credentials provider is double-gated and never active outside
   `NODE_ENV=development`.
-- **Route protection** — defense in depth: edge middleware (`src/proxy.ts`) →
+- **Route protection**: defense in depth, edge middleware (`src/proxy.ts`) →
   `auth()` in the `(dashboard)`/`(admin)` layouts → a role re-check in the admin
   page. Inbound webhooks bypass auth deliberately (they carry no session).
-- **Payments** — Stripe Checkout + Customer Portal. The webhook
+- **Payments**: Stripe Checkout + Customer Portal. The webhook
   (`src/app/api/webhooks/stripe/route.ts`) verifies the signature against the raw
   body before trusting any event. Checkout validates the price against the DB
   Plans before creating a session.
-- **Authorization** — server actions (`src/app/actions/*`) enforce auth + input
+- **Authorization**: server actions (`src/app/actions/*`) enforce auth + input
   validation (Zod) + ownership checks on every mutation.
-- **Secrets** — only `.env.example` is committed; all real secrets live in
+- **Secrets**: only `.env.example` is committed; all real secrets live in
   `.env*` files that are git-ignored.
-- **HTTP headers** — security headers (HSTS, `nosniff`, anti-clickjacking,
+- **HTTP headers**: security headers (HSTS, `nosniff`, anti-clickjacking,
   `Referrer-Policy`, `Permissions-Policy`) are set in `next.config.ts`. A
   Content-Security-Policy is left for you to tune per deployment.
 

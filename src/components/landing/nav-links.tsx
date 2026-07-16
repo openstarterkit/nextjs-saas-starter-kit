@@ -25,6 +25,9 @@ export function NavLinks() {
       <Link href="/docs" className={linkClass(pathname.startsWith("/docs"))}>
         Docs
       </Link>
+      <Link href="/changelog" className={linkClass(pathname.startsWith("/changelog"))}>
+        Changelog
+      </Link>
     </nav>
   )
 }

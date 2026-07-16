@@ -13,3 +13,15 @@ declare module "next-auth" {
     role: Role
   }
 }
+
+// next-auth/jwt just re-exports @auth/core/jwt, so the augmentation must
+// target the module that actually declares the JWT interface.
+declare module "@auth/core/jwt" {
+  interface JWT {
+    role?: Role
+    /** User.sessionVersion at issue time; a mismatch with the DB kills the session. */
+    sv?: number
+    /** Timestamp of the last sessionVersion check, to throttle the DB lookup. */
+    svAt?: number
+  }
+}

@@ -11,8 +11,10 @@ export function NavbarWrapper({ children }: { children: React.ReactNode }) {
     return null
   }
 
+  // Stickiness lives on the layout wrapper (banner + navbar stick together
+  // in demo mode), not here.
   return (
-    <header className="sticky top-0 z-50 w-full px-4 pt-4">
+    <header className="w-full px-4 pt-4">
       {children}
     </header>
   )

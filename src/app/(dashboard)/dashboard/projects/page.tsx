@@ -20,7 +20,7 @@ export default async function ProjectsPage() {
       <div>
         <h1 className="text-2xl font-bold">Projects</h1>
         <p className="mt-1 text-muted-foreground">
-          The things you&apos;re working on. This is the example resource — copy the pattern to build your own.
+          The things you&apos;re working on. This is the example resource - copy the pattern to build your own.
         </p>
       </div>
 

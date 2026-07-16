@@ -31,7 +31,7 @@ export function ProfileForm({ name, email, image }: ProfileFormProps) {
         </Avatar>
         <div>
           <p className="text-sm font-medium text-foreground">{email}</p>
-          <p className="text-xs text-muted-foreground">Connected via OAuth — avatar managed by provider</p>
+          <p className="text-xs text-muted-foreground">Connected via OAuth - avatar managed by provider</p>
         </div>
       </div>
 

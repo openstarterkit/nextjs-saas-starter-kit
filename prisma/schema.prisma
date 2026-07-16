@@ -16,6 +16,9 @@ enum Role {
 enum BillingInterval {
   MONTH
   YEAR
+  // One-time purchase (e.g. a lifetime deal): checkout runs in "payment" mode
+  // and the grant is recorded as a Purchase instead of a Subscription.
+  ONE_TIME
 }
 
 enum SubscriptionStatus {
@@ -25,6 +28,11 @@ enum SubscriptionStatus {
   UNPAID
   TRIALING
   INCOMPLETE
+}
+
+enum PurchaseStatus {
+  COMPLETED
+  REFUNDED
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -40,9 +48,16 @@ model User {
   passwordHash        String?
   role                Role                 @default(USER)
   stripeCustomerId    String?              @unique
+  // Bumped on password reset; JWTs carrying an older version are rejected,
+  // so a reset revokes every other session (JWTs are otherwise unrevocable).
+  sessionVersion      Int                  @default(1)
+  // When the user dismissed the "Get started" checklist; the checklist items
+  // themselves are derived live (name, projects, billing), only this persists.
+  onboardingDismissedAt DateTime?
   accounts            Account[]
   sessions            Session[]
   subscription        Subscription?
+  purchases           Purchase[]
   projects            Project[]
   passwordResetTokens PasswordResetToken[]
   createdAt           DateTime             @default(now())
@@ -105,9 +120,14 @@ model Plan {
   price         Int
   interval      BillingInterval
   stripePriceId String          @unique
+  // Set only on metered (usage-based) plans: the Stripe Billing Meter event
+  // name that recordUsage() reports against. Metered prices must be checked
+  // out without a quantity.
+  meterEventName String?
   features      String[]
   isActive      Boolean         @default(true)
   subscriptions Subscription[]
+  purchases     Purchase[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 }
@@ -125,6 +145,26 @@ model Subscription {
   plan                 Plan               @relation(fields: [planId], references: [id])
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
+}
+
+// One-time payments (ONE_TIME plans). The PaymentIntent id is the idempotency
+// key for the webhook: replays find the existing row and no-op. userId is not
+// unique on purpose — a real product may sell several one-time items.
+model Purchase {
+  id                      String         @id @default(cuid())
+  userId                  String
+  planId                  String
+  stripePaymentIntentId   String         @unique
+  stripeCheckoutSessionId String?        @unique
+  amount                  Int
+  currency                String         @default("usd")
+  status                  PurchaseStatus @default(COMPLETED)
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                    Plan           @relation(fields: [planId], references: [id])
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  @@index([userId])
 }
 
 // ─── Example domain resource ──────────────────────────────────────────────────

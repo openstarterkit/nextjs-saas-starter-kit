@@ -7,6 +7,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.2.0] - 2026-07-16
+
+💳 **Payments & polish.** The billing pillar is complete: one-time payments, multiple tiers, usage-based example. Plus onboarding and a public changelog.
+
+### Added
+- **One-time payments**: Stripe Checkout in `payment` mode with a new `Purchase` model, idempotent webhook handling (replay-safe on the PaymentIntent), refund handling via `charge.refunded`, purchase confirmation email, and invoices enabled on one-time checkouts
+- **Multiple pricing tiers**: plan cards are driven by the `Plan` table; monthly and yearly variants of a tier pair up into one card (by slug convention) and the Monthly/Yearly toggle swaps only the price, animated and always shown as its monthly equivalent with a "billed yearly" note; the seed now ships 6 example plans (Starter and Pro in monthly and yearly variants, Lifetime, and an inactive metered example)
+- **Usage-based billing example**: `recordUsage()` helper on Stripe Billing Meters, plus a new [billing guide](./docs/billing.md) covering subscriptions, one-time payments, usage-based metering and local testing
+- **Onboarding**: a dismissable "Get started" checklist on the dashboard (items derived live from your data) and toasts on return from Stripe Checkout (success and canceled)
+- **Public `/changelog` page**: this file rendered on the site with a version badge per release, linked in the navbar (after Docs) and in the footer
+- **Demo pricing triad**: in demo mode the homepage, `/pricing` and the in-app billing grid all show the same Starter / Pro / Enterprise triad driven by the `Plan` table, closed by an example Enterprise "Contact us" card that opens the contact dialog with a pre-filled subject (`PlanCards` gains a `ctaHref` mode for public pages and an optional `contactCard` slot for a sales-led tier)
+- **Session revocation**: a password reset now invalidates other active sessions within about a minute (`sessionVersion` claim with a throttled DB check)
+- **Entitlement helper**: `getEntitlement()` in `src/lib/billing.ts` resolves lifetime vs subscription vs free, the pattern to copy for gating your own features
+
+### Changed
+- Checkout API hardened: valid requests require an active `Plan` price, and users with an active subscription or lifetime purchase get a clear error pointing to the Customer Portal instead of a second checkout
+- The demo banner now stays pinned above the navbar while scrolling, so the "jump into the app" call to action is always visible on the demo
+- Upgrade button requires an explicit price and surfaces errors as toasts
+- Copy polish across the landing, dashboard, auth and legal pages
+
+### Fixed
+- Mobile menu: hash links now scroll to the section instead of bouncing
+- CSS `mask` uses the standard property alongside the `-webkit-` prefix
+
+### Notes
+- Two new migrations (both additive): `add_one_time_payments` and `add_session_version_and_onboarding`; run `npx prisma migrate deploy`
+- Env: new `STRIPE_STARTER_PRICE_ID`, `STRIPE_LIFETIME_PRICE_ID`, `STRIPE_METERED_PRICE_ID`; removed `NEXT_PUBLIC_STRIPE_PRO_PRICE_ID` (price IDs never needed to be public)
+- Sessions issued before this release stay valid: the new session claim is backfilled without logging anyone out
+
 ## [1.1.0] - 2026-07-10
 
 🔐 **Auth expansion & docs.** Four ways to sign in, one account. Plus a real documentation set.
@@ -53,5 +82,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[1.2.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.2.0
 [1.1.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.1.0
 [1.0.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.0.0

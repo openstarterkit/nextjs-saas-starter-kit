@@ -7,6 +7,7 @@ Everything you need to go from `git clone` to production.
 | [Getting started](./getting-started.md) | First run: clone, environment, database, dev server |
 | [Configuration](./configuration.md) | Setting up env vars, OAuth apps, Stripe, email and branding |
 | [Authentication](./authentication.md) | Understanding the sign-in methods, password reset and account linking |
+| [Billing & payments](./billing.md) | Subscriptions, one-time payments, usage-based billing and entitlements |
 | [Deployment](./deployment.md) | Shipping to Vercel, production env, webhooks, going admin |
 
 Quick pointers:

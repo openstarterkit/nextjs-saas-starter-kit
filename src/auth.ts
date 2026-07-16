@@ -76,8 +76,9 @@ const demoProvider = Credentials({
     const user = await prisma.user.upsert({
       where: { email },
       // Re-assert the role on every sign-in: a previous visitor may have
-      // demoted the shared account from the admin panel.
-      update: { role: asAdmin ? "ADMIN" : "USER" },
+      // demoted the shared account from the admin panel. Reset the checklist
+      // dismissal too, so every demo visitor sees the "Get started" card.
+      update: { role: asAdmin ? "ADMIN" : "USER", onboardingDismissedAt: null },
       create: {
         email,
         name: asAdmin ? "Demo Admin" : "Demo User",
@@ -121,13 +122,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.role = (user as { role?: Role }).role ?? undefined
       }
-      if (!token.role && token.sub) {
+
+      const now = Date.now()
+
+      // First time we see this token: at sign-in, or a legacy token issued
+      // before sessionVersion existed. Stamp role and version from the DB
+      // WITHOUT invalidating, so deploying this doesn't log everyone out.
+      if (token.sub && (!token.role || token.sv === undefined)) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { role: true },
+          select: { role: true, sessionVersion: true },
         })
-        token.role = dbUser?.role ?? "USER"
+        token.role = token.role ?? dbUser?.role ?? "USER"
+        token.sv = dbUser?.sessionVersion ?? 1
+        token.svAt = now
+        return token
       }
+
+      // Re-verify the session version at most once a minute: resetting the
+      // password bumps User.sessionVersion, so tokens issued before it die
+      // here (within ~60s). The throttle matters because proxy.ts runs auth()
+      // on nearly every request; and the check fails OPEN on DB errors, since
+      // for this threat model availability beats strictness.
+      if (token.sub && now - (token.svAt ?? 0) > 60_000) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { sessionVersion: true },
+          })
+          // Also kills sessions of deleted users. Returning null makes
+          // Auth.js clear the session cookie.
+          if (!dbUser || dbUser.sessionVersion !== token.sv) return null
+          token.svAt = now
+        } catch (error) {
+          console.error("sessionVersion check failed, keeping session:", error)
+        }
+      }
+
       return token
     },
     session({ session, token }) {

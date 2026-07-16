@@ -1,7 +1,7 @@
 import { siteConfig } from "@/config/site"
 
 export const metadata = {
-  title: `Privacy Policy — ${siteConfig.name}`,
+  title: `Privacy Policy | ${siteConfig.name}`,
 }
 
 // ⚠️ Placeholder page: this is a structural template, NOT legal advice.
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
             <h2 className="mb-2 text-lg font-semibold text-foreground">1. Data we collect</h2>
             <p>
               When you sign in with Google or GitHub, we receive your name, email address, and
-              profile picture. When you subscribe, payments are processed by Stripe — we never
+              profile picture. When you subscribe, payments are processed by Stripe: we never
               see or store your card details. We also store the content you create in the app
               (e.g. projects).
             </p>

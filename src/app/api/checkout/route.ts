@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
+import { CHECKOUT_BLOCKING_STATUSES } from "@/lib/billing"
+import type Stripe from "stripe"
 
 export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({ error: "Billing is not configured" }, { status: 503 })
   }
 
   const { priceId } = await req.json()
@@ -20,7 +26,7 @@ export async function POST(req: NextRequest) {
   // price maps to a Plan row, so an unknown price would mean "paid for nothing".
   const plan = await prisma.plan.findUnique({
     where: { stripePriceId: priceId },
-    select: { isActive: true },
+    select: { id: true, interval: true, meterEventName: true, isActive: true },
   })
   if (!plan || !plan.isActive) {
     return NextResponse.json({ error: "Invalid price" }, { status: 400 })
@@ -28,11 +34,34 @@ export async function POST(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { stripeCustomerId: true, email: true, name: true },
+    select: {
+      stripeCustomerId: true,
+      email: true,
+      name: true,
+      subscription: { select: { status: true } },
+      purchases: { where: { status: "COMPLETED" }, select: { id: true }, take: 1 },
+    },
   })
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 })
+  }
+
+  if (user.purchases.length > 0) {
+    return NextResponse.json({ error: "You already have lifetime access" }, { status: 400 })
+  }
+
+  // A user with a live subscription changes plans through the Customer Portal
+  // (which handles proration); a second checkout would create a second
+  // subscription in Stripe.
+  if (
+    user.subscription &&
+    (CHECKOUT_BLOCKING_STATUSES as readonly string[]).includes(user.subscription.status)
+  ) {
+    return NextResponse.json(
+      { error: "You already have a subscription. Use the billing portal to change plans." },
+      { status: 400 }
+    )
   }
 
   let customerId = user.stripeCustomerId
@@ -50,14 +79,31 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const checkoutSession = await stripe.checkout.sessions.create({
+  const isOneTime = plan.interval === "ONE_TIME"
+
+  // planId in metadata saves the webhook a listLineItems call: the session
+  // event doesn't include line items, and the plan was validated above.
+  const metadata = { userId: session.user.id, planId: plan.id }
+
+  const params: Stripe.Checkout.SessionCreateParams = {
     customer: customerId,
-    mode: "subscription",
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
-    metadata: { userId: session.user.id },
-  })
+    mode: isOneTime ? "payment" : "subscription",
+    // Metered prices bill from reported usage, so Stripe rejects a quantity.
+    line_items: [plan.meterEventName ? { price: priceId } : { price: priceId, quantity: 1 }],
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?success=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?canceled=true`,
+    metadata,
+  }
+
+  if (isOneTime) {
+    // An invoice makes the one-time payment show up in the billing page's
+    // invoice history and in the Customer Portal, like subscriptions do.
+    params.invoice_creation = { enabled: true }
+    // Metadata on the PaymentIntent too, so refund events can be traced back.
+    params.payment_intent_data = { metadata }
+  }
+
+  const checkoutSession = await stripe.checkout.sessions.create(params)
 
   return NextResponse.json({ url: checkoutSession.url })
 }

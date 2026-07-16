@@ -43,7 +43,7 @@ export function ContactDialog({
       toast.success("Email address copied")
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error("Couldn't copy — the address is shown above")
+      toast.error("Couldn't copy - the address is shown above")
     }
   }
 
@@ -59,7 +59,7 @@ export function ContactDialog({
           </div>
           <DialogTitle>Get in touch</DialogTitle>
           <DialogDescription>
-            Questions, feedback, ideas — we read everything and reply fast.
+            Questions, feedback, ideas - we read everything and reply fast.
           </DialogDescription>
         </DialogHeader>
 

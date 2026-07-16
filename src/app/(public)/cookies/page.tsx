@@ -1,7 +1,7 @@
 import { siteConfig } from "@/config/site"
 
 export const metadata = {
-  title: `Cookie Policy — ${siteConfig.name}`,
+  title: `Cookie Policy | ${siteConfig.name}`,
 }
 
 // ⚠️ Placeholder page: this is a structural template, NOT legal advice.

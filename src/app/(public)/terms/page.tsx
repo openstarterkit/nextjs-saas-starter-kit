@@ -1,7 +1,7 @@
 import { siteConfig } from "@/config/site"
 
 export const metadata = {
-  title: `Terms of Service — ${siteConfig.name}`,
+  title: `Terms of Service | ${siteConfig.name}`,
 }
 
 // ⚠️ Placeholder page: this is a structural template, NOT legal advice.

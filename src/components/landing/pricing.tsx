@@ -8,14 +8,14 @@ import { siteConfig } from "@/config/site"
 
 const freeFeatures = [
   "Next.js 16 + TypeScript + Tailwind 4",
-  "Auth.js v5 — Google & GitHub OAuth",
+  "Auth.js v5: Google & GitHub OAuth",
   "Prisma 7 + PostgreSQL schema",
   "Stripe Checkout + webhooks + Customer Portal",
   "Admin panel (users, metrics, roles)",
   "Transactional emails (Resend)",
   "Dashboard, dark mode, route protection",
   "1-click Vercel deploy + demo mode",
-  "MIT license — use in client projects",
+  "MIT license, use in client projects",
 ]
 
 const proFeatures = [
@@ -28,7 +28,7 @@ const proFeatures = [
 ]
 
 // Pre-filled feedback email — the Pro plan is in design; we build what people ask for.
-const feedbackSubject = `${siteConfig.name} Pro — my feedback`
+const feedbackSubject = `${siteConfig.name} Pro: my feedback`
 const feedbackBody = "What I'd want in the Pro / Teams plan:\n\n\nWhat I'd pay for it:\n\n"
 
 function CheckIcon() {
@@ -48,7 +48,7 @@ export function Pricing() {
             Start free, scale when you grow
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Open source and free forever — auth, payments, admin and emails included.
+            Open source and free forever: auth, payments, admin and emails included.
             Teams & multi-tenancy are coming as Pro.
           </p>
         </Reveal>
@@ -59,7 +59,7 @@ export function Pricing() {
             <Card className="flex h-full flex-col">
               <CardHeader className="pt-8">
                 <CardTitle className="text-2xl">Free</CardTitle>
-                <CardDescription>Open source — the complete core</CardDescription>
+                <CardDescription>Open source, the complete core</CardDescription>
                 <div className="mt-4">
                   <span className="text-5xl font-extrabold text-foreground">$0</span>
                   <span className="ml-2 text-muted-foreground">forever</span>
@@ -88,7 +88,7 @@ export function Pricing() {
                   </a>
                 </Button>
                 <p className="text-center text-xs text-muted-foreground">
-                  Clone, star, and ship — no signup required
+                  Clone, star, and ship. No signup required
                 </p>
               </CardFooter>
             </Card>
@@ -102,7 +102,7 @@ export function Pricing() {
                   <CardTitle className="text-2xl">Pro · Teams</CardTitle>
                   <Badge>Coming soon</Badge>
                 </div>
-                <CardDescription>For teams that scale — help us shape it</CardDescription>
+                <CardDescription>For teams that scale. Help us shape it</CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-extrabold text-foreground">Coming soon</span>
                   <p className="mt-1 text-sm text-muted-foreground">You tell us the price</p>
@@ -133,7 +133,7 @@ export function Pricing() {
                   }
                 />
                 <p className="text-center text-xs text-muted-foreground">
-                  Tell us what you&apos;d want — and what you&apos;d pay.
+                  Tell us what you&apos;d want, and what you&apos;d pay.
                   We build what people actually ask for.
                 </p>
               </CardFooter>

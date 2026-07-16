@@ -158,7 +158,7 @@ export default async function AdminPage({
                   <div className="flex min-w-0 items-center gap-3">
                     <UserAvatar image={user.image} name={user.name} email={user.email} />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">{user.name ?? "—"}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{user.name ?? "-"}</p>
                       <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
@@ -210,7 +210,7 @@ export default async function AdminPage({
                       <div className="flex items-center gap-3">
                         <UserAvatar image={user.image} name={user.name} email={user.email} />
                         <div>
-                          <p className="text-sm font-medium text-foreground">{user.name ?? "—"}</p>
+                          <p className="text-sm font-medium text-foreground">{user.name ?? "-"}</p>
                           <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
                       </div>

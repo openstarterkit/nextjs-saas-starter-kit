@@ -16,12 +16,12 @@ const faqs = [
   {
     question: "Why not ShipFast or Makerkit?",
     answer:
-      `${siteConfig.name} uses a best-of-breed stack where every component is independent. No Supabase lock-in, no proprietary auth layer. If a dependency releases a breaking change, you update one package — not the entire stack.`,
+      `${siteConfig.name} uses a best-of-breed stack where every component is independent. No Supabase lock-in, no proprietary auth layer. If a dependency releases a breaking change, you update one package, not the entire stack.`,
   },
   {
     question: "Which database providers are supported?",
     answer:
-      "Any PostgreSQL provider: Neon (recommended — cheapest), Supabase, Railway, PlanetScale (via Postgres mode), or self-hosted. Just set your DATABASE_URL and run the migration.",
+      "Any PostgreSQL provider: Neon (recommended, cheapest), Supabase, Railway, PlanetScale (via Postgres mode), or self-hosted. Just set your DATABASE_URL and run the migration.",
   },
   {
     question: "Do I need a Stripe account?",
@@ -31,7 +31,7 @@ const faqs = [
   {
     question: "Can I use this for client projects?",
     answer:
-      "Yes — MIT license. Use it for as many projects as you want, including client work. No per-project fees.",
+      "Yes, MIT license. Use it for as many projects as you want, including client work. No per-project fees.",
   },
   {
     question: "What if I need help or find a bug?",

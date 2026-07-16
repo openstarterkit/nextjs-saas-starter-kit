@@ -37,13 +37,13 @@ const features: { icon: LucideIcon; title: string; description: string }[] = [
     icon: Moon,
     title: "Dark mode",
     description:
-      "System-aware dark mode with a toggle. Tailwind 4 CSS variables — customize your brand colors in one file.",
+      "System-aware dark mode with a toggle. Tailwind 4 CSS variables let you customize your brand colors in one file.",
   },
   {
     icon: ShieldCheck,
     title: "Route protection",
     description:
-      "Middleware-based auth guards. Public, auth, dashboard, and admin route groups — zero boilerplate per page.",
+      "Middleware-based auth guards. Public, auth, dashboard, and admin route groups with zero boilerplate per page.",
   },
   {
     icon: Crown,
@@ -55,7 +55,7 @@ const features: { icon: LucideIcon; title: string; description: string }[] = [
     icon: Rocket,
     title: "1-click Vercel deploy",
     description:
-      "Deploy button in the README. From clone to production in under an hour — plus a built-in demo mode to showcase your product, like this site's live demo.",
+      "Deploy button in the README. From clone to production in under an hour, plus a built-in demo mode to showcase your product, like this site's live demo.",
   },
   {
     icon: Unlock,
@@ -67,7 +67,7 @@ const features: { icon: LucideIcon; title: string; description: string }[] = [
     icon: Mail,
     title: "Transactional emails",
     description:
-      "Welcome, receipt, and password reset emails via Resend. React Email templates included — branded and responsive.",
+      "Welcome, receipt, and password reset emails via Resend. React Email templates included, branded and responsive.",
   },
 ]
 
