@@ -58,14 +58,33 @@ Setup: create an account at [resend.com](https://resend.com), verify your domain
 |---|---|
 | `DEMO_MODE` | `"true"` turns the deployment into a public demo: one-click shared accounts, real OAuth disabled, email-based auth forms hidden. Use an isolated database. |
 | `NEXT_PUBLIC_DEMO_URL` | On a marketing deployment, points the sign-in links at your demo instance. |
+| `KIT_SITE` | Leave it empty. Reserved for the deployment that sells the kit itself: `"true"` switches the landing copy, pricing (hand-written open source tiers plus a Pro waitlist instead of your `Plan` rows), FAQ, footer license links and the dashboard upsell to talk about the repository rather than about your product. |
 | `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` removes the "Built with" footer badge. Free to use, no unlock. |
 | `NEXT_PUBLIC_GITHUB_URL` | Repo link shown in the navbar/footer. |
 
-## Branding
+## Branding & theming
 
-Your identity lives in exactly two files; everything else reads from them:
+The kit ships **brand-neutral**: a placeholder name and a black + grayscale theme, so it reads as a blank canvas you make yours. There are two ways to rebrand.
+
+**From config** (edit the code):
 
 - `src/config/site.ts`: name, tagline, description, contact email, links
-- `src/components/logo.tsx`: logo mark and wordmark
+- `src/components/logo.tsx`: the logo mark (swap the icon); the wordmark follows `siteConfig.name`
+- `src/app/icon.tsx`: the favicon, drawn with the same mark and generated at build time, so there is no `.ico` to redraw. It picks up your accent color on its own; swap the bolt here when you swap the logo mark.
+- `src/app/globals.css`: the color tokens under `:root` and `.dark` (`--primary`, `--primary-2`, `--gradient-brand`)
+- `src/app/globals.css`: the decorative hero backgrounds, `.bg-grid` (faint grid lines) and `.bg-glow` (accent halo). They are purely cosmetic, so emptying a rule removes it everywhere it is used: the landing hero, the auth pages and the 404.
 
-Swap those, rewrite the landing copy and the `/privacy` + `/terms` placeholders, and the kit is fully yours. The code is MIT; the OpenStarterKit name and wordmark are the kit's brand, so replace them in your production app.
+**From env** (no code changes): every field falls back to a neutral default, so set only what you want to override.
+
+| Variable | Notes |
+|---|---|
+| `NEXT_PUBLIC_BRAND_NAME` | App name, shown everywhere: wordmark, metadata, emails. |
+| `NEXT_PUBLIC_BRAND_TAGLINE` | Headline / tagline. |
+| `NEXT_PUBLIC_BRAND_DESCRIPTION` | Meta description. |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | Public contact address. |
+| `NEXT_PUBLIC_GITHUB_ORG_URL`, `NEXT_PUBLIC_X_URL` | Social links; footer icons hide when unset. |
+| `NEXT_PUBLIC_BRAND_WORDMARK_ACCENT` | Substring of the name to gradient-highlight in the logo. |
+| `NEXT_PUBLIC_BRAND_PRIMARY`, `NEXT_PUBLIC_BRAND_PRIMARY_2` | Accent colors (hex). The gradient, glow and Open Graph images follow them automatically. |
+| `NEXT_PUBLIC_BRAND_GRADIENT` | Full CSS gradient, if you prefer to set it explicitly instead of deriving it. |
+
+The code is MIT, so use it for anything. The "Built with" footer badge is optional (`NEXT_PUBLIC_REMOVE_BRANDING="true"`).

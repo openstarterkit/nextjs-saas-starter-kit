@@ -1,5 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
+import { isKitSite } from "@/config/kit"
 
 export type ChangelogRelease = {
   version: string
@@ -17,12 +18,22 @@ export type Changelog = {
 }
 
 /**
- * Parses the repo root CHANGELOG.md (Keep a Changelog format) into
- * per-release sections for the /changelog page. The Markdown file stays the
- * single source of truth, same philosophy as the docs.
+ * Parses a Keep a Changelog file into per-release sections for the
+ * /changelog page. The Markdown stays the single source of truth, same
+ * philosophy as the docs, and the source follows the same split:
+ *
+ * - your app reads `content/changelog.md`, the release notes you write for
+ *   your users. It ships with example entries: replace them, and keep the
+ *   newest version in step with `version` in `src/config/site.ts`, which is
+ *   what the footer shows.
+ * - the kit's own site (KIT_SITE="true") reads the repo root `CHANGELOG.md`.
  */
+const SOURCE = isKitSite
+  ? path.join(process.cwd(), "CHANGELOG.md")
+  : path.join(process.cwd(), "content", "changelog.md")
+
 export function getChangelog(): Changelog {
-  const raw = fs.readFileSync(path.join(process.cwd(), "CHANGELOG.md"), "utf8")
+  const raw = fs.readFileSync(SOURCE, "utf8")
 
   // Drop the trailing link-reference definitions ([1.0.0]: https://...) so
   // they don't render as stray text inside the last release's body.

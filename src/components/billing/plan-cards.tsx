@@ -24,13 +24,19 @@ export type PlanCardData = {
 }
 
 // A "talk to sales" tier with no self-serve price: rendered as the last card,
-// always visible regardless of the billing interval toggle. The CTA opens the
+// visible on both sides of the billing interval toggle. The CTA opens the
 // contact dialog (copyable address + mail-app handoff), not a bare mailto.
 export type ContactCardData = {
   name: string
   description: string
   priceLabel: string
   note?: string
+  /**
+   * What the price block shows while the toggle is on Yearly. Set it when this
+   * tier is priced rather than "Custom", so an annual figure can differ from
+   * the monthly one; anything left out falls back to the values above.
+   */
+  yearly?: { priceLabel?: string; note?: string }
   features: string[]
   ctaLabel: string
   /** Pre-filled subject/body for the dialog's mail-app handoff. */
@@ -63,6 +69,44 @@ function FeatureList({ features }: { features: string[] }) {
         </li>
       ))}
     </ul>
+  )
+}
+
+// The sales-led tier. Its price block follows the interval toggle just like the
+// priced tiers: with no `yearly` values set both sides render the same thing,
+// so it stays put and never animates.
+function ContactTierCard({ card, onYearly }: { card: ContactCardData; onYearly: boolean }) {
+  const priceLabel = (onYearly ? card.yearly?.priceLabel : undefined) ?? card.priceLabel
+  const note = (onYearly ? card.yearly?.note : undefined) ?? card.note
+
+  return (
+    <Card className="flex flex-col">
+      <CardHeader>
+        <CardTitle className="text-lg">{card.name}</CardTitle>
+        <CardDescription>{card.description}</CardDescription>
+        <div key={`${priceLabel}-${note ?? ""}`} className="animate-price-swap pt-2">
+          <span className="text-4xl font-extrabold text-foreground">{priceLabel}</span>
+          {/* Own line, rendered on both sides of the toggle, so swapping the
+              text can't reflow the card the way an inline note would. Mirrors
+              the "billed monthly / billed yearly" line on the priced tiers. */}
+          <p className="mt-1 text-xs text-muted-foreground">{note ?? " "}</p>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1">
+        <FeatureList features={card.features} />
+      </CardContent>
+      <CardFooter>
+        <ContactDialog
+          subject={card.ctaSubject}
+          body={card.ctaBody}
+          trigger={
+            <Button variant="outline" className="w-full">
+              {card.ctaLabel}
+            </Button>
+          }
+        />
+      </CardFooter>
+    </Card>
   )
 }
 
@@ -207,34 +251,10 @@ export function PlanCards({
         })}
 
         {contactCard && (
-          <Card className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-lg">{contactCard.name}</CardTitle>
-              <CardDescription>{contactCard.description}</CardDescription>
-              <div className="pt-2">
-                <span className="text-4xl font-extrabold text-foreground">
-                  {contactCard.priceLabel}
-                </span>
-                {contactCard.note && (
-                  <span className="ml-1.5 text-sm text-muted-foreground">{contactCard.note}</span>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <FeatureList features={contactCard.features} />
-            </CardContent>
-            <CardFooter>
-              <ContactDialog
-                subject={contactCard.ctaSubject}
-                body={contactCard.ctaBody}
-                trigger={
-                  <Button variant="outline" className="w-full">
-                    {contactCard.ctaLabel}
-                  </Button>
-                }
-              />
-            </CardFooter>
-          </Card>
+          <ContactTierCard
+            card={contactCard}
+            onYearly={hasBothIntervals && interval === "YEAR"}
+          />
         )}
       </div>
 

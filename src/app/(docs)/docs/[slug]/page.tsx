@@ -47,8 +47,8 @@ function mapHref(href: string): string {
   if (/^(https?:|mailto:|#|\/)/.test(href)) return href
   const clean = href.replace(/^\.\//, "")
   if (clean.startsWith("../")) {
-    const repoUrl = siteConfig.links.github || "https://github.com/openstarterkit/nextjs-saas-starter-kit"
-    return `${repoUrl}/blob/main/${clean.slice(3)}`
+    if (!siteConfig.links.github) return href
+    return `${siteConfig.links.github}/blob/main/${clean.slice(3)}`
   }
   if (/(^|\/)README\.md$/.test(clean)) return "/docs"
   if (clean.endsWith(".md")) return `/docs/${clean.replace(/\.md$/, "")}`

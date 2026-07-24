@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Abstract cover: ascending steps">
+  <defs>
+    <linearGradient id="g" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="__ACCENT_1__"/>
+      <stop offset="1" stop-color="__ACCENT_2__"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="78%" cy="18%" r="60%">
+      <stop offset="0" stop-color="__ACCENT_2__" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="__ACCENT_2__" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#171717"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g transform="translate(381 169)">
+    <rect x="0" y="228" width="150" height="64" rx="16" fill="#2b2b2b" stroke="#555555" stroke-width="2"/>
+    <rect x="96" y="152" width="150" height="64" rx="16" fill="#3a3a3a" stroke="#6e6e6e" stroke-width="2"/>
+    <rect x="192" y="76" width="150" height="64" rx="16" fill="#232323" stroke="url(#g)" stroke-width="3"/>
+    <rect x="288" y="0" width="150" height="64" rx="16" fill="url(#g)"/>
+    <circle cx="363" cy="32" r="13" fill="#171717"/>
+  </g>
+</svg>

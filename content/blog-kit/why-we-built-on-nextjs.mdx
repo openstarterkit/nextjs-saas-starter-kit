@@ -1,0 +1,29 @@
+---
+title: "Why we built this kit on Next.js"
+description: "One framework for the frontend, the backend and the marketing site, and why that matters for a SaaS."
+date: "2026-07-23"
+category: "Engineering"
+cover: "/blog/covers/why-nextjs.svg"
+---
+
+Every starter kit is a pile of decisions you inherit. This is the first in a short series explaining ours, so you know what you are signing up for. We start with the biggest one: the framework.
+
+## One codebase, not two
+
+A SaaS is a marketing site, an authenticated app and a backend API. The tempting mistake is to build these as separate projects: a React frontend here, an Express server there, a static marketing site somewhere else. Three deploys, three sets of dependencies, three places for things to drift.
+
+Next.js collapses that into one. The landing page, the dashboard, the admin panel, the API routes and the Stripe webhook all live in the same project, share the same types and deploy together. When you change the shape of a user, the frontend and the backend see it at the same time.
+
+## Server Components do the heavy lifting
+
+The App Router renders on the server by default. Data fetching happens close to the database, secrets stay on the server, and the browser ships less JavaScript. For pages that are mostly reading and displaying data, which is most of a SaaS, this is the right default: fast first paint, good SEO on the public pages, and no separate API layer to build just to feed the UI.
+
+Server Actions extend the same idea to writes. A form submits straight to a server function with no hand-written fetch call in between, which is how the contact form and the waitlist in this kit work.
+
+## The honest tradeoffs
+
+Next.js moves fast, and major versions bring breaking changes. Server Components have a real learning curve, and the line between server and client code is something you have to hold in your head. If you want a framework that stays still for five years, this is not it.
+
+We think the tradeoff is worth it. You get one mental model, one deploy, server rendering for SEO, and a huge ecosystem. And because it is still just Node under the hood, you are not locked to a single host: deploy it to Vercel in one click, or run it anywhere that runs Node.
+
+For a product where speed to launch matters more than framework stability, one codebase wins. That is why it is the foundation everything else in this kit sits on.

@@ -6,7 +6,7 @@ import { LogoMark } from "@/components/logo"
 export default function VerifyRequestPage() {
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-3xl border border-border bg-background/80 p-8 text-center shadow-[var(--shadow-soft-lg)] backdrop-blur-xl">
+      <div className="rounded-3xl border border-border bg-card/80 p-8 text-center shadow-[var(--shadow-soft-lg)] backdrop-blur-xl">
         <div className="mb-4 flex justify-center">
           <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
         </div>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Abstract cover: two interlocking rings">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="__ACCENT_1__"/>
+      <stop offset="1" stop-color="__ACCENT_2__"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="20%" cy="20%" r="62%">
+      <stop offset="0" stop-color="__ACCENT_1__" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="__ACCENT_1__" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#171717"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g transform="translate(600 315)" fill="none" stroke-width="14" stroke-linecap="round">
+    <circle cx="-72" cy="0" r="112" stroke="#4a4a4a"/>
+    <circle cx="72" cy="0" r="112" stroke="url(#g)"/>
+    <path d="M-4 -89 A 112 112 0 0 0 -4 89" stroke="#6e6e6e"/>
+    <circle cx="-72" cy="0" r="14" fill="#6e6e6e" stroke="none"/>
+    <circle cx="72" cy="0" r="14" fill="__ACCENT_2__" stroke="none"/>
+  </g>
+</svg>

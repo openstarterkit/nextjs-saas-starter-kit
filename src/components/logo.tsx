@@ -1,10 +1,16 @@
 import { Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { siteConfig } from "@/config/site"
+import { isKitSite } from "@/config/kit"
 
 /**
  * Your app's logo, in one place. Together with `src/config/site.ts` this is
- * the only file to touch to rebrand the kit: swap the icon and the wordmark
- * markup below for your own.
+ * the only file to touch to rebrand the kit: swap the icon below for your own
+ * and the wordmark follows `siteConfig.name` automatically.
+ *
+ * Optional: set `NEXT_PUBLIC_BRAND_WORDMARK_ACCENT` to a substring of the
+ * name to gradient-highlight it (e.g. "Starter" in "OpenStarterKit"). Unset,
+ * the name renders plainly — the neutral default.
  */
 
 export function LogoMark({
@@ -27,13 +33,23 @@ export function LogoMark({
 }
 
 export function LogoWordmark({ className }: { className?: string }) {
-  return (
-    <span className={cn("tracking-tight", className)}>
-      <span>Open</span>
-      <span className="text-gradient-brand">Starter</span>
-      <span>Kit</span>
-    </span>
-  )
+  const name = siteConfig.name
+  // The kit's own site highlights "Starter", as it did before this was
+  // configurable. Your app renders the name plainly unless you set the var.
+  const accent = process.env.NEXT_PUBLIC_BRAND_WORDMARK_ACCENT || (isKitSite ? "Starter" : undefined)
+
+  if (accent && name.includes(accent)) {
+    const [before, after] = name.split(accent)
+    return (
+      <span className={cn("tracking-tight", className)}>
+        {before}
+        <span className="text-gradient-brand">{accent}</span>
+        {after}
+      </span>
+    )
+  }
+
+  return <span className={cn("tracking-tight", className)}>{name}</span>
 }
 
 export function Logo({

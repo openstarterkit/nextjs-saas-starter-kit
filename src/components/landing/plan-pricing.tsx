@@ -4,12 +4,18 @@ import { exampleEnterpriseCard } from "@/components/billing/enterprise-card"
 import { Reveal } from "@/components/landing/reveal"
 
 /**
- * Demo-only replacement for the static <Pricing /> section (DEMO_MODE="true"):
- * renders the seeded example plans straight from the Plan table, so visitors
- * see the dynamic multi-tier pricing without signing in. The marketing
- * deployment keeps the hand-written OpenStarterKit section.
+ * The pricing section, rendered from your `Plan` rows: this is what the kit
+ * ships by default, so changing your pricing means editing data, not
+ * components. Visitors have no session yet, so the cards link to sign-in
+ * instead of opening a checkout.
+ *
+ * Selling an open source project instead of a product? `<Pricing />` in
+ * `pricing.tsx` is a hand-written alternative (free tier plus a waitlist for
+ * a paid one), enabled with KIT_SITE="true".
  */
-export async function DemoPricing() {
+export async function PlanPricing() {
+  const isDemo = process.env.DEMO_MODE === "true"
+
   // Metered plans stay docs-only; one-time plans (Lifetime) live on the
   // billing page, the landing shows the classic recurring triad.
   const planRows = await prisma.plan.findMany({
@@ -34,12 +40,12 @@ export async function DemoPricing() {
       <div className="mx-auto max-w-6xl px-6">
         <Reveal className="mb-16 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Pricing, driven by your database
+            Simple, transparent pricing
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            These are the kit&apos;s seeded example plans, rendered live from the Plan table
-            with monthly and yearly tiers. Sign in to the demo to see the full billing flow,
-            including a one-time lifetime purchase.
+            {isDemo
+              ? "These are example plans, rendered live from the database with monthly and yearly tiers. Sign in to the demo to see the full billing flow, including a one-time lifetime purchase."
+              : "Start free and upgrade when you need more. Every plan below comes straight from your database, so your pricing changes without a deploy."}
           </p>
         </Reveal>
 

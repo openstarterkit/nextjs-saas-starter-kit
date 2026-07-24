@@ -13,7 +13,7 @@ const buttonVariants = cva(
         primary:
           "bg-primary text-primary-foreground shadow-soft hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)]",
         gradient:
-          "relative overflow-hidden text-white shadow-soft [background-image:var(--gradient-brand)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)]",
+          "relative overflow-hidden text-primary-foreground shadow-soft [background-image:var(--gradient-brand)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)]",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         outline:
           "border border-border bg-background/60 backdrop-blur-sm text-foreground hover:bg-accent hover:-translate-y-0.5",

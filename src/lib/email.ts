@@ -1,5 +1,7 @@
 import { Resend } from "resend"
 import { siteConfig } from "@/config/site"
+import { emailAccent } from "@/config/brand"
+import { isKitSite } from "@/config/kit"
 
 let _instance: Resend | null = null
 
@@ -96,7 +98,7 @@ function baseTemplate(content: string) {
 <style>
   body { margin: 0; padding: 0; background: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
   .container { max-width: 560px; margin: 40px auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
-  .header { background: #2563eb; padding: 32px 40px; text-align: center; }
+  .header { background: ${emailAccent}; padding: 32px 40px; text-align: center; }
   .header h1 { color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
   .header p { color: rgba(255,255,255,0.8); margin: 8px 0 0; font-size: 14px; }
   .body { padding: 40px; color: #1e293b; }
@@ -104,7 +106,7 @@ function baseTemplate(content: string) {
   .highlight { background: #f1f5f9; border-radius: 8px; padding: 20px 24px; margin: 24px 0; }
   .highlight p { margin: 4px 0; font-size: 14px; }
   .highlight strong { color: #0f172a; }
-  .btn { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; margin: 8px 0; }
+  .btn { display: inline-block; background: ${emailAccent}; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; margin: 8px 0; }
   .footer { padding: 24px 40px; border-top: 1px solid #f1f5f9; text-align: center; }
   .footer p { margin: 0; font-size: 12px; color: #94a3b8; }
 </style>
@@ -129,14 +131,24 @@ function baseTemplate(content: string) {
 function welcomeTemplate(name: string) {
   return baseTemplate(`
     <p>Hey ${name || "there"} 👋</p>
-    <p>Welcome to ${siteConfig.name}! Your account is ready. You're now part of a community of developers shipping SaaS products faster.</p>
+    ${
+      isKitSite
+        ? `<p>Welcome to ${siteConfig.name}! Your account is ready. You're now part of a community of developers shipping SaaS products faster.</p>
     <p>Here's what you can do right now:</p>
     <div class="highlight">
       <p>🔐 <strong>Authentication</strong>: Google & GitHub OAuth, fully configured</p>
       <p>💳 <strong>Billing</strong>: Stripe checkout ready to go</p>
       <p>📊 <strong>Dashboard</strong>: Track your subscription and account</p>
-    </div>
-    <p>Ready to explore?</p>
+    </div>`
+        : `<p>Welcome to ${siteConfig.name}! Your account is ready and there is nothing left to set up.</p>
+    <p>Here's what you can do right now:</p>
+    <div class="highlight">
+      <p>📁 <strong>Start a project</strong>: create your first one and invite your team</p>
+      <p>⚙️ <strong>Make it yours</strong>: add your name and preferences in settings</p>
+      <p>💳 <strong>Pick a plan</strong>: upgrade when you need more, cancel any time</p>
+    </div>`
+    }
+    <p>Ready to dive in?</p>
     <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Go to Dashboard →</a>
     <p style="margin-top:24px">If you have any questions, just reply to this email. We're happy to help.</p>
   `)
@@ -216,5 +228,111 @@ function cancellationTemplate(name: string, endDate: string) {
     <p>Changed your mind? You can resubscribe anytime before your access expires.</p>
     <a href="${process.env.NEXT_PUBLIC_APP_URL}/pricing" class="btn">Resubscribe →</a>
     <p style="margin-top:24px">If you'd like to share feedback on why you cancelled, just reply to this email - we read every response.</p>
+  `)
+}
+
+// ─── Contact form ───────────────────────────────────────────────────────────
+
+/**
+ * Delivers a contact-form message to the site owner. replyTo points at the
+ * visitor, so answering is a normal reply. All user input is HTML-escaped:
+ * the message lands in an HTML email and must never carry markup through.
+ */
+export async function sendContactMessage(fromEmail: string, name: string | undefined, message: string) {
+  const resend = getInstance()
+  return resend.emails.send({
+    from: FROM_ADDRESS,
+    to: siteConfig.contactEmail,
+    replyTo: fromEmail,
+    subject: `Contact form: ${name || fromEmail}`,
+    html: contactTemplate(escapeHtml(fromEmail), name ? escapeHtml(name) : undefined, escapeHtml(message)),
+  })
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
+function contactTemplate(email: string, name: string | undefined, message: string) {
+  return baseTemplate(`
+    <p>New message from the contact form:</p>
+    <div class="highlight">
+      <p><strong>From:</strong> ${name ? `${name} · ` : ""}${email}</p>
+    </div>
+    <p style="white-space:pre-wrap">${message}</p>
+    <p style="margin-top:24px">Reply to this email to answer directly.</p>
+  `)
+}
+
+// ─── Newsletter / waitlist (double opt-in) ──────────────────────────────────
+
+export async function sendNewsletterConfirmEmail(to: string, confirmUrl: string) {
+  const resend = getInstance()
+  return resend.emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: `Confirm your spot on the ${siteConfig.name} waitlist`,
+    html: newsletterConfirmTemplate(confirmUrl),
+  })
+}
+
+export async function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: string) {
+  const resend = getInstance()
+  return resend.emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: "You're on the list",
+    html: newsletterWelcomeTemplate(unsubscribeUrl),
+  })
+}
+
+/**
+ * Mirrors a confirmed subscriber onto the Resend Audience so the weekly
+ * numbers can be sent as Broadcasts from the Resend dashboard. No-op when
+ * RESEND_AUDIENCE_ID is unset: the database list still works on its own.
+ */
+export async function syncNewsletterContact(email: string) {
+  const audienceId = process.env.RESEND_AUDIENCE_ID
+  if (!audienceId) return
+  const resend = getInstance()
+  await resend.contacts.create({ email, audienceId, unsubscribed: false })
+}
+
+export async function removeNewsletterContact(email: string) {
+  const audienceId = process.env.RESEND_AUDIENCE_ID
+  if (!audienceId) return
+  const resend = getInstance()
+  await resend.contacts.remove({ email, audienceId })
+}
+
+function newsletterConfirmTemplate(confirmUrl: string) {
+  return baseTemplate(`
+    <p>You asked to join the ${siteConfig.name} waitlist. Click below to confirm.</p>
+    <a href="${confirmUrl}" class="btn">Confirm my spot →</a>
+    <p style="margin-top:24px">The link expires in 7 days. If this was not you, just ignore this email and nothing will happen.</p>
+  `)
+}
+
+function newsletterWelcomeTemplate(unsubscribeUrl: string) {
+  // The kit's own waitlist sells the Pro tier; your clone's list promises
+  // only what a generic waitlist can: news when there is some.
+  return baseTemplate(`
+    <p>You're in. Here is the deal:</p>
+    <div class="highlight">
+    ${
+      isKitSite
+        ? `  <p>📬 <strong>One short email a week</strong> while we build the Pro.</p>
+      <p>🎟️ <strong>A launch discount</strong> reserved for early adopters.</p>`
+        : `  <p>📬 <strong>One short email</strong> when there is real news to share.</p>
+      <p>🎟️ <strong>Early access</strong> when what you signed up for goes live.</p>`
+    }
+    </div>
+    <p>No spam, no daily drip. Unsubscribe anytime with one click.</p>
+    <p style="margin-top:24px"><a href="${unsubscribeUrl}" style="color:#94a3b8">Unsubscribe</a></p>
   `)
 }

@@ -1,18 +1,19 @@
 import { Hero } from "@/components/landing/hero"
 import { Features } from "@/components/landing/features"
 import { Pricing } from "@/components/landing/pricing"
-import { DemoPricing } from "@/components/landing/demo-pricing"
+import { PlanPricing } from "@/components/landing/plan-pricing"
 import { FAQ } from "@/components/landing/faq"
+import { isKitSite } from "@/config/kit"
 
 export default function LandingPage() {
-  // On the public demo the pricing section showcases the DB-driven plan cards
-  // instead of the kit's own marketing tiers.
-  const isDemo = process.env.DEMO_MODE === "true"
+  // Pricing comes from your Plan rows. The kit's own site (KIT_SITE="true")
+  // swaps in the hand-written open source tiers instead: a free one plus a
+  // waitlist for a paid one.
   return (
     <>
       <Hero />
       <Features />
-      {isDemo ? <DemoPricing /> : <Pricing />}
+      {isKitSite ? <Pricing /> : <PlanPricing />}
       <FAQ />
     </>
   )

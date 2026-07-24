@@ -6,6 +6,7 @@ import { PendingButton } from "@/components/auth/pending-button"
 import { AuthNotice } from "@/components/auth/auth-notice"
 import { Input } from "@/components/ui/input"
 import { siteConfig } from "@/config/site"
+import { isKitSite } from "@/config/kit"
 
 const ERROR_MESSAGES: Record<string, string> = {
   invalid: "Check your details: valid email and a password of at least 8 characters.",
@@ -32,7 +33,7 @@ export default async function SignupPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-3xl border border-border bg-background/80 p-8 shadow-[var(--shadow-soft-lg)] backdrop-blur-xl">
+      <div className="rounded-3xl border border-border bg-card/80 p-8 shadow-[var(--shadow-soft-lg)] backdrop-blur-xl">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
             <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
@@ -47,19 +48,31 @@ export default async function SignupPage({
 
         {isDemo && (
           <AuthNotice>
-            This live demo has no email service attached, so sign-up is disabled here. In your own
-            deployment, wire an email provider (the kit ships with{" "}
-            <a href="https://resend.com" className="underline underline-offset-2" target="_blank" rel="noreferrer">
-              Resend
-            </a>
-            ) and this flow goes live.
+            This live demo has no email service attached, so sign-up is disabled here.
+            {isKitSite ? (
+              <>
+                {" "}
+                In your own deployment, wire an email provider (the kit ships with{" "}
+                <a
+                  href="https://resend.com"
+                  className="underline underline-offset-2"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Resend
+                </a>
+                ) and this flow goes live.
+              </>
+            ) : (
+              " Everything else works as it would in production."
+            )}
           </AuthNotice>
         )}
         {!isDemo && !hasEmailService && (
           <AuthNotice>
             No email service is configured, so accounts are created without email verification. Set{" "}
-            <code>RESEND_API_KEY</code> to enable it (the kit ships with Resend, see{" "}
-            <code>docs/configuration.md</code>).
+            <code>RESEND_API_KEY</code> to enable it ({isKitSite && "the kit ships with Resend, "}
+            see <code>docs/configuration.md</code>).
           </AuthNotice>
         )}
 

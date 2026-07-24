@@ -1,0 +1,29 @@
+---
+title: "Why we chose Prisma and plain PostgreSQL"
+description: "Type-safe database access and readable migrations, on a database you can host anywhere."
+date: "2026-07-22"
+category: "Engineering"
+cover: "/blog/covers/why-prisma-postgres.svg"
+---
+
+The database is where a SaaS keeps everything that matters, so the way you talk to it shapes the whole codebase. Here is why this kit uses Prisma on top of plain PostgreSQL.
+
+## The schema is the source of truth
+
+With Prisma you describe your data once, in a schema file, and the client is generated from it. Every query is typed against that schema, so a renamed field or a wrong type is a compile error, not a 2am production incident. When you read `getEntitlement` or the admin queries in this kit, the editor knows the exact shape of what comes back, because the schema said so.
+
+That safety compounds. As the app grows, the schema stays the one place that describes your data, and the generated types keep the rest of the code honest about it.
+
+## Migrations you can read
+
+Schema changes become migration files: plain SQL, checked into git, applied in order. You can read exactly what will happen to production before it happens, review it like any other code, and roll it into your deploy pipeline. Adding the newsletter table for the waitlist was one additive migration, reviewable in a single diff.
+
+## Plain PostgreSQL means no lock-in
+
+This is the part that matters most for a business. The kit does not depend on a proprietary database or a bespoke data API. It is standard PostgreSQL. Run it on Neon, on Supabase, on RDS, or on a box in your closet. Your data is yours, in a format the whole industry supports, and moving hosts is a connection string, not a rewrite.
+
+## The honest tradeoffs
+
+Prisma's generated client and query engine add some weight, and for exotic, hand-tuned queries raw SQL will always be faster. If your product is query-heavy analytics, you will reach for raw SQL in places, and Prisma lets you drop down to it when you need to.
+
+But most of a SaaS is create, read, update and delete over a handful of core models. For that, the type safety and the readable migrations save far more time than the overhead costs. Own your data, catch mistakes at compile time, and keep the freedom to host anywhere. That is the trade we made.

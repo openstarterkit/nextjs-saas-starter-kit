@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
 import { SessionProvider } from "@/components/auth/session-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { siteConfig } from "@/config/site"
+import { brandOverrideCss } from "@/config/brand"
 import "./globals.css"
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
@@ -25,12 +27,15 @@ const sidebarInit =
   "try{if(localStorage.getItem('sidebar-collapsed')==='1')document.documentElement.classList.add('sidebar-collapsed')}catch(e){}"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const brandCss = brandOverrideCss()
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: `${themeInit};${sidebarInit}` }} />
+        {brandCss && <style dangerouslySetInnerHTML={{ __html: brandCss }} />}
         <SessionProvider>{children}</SessionProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   )

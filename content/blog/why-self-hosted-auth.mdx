@@ -1,0 +1,29 @@
+---
+title: "Where your account actually lives"
+description: "Why we keep sign-in and your user record on our own infrastructure instead of renting it."
+date: "2026-07-21"
+category: "Engineering"
+cover: "/blog/covers/why-authjs.svg"
+---
+
+Of every part of a product, authentication is the one you least want to rebuild after launch. It touches every request, it holds your users, and it quietly becomes load-bearing. So the choice of how to do it is worth making on purpose. We self-host ours, and here is why that matters to you.
+
+## Your account is a row in our database
+
+With a hosted authentication provider, the user table lives on someone else's servers and the app asks them who is signed in. It is fast to set up and it works well, but it means the most important list a company owns, its customers, sits behind a third party's API and pricing.
+
+Self-hosting flips that. Your account sits next to your projects and your subscription, in one database we operate. When you ask us to export your data or delete your account, we are not filing a request with somebody else to make it happen.
+
+## No per-seat tax on signing in
+
+Hosted providers often price by monthly active users. That is a fee that grows exactly as a product succeeds, charged on the act of signing in. Keeping it in house means the cost of you signing in is the row you already have, and our pricing can stay about what you actually use.
+
+## You still get the real thing
+
+Owning sign-in does not mean a worse sign-in. You get Google and GitHub, passwordless links by email, classic email and password with a proper reset, and account linking, so if you started with Google you can add a password later and both keep working.
+
+## The honest tradeoff
+
+A hosted provider ships passkeys, enterprise SSO and advanced multi-factor flows faster than anyone can build them alone, and that is real value if those are requirements on day one. Doing it ourselves means we own more surface area, including keeping it secure, and we take that seriously.
+
+We made the call for ownership because authentication is so expensive to change later. Starting with your account in our own hands means we never have to run the migration everyone dreads, and you never have to hear that your data is somewhere we cannot reach.

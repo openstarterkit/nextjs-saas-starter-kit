@@ -1,0 +1,9 @@
+---
+description: OpenStarterKit project rules for AI coding agents
+alwaysApply: true
+---
+
+The agent instructions for this project live in `AGENTS.md` at the repository
+root. Read it before writing code. This file exists so Cursor picks up the
+same rules; `AGENTS.md` is the single source of truth (Claude Code reads it
+via `CLAUDE.md`, Copilot via `.github/copilot-instructions.md`).

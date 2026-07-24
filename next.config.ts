@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
   // serverless bundle.
   outputFileTracingIncludes: {
     "/docs/[slug]": ["./docs/**"],
+    // Same story for the blog: posts and cover art are read from content/ at
+    // request time. Without this they never reach the serverless bundle, and
+    // because the reader treats a missing folder as "no posts", the blog would
+    // come back empty in production instead of failing loudly.
+    "/blog": ["./content/blog/**"],
+    "/blog/**": ["./content/blog/**"],
+    "/sitemap.xml": ["./content/blog/**"],
+    "/llms.txt": ["./content/blog/**"],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

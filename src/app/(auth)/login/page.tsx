@@ -40,7 +40,7 @@ export default async function LoginPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-3xl border border-border bg-background/80 p-8 shadow-[var(--shadow-soft-lg)] backdrop-blur-xl">
+      <div className="rounded-3xl border border-border bg-card/80 p-8 shadow-[var(--shadow-soft-lg)] backdrop-blur-xl">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
             <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
@@ -113,7 +113,7 @@ export default async function LoginPage({
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background px-2 text-xs text-muted-foreground">or continue with email</span>
+                <span className="bg-card px-2 text-xs text-muted-foreground">or continue with email</span>
               </div>
             </div>
 
@@ -166,7 +166,7 @@ export default async function LoginPage({
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background px-2 text-xs text-muted-foreground">try the demo</span>
+                <span className="bg-card px-2 text-xs text-muted-foreground">try the demo</span>
               </div>
             </div>
 
@@ -216,7 +216,7 @@ export default async function LoginPage({
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background px-2 text-xs text-muted-foreground">dev only</span>
+                <span className="bg-card px-2 text-xs text-muted-foreground">dev only</span>
               </div>
             </div>
             <form

@@ -1,4 +1,5 @@
 import { siteConfig } from "@/config/site"
+import { isKitSite } from "@/config/kit"
 
 export const metadata = {
   title: `Cookie Policy | ${siteConfig.name}`,
@@ -23,8 +24,8 @@ export default function CookiesPage() {
           <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5">
             <p className="font-medium text-foreground">This is a placeholder.</p>
             <p className="mt-1">
-              It describes what this starter kit stores out of the box. If you add analytics or
-              any third-party tracking to your app, update this page accordingly.
+              It describes what this {isKitSite ? "starter kit" : "app"} stores out of the box. If
+              you add analytics or any third-party tracking, update this page accordingly.
             </p>
           </div>
 

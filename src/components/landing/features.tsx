@@ -13,8 +13,75 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Reveal } from "@/components/landing/reveal"
 import { TechStack } from "@/components/landing/tech-stack"
+import { isKitSite } from "@/config/kit"
 
-const features: { icon: LucideIcon; title: string; description: string }[] = [
+type Feature = { icon: LucideIcon; title: string; description: string }
+
+/**
+ * Placeholder feature grid, written from your customer's point of view.
+ * Every card here describes something the kit actually does, so the copy is
+ * honest before you touch it: rewrite each one in terms of your product and
+ * keep the nine-card rhythm, or drop to six.
+ */
+const productFeatures: Feature[] = [
+  {
+    icon: Lock,
+    title: "Sign in, your way",
+    description:
+      "Google, GitHub, a password or a one-time link in your inbox. Pick what suits your team and switch whenever you want.",
+  },
+  {
+    icon: CreditCard,
+    title: "Billing without the back and forth",
+    description:
+      "Upgrade, downgrade or cancel in a click. Invoices and receipts arrive on their own, and the payment details stay with Stripe.",
+  },
+  {
+    icon: Database,
+    title: "Your data stays yours",
+    description:
+      "Everything lives in one database you control. Nothing is held hostage, and leaving is as easy as arriving.",
+  },
+  {
+    icon: Moon,
+    title: "Light and dark",
+    description:
+      "The interface follows your system theme, or you pick one and it stays. Easy on the eyes at 9am and at midnight.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Private by default",
+    description:
+      "Your workspace is visible to you and the people you invite, and to nobody else. Sessions expire, access is checked on every request.",
+  },
+  {
+    icon: Crown,
+    title: "Admin controls",
+    description:
+      "See every member, their role and their plan in one place. Promote, review and step in when something needs a decision.",
+  },
+  {
+    icon: Rocket,
+    title: "Ready in minutes",
+    description:
+      "Create an account, name your first project and you are working. No onboarding call, no implementation project.",
+  },
+  {
+    icon: Unlock,
+    title: "No lock-in",
+    description:
+      "Month to month, cancel when you like, export what you built. We would rather earn the next month than trap you in it.",
+  },
+  {
+    icon: Mail,
+    title: "Kept in the loop",
+    description:
+      "A short welcome, a receipt when you pay, a note when something needs you. No noise, and one click to stop any of it.",
+  },
+]
+
+/** The kit's own site (KIT_SITE="true"): what a developer gets by cloning. */
+const kitFeatures: Feature[] = [
   {
     icon: Lock,
     title: "Auth out of the box",
@@ -71,20 +138,27 @@ const features: { icon: LucideIcon; title: string; description: string }[] = [
   },
 ]
 
+const features = isKitSite ? kitFeatures : productFeatures
+
+const heading = isKitSite
+  ? { title: "Everything you need to ship", subtitle: "Stop reinventing auth and payments. Start building your product." }
+  : { title: "Everything you need, in one place", subtitle: "The essentials done properly, so you can get on with the work." }
+
 export function Features() {
   return (
     <section id="features" className="py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <Reveal className="mb-10 text-center">
+        <Reveal className={isKitSite ? "mb-10 text-center" : "mb-14 text-center"}>
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Everything you need to ship
+            {heading.title}
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Stop reinventing auth and payments. Start building your product.
-          </p>
+          <p className="mt-4 text-lg text-muted-foreground">{heading.subtitle}</p>
         </Reveal>
 
-        <TechStack className="mb-14" />
+        {/* The "built with" logo strip belongs to the kit's own site, where the
+            stack is the product. In your app it would advertise our
+            dependencies instead of what you do, so it stays off. */}
+        {isKitSite && <TechStack className="mb-14" />}
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, i) => {

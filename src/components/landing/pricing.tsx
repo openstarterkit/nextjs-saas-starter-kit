@@ -2,8 +2,8 @@ import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ContactDialog } from "@/components/landing/contact-dialog"
 import { Reveal } from "@/components/landing/reveal"
+import { WaitlistForm } from "@/components/landing/waitlist-form"
 import { siteConfig } from "@/config/site"
 
 const freeFeatures = [
@@ -27,9 +27,6 @@ const proFeatures = [
   "i18n scaffold",
 ]
 
-// Pre-filled feedback email — the Pro plan is in design; we build what people ask for.
-const feedbackSubject = `${siteConfig.name} Pro: my feedback`
-const feedbackBody = "What I'd want in the Pro / Teams plan:\n\n\nWhat I'd pay for it:\n\n"
 
 function CheckIcon() {
   return (
@@ -40,6 +37,12 @@ function CheckIcon() {
 }
 
 export function Pricing() {
+  // Production gate (COO #007 §5): the waitlist must not collect real emails
+  // until the real privacy policy is live on the showcase. Off by default,
+  // so a deploy that forgets the overlay ships a disabled form, not a live
+  // one. Set WAITLIST_ENABLED="true" on the showcase once /privacy is real.
+  const isDemo = process.env.DEMO_MODE === "true"
+  const waitlistOn = process.env.WAITLIST_ENABLED === "true"
   return (
     <section id="pricing" className="bg-muted/30 py-24">
       <div className="mx-auto max-w-6xl px-6">
@@ -123,19 +126,17 @@ export function Pricing() {
               </CardContent>
 
               <CardFooter className="flex-col gap-3 px-8 pb-8">
-                <ContactDialog
-                  subject={feedbackSubject}
-                  body={feedbackBody}
-                  trigger={
-                    <Button variant="gradient" size="lg" className="w-full">
-                      Get in touch
-                    </Button>
+                <WaitlistForm
+                  source="pricing-card"
+                  disabled={isDemo || !waitlistOn}
+                  cta="Join the Pro waitlist"
+                  note="One short email a week while we build it. Early adopters get a launch discount. Unsubscribe anytime, one click."
+                  disabledNote={
+                    isDemo
+                      ? "Forms are disabled in the live demo."
+                      : "The waitlist opens shortly - check back soon."
                   }
                 />
-                <p className="text-center text-xs text-muted-foreground">
-                  Tell us what you&apos;d want, and what you&apos;d pay.
-                  We build what people actually ask for.
-                </p>
               </CardFooter>
             </Card>
           </Reveal>

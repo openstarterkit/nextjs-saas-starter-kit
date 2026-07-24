@@ -1,9 +1,10 @@
 import Link from "next/link"
 import { PoweredBy } from "@/components/powered-by"
+import { ContactDialog } from "@/components/landing/contact-dialog"
 import { Logo } from "@/components/logo"
 import { LogoLink } from "@/components/landing/logo-link"
-import { ContactDialog } from "@/components/landing/contact-dialog"
 import { siteConfig } from "@/config/site"
+import { isKitSite } from "@/config/kit"
 
 function GithubIcon() {
   return (
@@ -22,6 +23,7 @@ function XIcon() {
 }
 
 export function Footer() {
+  const orgUrl = siteConfig.links.githubOrg ?? siteConfig.links.github
   return (
     <footer className="border-t border-border bg-muted/30 py-12">
       <div className="mx-auto max-w-6xl px-6">
@@ -31,12 +33,14 @@ export function Footer() {
               <Logo wordmarkClassName="text-base font-bold" />
             </LogoLink>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              {siteConfig.tagline}. Production-ready boilerplate with no vendor lock-in.
+              {isKitSite
+                ? `${siteConfig.tagline}. Production-ready boilerplate with no vendor lock-in.`
+                : siteConfig.description}
             </p>
             <div className="mt-4 flex items-center gap-2">
-              {(siteConfig.links.githubOrg ?? siteConfig.links.github) && (
+              {orgUrl && (
                 <a
-                  href={siteConfig.links.githubOrg ?? siteConfig.links.github}
+                  href={orgUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="GitHub"
@@ -67,6 +71,7 @@ export function Footer() {
               <li><Link href="/#features" className="transition-colors hover:text-foreground">Features</Link></li>
               <li><Link href="/#pricing" className="transition-colors hover:text-foreground">Pricing</Link></li>
               <li><Link href="/docs" className="transition-colors hover:text-foreground">Docs</Link></li>
+              <li><Link href="/blog" className="transition-colors hover:text-foreground">Blog</Link></li>
               <li><Link href="/changelog" className="transition-colors hover:text-foreground">Changelog</Link></li>
               <li>
                 <Link href={siteConfig.links.demo ?? "/login"} className="transition-colors hover:text-foreground">
@@ -79,26 +84,37 @@ export function Footer() {
           <div>
             <h4 className="mb-4 text-sm font-semibold text-foreground">About</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link href="/about" className="transition-colors hover:text-foreground">About</Link></li>
               <li><Link href="/#faq" className="transition-colors hover:text-foreground">FAQ</Link></li>
               <li>
-                <ContactDialog
-                  trigger={
-                    <button type="button" className="transition-colors hover:text-foreground">
-                      Contact
-                    </button>
-                  }
-                />
+                {/* The kit's own site collects nothing through the site: its
+                    contact is the copyable-email dialog, as it was before the
+                    contact form existed, so the waitlist stays the only data
+                    the privacy policy has to cover. Your app links the form. */}
+                {isKitSite ? (
+                  <ContactDialog
+                    trigger={
+                      <button type="button" className="transition-colors hover:text-foreground">
+                        Contact
+                      </button>
+                    }
+                  />
+                ) : (
+                  <Link href="/contact" className="transition-colors hover:text-foreground">Contact</Link>
+                )}
               </li>
-              <li>
-                <a
-                  href={siteConfig.links.githubOrg ?? siteConfig.links.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition-colors hover:text-foreground"
-                >
-                  Open Source
-                </a>
-              </li>
+              {isKitSite && orgUrl && (
+                <li>
+                  <a
+                    href={orgUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-colors hover:text-foreground"
+                  >
+                    Open Source
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -106,18 +122,36 @@ export function Footer() {
             <h4 className="mb-4 text-sm font-semibold text-foreground">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/privacy" className="transition-colors hover:text-foreground">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="transition-colors hover:text-foreground">Terms of Service</Link></li>
-              <li><Link href="/cookies" className="transition-colors hover:text-foreground">Cookie Policy</Link></li>
+              {/* The kit's own site sells nothing and has no accounts, so no
+                  terms; its cookie disclosure is a section of the (real)
+                  privacy policy. Your app keeps the dedicated pages. */}
+              {!isKitSite && (
+                <li><Link href="/terms" className="transition-colors hover:text-foreground">Terms of Service</Link></li>
+              )}
               <li>
-                <a
-                  href="https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/LICENSE"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={isKitSite ? "/privacy#cookies" : "/cookies"}
                   className="transition-colors hover:text-foreground"
                 >
-                  License
-                </a>
+                  Cookie Policy
+                </Link>
               </li>
+              {isKitSite && (
+                <li>
+                  <a
+                    href={
+                      siteConfig.links.github
+                        ? `${siteConfig.links.github}/blob/main/LICENSE`
+                        : "https://opensource.org/license/mit"
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-colors hover:text-foreground"
+                  >
+                    License
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -127,8 +161,8 @@ export function Footer() {
           <p>
             <Link href="/changelog" className="transition-colors hover:text-foreground">
               v{siteConfig.version}
-            </Link>{" "}
-            · MIT License · Built with Next.js
+            </Link>
+            {isKitSite && " · MIT License · Built with Next.js"}
           </p>
         </div>
 

@@ -65,7 +65,7 @@ export default function ChangelogPage() {
                   banner sits above the navbar and makes it taller. */}
               <div className="md:sticky md:top-[116px] md:self-start">
                 <div className="flex items-center gap-2.5">
-                  <span className="inline-block rounded-full px-4 py-1.5 text-lg font-bold tracking-tight text-white shadow-soft [background-image:var(--gradient-brand)]">
+                  <span className="inline-block rounded-full px-4 py-1.5 text-lg font-bold tracking-tight text-primary-foreground shadow-soft [background-image:var(--gradient-brand)]">
                     v{release.version}
                   </span>
                   {i === 0 && <Badge variant="secondary">Latest</Badge>}

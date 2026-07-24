@@ -27,7 +27,7 @@
 /* In dark mode the default link/primary blue is too dim on the dark
    background: use a lighter blue for legible links. */
 .dark .prose {
-  --tw-prose-links: #60a5fa;
+  --tw-prose-links: color-mix(in srgb, var(--primary) 55%, #ffffff);
 }
 /* Inline code (not the fenced blocks): a subtle boxed style so it reads
    as code in both themes. */
@@ -47,52 +47,55 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #0f172a;
-  --muted: #f8fafc;
-  --muted-foreground: #64748b;
-  --border: #e2e8f0;
-  --ring: #3b82f6;
-  --primary: #1d4ed8;
+  --foreground: #0a0a0a;
+  --muted: #fafafa;
+  --muted-foreground: #737373;
+  --border: #e5e5e5;
+  --ring: #0a0a0a;
+  --primary: #0a0a0a;
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #0a0a0a;
   --destructive: #ef4444;
   --success: #22c55e;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #0a0a0a;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --input: #e2e8f0;
+  --popover-foreground: #0a0a0a;
+  --accent: #f5f5f5;
+  --accent-foreground: #0a0a0a;
+  --input: #e5e5e5;
   --radius: 0.875rem;
-  /* Brand gradient stops (Light & Bold) */
-  --primary-2: #38bdf8;
-  --gradient-brand: linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #38bdf8 100%);
+  /* Brand accent — neutral (true black + grayscale) premium default. Override
+     per-deploy with the NEXT_PUBLIC_BRAND_* env vars (see src/config/brand.ts). */
+  --primary-2: #404040;
+  --gradient-brand: linear-gradient(135deg, #0a0a0a 0%, #404040 100%);
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --border: #1e293b;
-  --ring: #3b82f6;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
+  /* Background stays true black; surfaces (card/popover/muted) lift to a soft
+     warm "taupe" gray so cards read as raised, not fused with the black. */
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --muted: #1c1a17;
+  --muted-foreground: #a3a3a3;
+  --border: #2e2a25;
+  --ring: #d4d4d4;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #2a2622;
+  --secondary-foreground: #fafafa;
   --destructive: #ef4444;
   --success: #22c55e;
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --input: #1e293b;
-  --primary-2: #38bdf8;
-  --gradient-brand: linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #38bdf8 100%);
+  --card: #1c1a17;
+  --card-foreground: #fafafa;
+  --popover: #24211d;
+  --popover-foreground: #fafafa;
+  --accent: #2a2622;
+  --accent-foreground: #fafafa;
+  --input: #2a2622;
+  --primary-2: #a3a3a3;
+  --gradient-brand: linear-gradient(135deg, #ffffff 0%, #d4d4d4 100%);
 }
 
 @theme inline {
@@ -120,8 +123,8 @@
   /* Soft, diffused shadows — depth without heaviness (Supastarter-like) */
   --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 16px rgb(15 23 42 / 0.05);
   --shadow-soft-lg: 0 2px 4px rgb(15 23 42 / 0.04), 0 8px 28px rgb(15 23 42 / 0.07);
-  /* Colored glow tinted with primary — for hover lift on CTAs/cards */
-  --shadow-glow: 0 10px 30px -6px rgb(29 78 216 / 0.40), 0 4px 12px -4px rgb(56 189 248 / 0.30);
+  /* Glow tinted from the brand accent — follows --primary automatically */
+  --shadow-glow: 0 10px 30px -6px color-mix(in srgb, var(--primary) 35%, transparent), 0 4px 12px -4px color-mix(in srgb, var(--primary-2) 30%, transparent);
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-fade-in-up: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -190,8 +193,8 @@ body {
 /* Soft brand-tinted glow blob — sits behind hero/login content */
 .bg-glow {
   background:
-    radial-gradient(60% 50% at 50% 0%, rgb(29 78 216 / 0.20) 0%, transparent 70%),
-    radial-gradient(40% 40% at 80% 10%, rgb(56 189 248 / 0.14) 0%, transparent 70%);
+    radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--primary) 18%, transparent) 0%, transparent 70%),
+    radial-gradient(40% 40% at 80% 10%, color-mix(in srgb, var(--primary-2) 14%, transparent) 0%, transparent 70%);
 }
 
 /* Gradient text helper for accent words in headlines */

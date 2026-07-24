@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.2.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.3.0-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -52,6 +52,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 - 🔓 **No vendor lock-in**: plain PostgreSQL, Prisma and Auth.js. Host it anywhere, own your data.
 - 🧩 **A complete SaaS, not a starter demo**: auth, billing, an admin panel with real MRR metrics, transactional emails and a polished landing page.
 - 📖 **MIT licensed**: use it for anything, commercial included. No license keys, no unlock fees.
+- 🕹️ **A publishable demo, built in**: one env var turns a deployment into a safe public demo of *your* product, with one-click explore accounts and writes disabled. Normally that is something you build yourself.
 
 ---
 
@@ -65,10 +66,15 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 | 📊 | **User dashboard** | Plan status, billing history, profile & settings |
 | 📁 | **Projects CRUD** | A ready example resource with ownership checks to build on |
 | 📧 | **Transactional email** | Resend-powered welcome, subscription, magic link & password reset emails |
-| 🎨 | **Design system** | Custom Tailwind v4 UI (Button, Card, Badge, Input, Table) + dark mode |
+| 🎨 | **Design system** | Custom Tailwind v4 UI (Button, Card, Badge, Input, Table), brand-neutral by default with one-file or env rebranding |
 | 🌗 | **Dark mode** | System-aware theme with no flash of unstyled content |
 | 🧱 | **Landing page** | Hero, Features, Pricing and FAQ sections ready to edit |
-| ✅ | **CI + security** | GitHub Actions pipeline, security headers, `SECURITY.md`, 0 High/Critical audit |
+| 🕹️ | **Demo mode** | Ship a public demo of your product: `DEMO_MODE="true"` gives one-click explore accounts, disabled writes and checkout, and a seeded dataset you can reset |
+| ✍️ | **Blog & content** | File-based MDX blog with categories and an RSS feed: write a Markdown file, commit, publish |
+| 🔎 | **SEO** | Sitemap, robots, dynamic Open Graph images and Article JSON-LD out of the box |
+| 📨 | **Waitlist & contact** | Double opt-in newsletter waitlist (admin export, Resend sync) and a spam-protected contact form |
+| 🤖 | **AI-ready** | Ships agent instructions for Claude Code, Cursor and Copilot (`AGENTS.md`) so your assistant is productive on day one |
+| ✅ | **CI + security** | GitHub Actions pipeline, security headers, per-endpoint rate limiting, `SECURITY.md`, 0 High/Critical audit |
 
 ---
 
@@ -207,14 +213,12 @@ Find your user in the `User` table and set `role` to `ADMIN`. You'll then see th
 
 ## 🎨 Make it yours
 
-Your app's identity lives in **two files**. Everything else (metadata, navbar, footer, emails, legal pages) reads from them:
+The kit ships **brand-neutral**: a placeholder name and a black + grayscale theme, a blank canvas you make yours. Everything (metadata, navbar, footer, emails, legal pages, Open Graph images) reads from a single source, so you can rebrand two ways:
 
-- `src/config/site.ts`: name, tagline, description, contact email, links
-- `src/components/logo.tsx`: the logo mark and wordmark
+- **From config**: `src/config/site.ts` (name, tagline, description, links), `src/components/logo.tsx` (the logo mark), and the color tokens in `src/app/globals.css`.
+- **From env**: set the `NEXT_PUBLIC_BRAND_*` variables (name, tagline, logo accent, colors) and the app rebrands with no code changes. The gradient, glow and Open Graph images follow your accent automatically. See [Configuration](./docs/configuration.md#branding--theming).
 
-Change those, replace the landing copy, and the kit is fully yours. The only intentional exception is the optional ["Built with" badge](#%EF%B8%8F-attribution--the-badge), which credits the kit itself.
-
-One boundary worth stating plainly: the **code is MIT**, use it for anything, no strings attached. The **OpenStarterKit name and wordmark are our brand**: replace them in your production app (it's the two files above, ~5 minutes).
+Change those, replace the landing copy, and the kit is fully yours. The only intentional exception is the optional ["Built with" badge](#%EF%B8%8F-attribution--the-badge), which credits the kit itself. The **code is MIT**: use it for anything, no strings attached.
 
 ---
 

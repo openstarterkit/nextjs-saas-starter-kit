@@ -182,3 +182,19 @@ model Project {
 
   @@index([userId])
 }
+
+// ─── Newsletter / pre-launch waitlist ─────────────────────────────────────────
+// Double opt-in mailing list, owned in your database (docs/newsletter.md).
+// createdAt records the latest signup request and confirmedAt the completed
+// opt-in: together they are the proof of consent. Tokens are random DB values,
+// so a link can be revoked by rotating the token — no extra secrets involved.
+model NewsletterSubscriber {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  source           String    @default("waitlist") // where the signup came from, e.g. "pricing-card"
+  createdAt        DateTime  @default(now())
+  confirmedAt      DateTime?
+  confirmToken     String    @unique
+  unsubscribeToken String    @unique
+  unsubscribedAt   DateTime?
+}

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Abstract cover: a shield with a keyhole">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="__ACCENT_1__"/>
+      <stop offset="1" stop-color="__ACCENT_2__"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="12%" r="64%">
+      <stop offset="0" stop-color="__ACCENT_1__" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="__ACCENT_1__" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#171717"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g transform="translate(490 130)">
+    <path d="M110 10 L206 48 L206 176 Q206 300 110 356 Q14 300 14 176 L14 48 Z" fill="#232323" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="110" cy="150" r="30" fill="none" stroke="url(#g)" stroke-width="6"/>
+    <rect x="99" y="168" width="22" height="58" rx="11" fill="url(#g)"/>
+  </g>
+</svg>

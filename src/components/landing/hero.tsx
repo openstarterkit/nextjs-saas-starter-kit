@@ -11,6 +11,44 @@ import {
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
 import { siteConfig } from "@/config/site"
+import { isKitSite } from "@/config/kit"
+
+/**
+ * Headline support copy. The first block is the placeholder your clone
+ * ships with: say what your product does and who it is for, then replace the
+ * trust line with whatever is true of your offer. The second block is the
+ * kit's own site (KIT_SITE="true").
+ *
+ * `headline` overrides how the H1 is split: give it the plain part and the
+ * gradient part, and it renders them on two lines. Leave it null and the H1
+ * follows `tagline` from src/config/site.ts, accenting the last word, so
+ * rebranding from env still reshapes the headline for you.
+ */
+type Headline = { head: string; accent: string } | null
+
+const copy: {
+  headline: Headline
+  subtitle: string
+  cta: string
+  trust: string
+  pill: string
+} = isKitSite
+  ? {
+      headline: { head: "Ship your SaaS", accent: "this weekend." },
+      subtitle:
+        "Production-ready boilerplate with auth, payments, dashboard, and admin panel. No vendor lock-in, swap any component without rewriting everything.",
+      cta: "Start free",
+      trust: "Free & open source · No credit card required · Pro (teams) coming soon",
+      pill: "Now open source & free",
+    }
+  : {
+      headline: null,
+      subtitle:
+        "One workspace for your projects, your customers and your billing. Invite your team and get back to the work that matters.",
+      cta: "Get started",
+      trust: "Set up in minutes · No credit card required · Cancel anytime",
+      pill: "Now in public beta",
+    }
 
 const mockNav: { label: string; icon: LucideIcon; active?: boolean }[] = [
   { label: "Dashboard", icon: LayoutGrid, active: true },
@@ -29,6 +67,12 @@ const mockStats = [
 const mockBars = [38, 52, 45, 63, 58, 74, 69, 85, 78, 92, 88, 100]
 
 export function Hero() {
+  // Explicit split when `headline` is set, otherwise derive it from the
+  // tagline with the last word gradient-accented.
+  const words = siteConfig.tagline.split(" ")
+  const taglineLast = words.pop() ?? ""
+  const headline = copy.headline ?? { head: words.join(" "), accent: taglineLast }
+
   return (
     <section className="relative overflow-hidden pb-24 pt-16 md:pb-32 md:pt-24">
       {/* Decorative background layers */}
@@ -36,29 +80,30 @@ export function Hero() {
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-glow" />
 
       <div className="mx-auto max-w-5xl px-6 text-center">
-        {/* Animated badge pill */}
-        <div className="mb-7 inline-flex animate-fade-in-up items-center gap-2 rounded-full border border-border bg-background/70 py-1.5 pl-2 pr-4 text-sm font-medium shadow-soft backdrop-blur">
+        {/* Announcement pill: the current version, then what is new in it.
+            The badge reads `version` from src/config/site.ts, so it moves with
+            your releases; swap the sentence for whatever you are shipping. */}
+        <div className="mb-7 inline-flex animate-fade-in-up items-center gap-2 rounded-full border border-border bg-card/70 py-1.5 pl-2 pr-4 text-sm font-medium shadow-soft backdrop-blur">
           <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
             <Sparkles className="h-3 w-3" /> v{siteConfig.version}
           </span>
-          <span className="text-muted-foreground">Now open source &amp; free</span>
+          <span className="text-muted-foreground">{copy.pill}</span>
         </div>
 
         <h1
           className="animate-fade-in-up text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl"
           style={{ animationDelay: "60ms" }}
         >
-          Ship your SaaS
+          {headline.head}
           <br />
-          <span className="text-gradient-brand">this weekend.</span>
+          <span className="text-gradient-brand">{headline.accent}</span>
         </h1>
 
         <p
           className="mx-auto mt-6 max-w-2xl animate-fade-in-up text-lg text-muted-foreground md:text-xl"
           style={{ animationDelay: "120ms" }}
         >
-          Production-ready boilerplate with auth, payments, dashboard, and admin panel.
-          No vendor lock-in, swap any component without rewriting everything.
+          {copy.subtitle}
         </p>
 
         <div
@@ -67,7 +112,7 @@ export function Hero() {
         >
           <Button asChild variant="gradient" size="xl">
             <a href="#pricing">
-              Start free <ArrowRight className="h-5 w-5" />
+              {copy.cta} <ArrowRight className="h-5 w-5" />
             </a>
           </Button>
           <Button asChild variant="outline" size="xl">
@@ -79,7 +124,7 @@ export function Hero() {
           className="mt-5 animate-fade-in-up text-sm text-muted-foreground"
           style={{ animationDelay: "240ms" }}
         >
-          Free &amp; open source · No credit card required · Pro (teams) coming soon
+          {copy.trust}
         </p>
 
         {/* Dashboard mockup — mirrors the real app shell */}
@@ -87,9 +132,9 @@ export function Hero() {
           className="mx-auto mt-16 max-w-4xl animate-fade-in-up text-left"
           style={{ animationDelay: "320ms" }}
         >
-          <div className="overflow-hidden rounded-2xl border border-border bg-background shadow-[var(--shadow-soft-lg)] ring-1 ring-black/5 md:animate-float">
+          <div className="overflow-hidden rounded-2xl border border-border bg-background shadow-[var(--shadow-soft-lg)] ring-1 ring-white/10 md:animate-float">
             {/* Browser chrome */}
-            <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-3">
+            <div className="flex items-center gap-2 border-b border-border bg-card px-4 py-3">
               <span className="h-3 w-3 rounded-full bg-red-400" />
               <span className="h-3 w-3 rounded-full bg-yellow-400" />
               <span className="h-3 w-3 rounded-full bg-green-400" />
@@ -119,7 +164,7 @@ export function Hero() {
                   ))}
                 </nav>
                 <div className="flex items-center gap-2.5 border-t border-border p-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-2 text-xs font-semibold text-white">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-2 text-xs font-semibold text-primary-foreground">
                     AR
                   </span>
                   <div className="min-w-0">
@@ -147,7 +192,7 @@ export function Hero() {
                   {/* Stat cards */}
                   <div className="grid grid-cols-3 gap-3">
                     {mockStats.map(({ label, value, badge }) => (
-                      <div key={label} className="rounded-xl border border-border bg-background p-3">
+                      <div key={label} className="rounded-xl border border-border bg-card p-3">
                         <p className="text-[11px] text-muted-foreground">{label}</p>
                         {badge ? (
                           <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400">
@@ -162,7 +207,7 @@ export function Hero() {
                   </div>
 
                   {/* Revenue chart card */}
-                  <div className="rounded-xl border border-border bg-background p-4">
+                  <div className="rounded-xl border border-border bg-card p-4">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold text-foreground">Revenue</p>
                       <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">+12.5%</span>
@@ -179,7 +224,7 @@ export function Hero() {
                   </div>
 
                   {/* Projects row */}
-                  <div className="flex items-center justify-between rounded-xl border border-border bg-background p-4">
+                  <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
                     <div>
                       <p className="text-sm font-semibold text-foreground">Projects</p>
                       <p className="text-xs text-muted-foreground">You have 3 projects.</p>

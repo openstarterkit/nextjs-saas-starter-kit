@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Abstract cover: a grid of cards">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="__ACCENT_1__"/>
+      <stop offset="1" stop-color="__ACCENT_2__"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="18%" cy="14%" r="64%">
+      <stop offset="0" stop-color="__ACCENT_1__" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="__ACCENT_1__" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#171717"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g transform="translate(348 165)">
+    <g>
+      <rect x="0" y="0" width="152" height="132" rx="18" fill="#232323" stroke="url(#g)" stroke-width="3"/>
+      <rect x="22" y="22" width="76" height="10" rx="5" fill="url(#g)"/>
+      <rect x="22" y="50" width="108" height="8" rx="4" fill="#4a4a4a"/>
+      <rect x="22" y="70" width="84" height="8" rx="4" fill="#3a3a3a"/>
+    </g>
+    <g transform="translate(176 0)">
+      <rect x="0" y="0" width="152" height="132" rx="18" fill="#232323" stroke="#6e6e6e" stroke-width="2"/>
+      <rect x="22" y="22" width="60" height="10" rx="5" fill="#6e6e6e"/>
+      <rect x="22" y="50" width="108" height="8" rx="4" fill="#3a3a3a"/>
+      <rect x="22" y="70" width="70" height="8" rx="4" fill="#2b2b2b"/>
+    </g>
+    <g transform="translate(352 0)">
+      <rect x="0" y="0" width="152" height="132" rx="18" fill="#2b2b2b" stroke="#4a4a4a" stroke-width="2"/>
+      <rect x="22" y="22" width="70" height="10" rx="5" fill="#555555"/>
+      <rect x="22" y="50" width="96" height="8" rx="4" fill="#3a3a3a"/>
+    </g>
+    <g transform="translate(0 168)">
+      <rect x="0" y="0" width="152" height="132" rx="18" fill="#2b2b2b" stroke="#4a4a4a" stroke-width="2"/>
+      <rect x="22" y="22" width="66" height="10" rx="5" fill="#555555"/>
+      <rect x="22" y="50" width="102" height="8" rx="4" fill="#3a3a3a"/>
+    </g>
+    <g transform="translate(176 168)">
+      <rect x="0" y="0" width="152" height="132" rx="18" fill="#232323" stroke="#6e6e6e" stroke-width="2"/>
+      <rect x="22" y="22" width="80" height="10" rx="5" fill="#6e6e6e"/>
+      <rect x="22" y="50" width="90" height="8" rx="4" fill="#3a3a3a"/>
+    </g>
+    <g transform="translate(352 168)">
+      <rect x="0" y="0" width="152" height="132" rx="18" fill="#232323" stroke="#555555" stroke-width="2" stroke-dasharray="7 9"/>
+      <rect x="58" y="52" width="36" height="6" rx="3" fill="#4a4a4a"/>
+      <rect x="73" y="37" width="6" height="36" rx="3" fill="#4a4a4a"/>
+    </g>
+  </g>
+</svg>

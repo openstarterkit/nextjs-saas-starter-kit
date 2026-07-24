@@ -44,7 +44,7 @@ export function OnThisPage({ items }: { items: TocItem[] }) {
               className={cn(
                 "block py-1 transition-colors",
                 active === item.slug
-                  ? "font-medium text-primary dark:text-blue-400"
+                  ? "font-medium text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >

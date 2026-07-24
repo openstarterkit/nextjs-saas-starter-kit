@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { GetStartedChecklist } from "@/components/dashboard/get-started-checklist"
 import { CheckoutStatusToast } from "@/components/billing/checkout-status-toast"
+import { isKitSite } from "@/config/kit"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -106,17 +107,26 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
+      {/* Upsell for users without a plan. On the kit's own site it teases the
+          Pro tier; in your app it points at your paid plans. Delete it if you
+          would rather not sell from inside the dashboard. */}
       {entitlement.kind === "free" && (
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader>
-            <CardTitle className="text-base">Teams - coming soon</CardTitle>
+            <CardTitle className="text-base">
+              {isKitSite ? "Teams, coming soon" : "Do more with a plan"}
+            </CardTitle>
             <CardDescription>
-              Multi-tenancy, roles and team billing are on the way. Tell us what you&apos;d need.
+              {isKitSite
+                ? "Multi-tenancy, roles and team billing are on the way. Tell us what you'd need."
+                : "Unlock the full workspace for you and your team. Change or cancel whenever you like."}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline">
-              <Link href="/pricing">Learn more</Link>
+              <Link href={isKitSite ? "/pricing" : "/dashboard/billing"}>
+                {isKitSite ? "Learn more" : "See plans"}
+              </Link>
             </Button>
           </CardContent>
         </Card>

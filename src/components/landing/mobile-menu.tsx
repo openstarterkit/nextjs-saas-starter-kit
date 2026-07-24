@@ -63,6 +63,9 @@ export function MobileMenu({
           <Link href="/docs">Docs</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
+          <Link href="/blog">Blog</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link href="/changelog">Changelog</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

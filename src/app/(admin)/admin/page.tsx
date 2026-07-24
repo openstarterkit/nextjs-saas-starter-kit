@@ -40,20 +40,24 @@ async function getAdminData(page: number, search: string) {
     ? { email: { contains: search, mode: "insensitive" as const } }
     : {}
 
-  const [totalUsers, activeSubscriptions, users] = await Promise.all([
-    prisma.user.count(),
-    prisma.subscription.findMany({
-      where: { status: "ACTIVE" },
-      include: { plan: true },
-    }),
-    prisma.user.findMany({
-      where,
-      include: { subscription: { include: { plan: true } } },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * ITEMS_PER_PAGE,
-      take: ITEMS_PER_PAGE,
-    }),
-  ])
+  const [totalUsers, activeSubscriptions, users, waitlistConfirmed, waitlistPending, waitlistRecent] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.subscription.findMany({
+        where: { status: "ACTIVE" },
+        include: { plan: true },
+      }),
+      prisma.user.findMany({
+        where,
+        include: { subscription: { include: { plan: true } } },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * ITEMS_PER_PAGE,
+        take: ITEMS_PER_PAGE,
+      }),
+      prisma.newsletterSubscriber.count({ where: { confirmedAt: { not: null }, unsubscribedAt: null } }),
+      prisma.newsletterSubscriber.count({ where: { confirmedAt: null, unsubscribedAt: null } }),
+      prisma.newsletterSubscriber.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
+    ])
 
   const totalFiltered = search ? users.length : totalUsers
 
@@ -69,6 +73,9 @@ async function getAdminData(page: number, search: string) {
     mrr,
     users,
     totalPages: Math.ceil(totalFiltered / ITEMS_PER_PAGE),
+    waitlistConfirmed,
+    waitlistPending,
+    waitlistRecent,
   }
 }
 
@@ -87,7 +94,8 @@ export default async function AdminPage({
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
   const search = params.search ?? ""
 
-  const { totalUsers, activeUsers, mrr, users, totalPages } = await getAdminData(page, search)
+  const { totalUsers, activeUsers, mrr, users, totalPages, waitlistConfirmed, waitlistPending, waitlistRecent } =
+    await getAdminData(page, search)
 
   return (
     <div className="space-y-6">
@@ -138,7 +146,7 @@ export default async function AdminPage({
                 name="search"
                 defaultValue={search}
                 placeholder="Search by email..."
-                className="h-9 w-full rounded-[var(--radius)] border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-64"
+                className="h-9 w-full rounded-[var(--radius)] border border-border bg-secondary px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-64"
               />
               <button
                 type="submit"
@@ -281,6 +289,71 @@ export default async function AdminPage({
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Newsletter / waitlist */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle>Waitlist</CardTitle>
+              <CardDescription>
+                {waitlistConfirmed} confirmed · {waitlistPending} pending confirmation
+              </CardDescription>
+            </div>
+            <a
+              href="/api/admin/newsletter-export"
+              className="inline-flex h-9 items-center rounded-[var(--radius)] border border-border px-4 text-sm hover:bg-muted"
+            >
+              Export CSV
+            </a>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[220px]">Email</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden lg:table-cell">Requested</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {waitlistRecent.map((sub) => (
+                <TableRow key={sub.id}>
+                  <TableCell>
+                    <span className="text-sm font-medium text-foreground">{sub.email}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">{sub.source}</span>
+                  </TableCell>
+                  <TableCell>
+                    {sub.unsubscribedAt ? (
+                      <Badge variant="outline">Unsubscribed</Badge>
+                    ) : sub.confirmedAt ? (
+                      <Badge variant="success">Confirmed</Badge>
+                    ) : (
+                      <Badge variant="secondary">Pending</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
+                      {formatJoined(sub.createdAt)}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {waitlistRecent.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                    No subscribers yet. The signup form lives on the pricing page.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.3.0] - 2026-07-24
+
+📝 **Content & SEO.** A file-based blog, technical SEO, a pre-launch waitlist and a spam-safe contact form. The kit now ships agent instructions so your AI assistant is productive on day one, and goes fully brand-neutral so rebranding is one config or env away.
+
+### Added
+- **Theming and instant rebrand**: the kit now ships brand-neutral, with a placeholder name and a clean black + grayscale theme. Make it yours from `src/config/site.ts` and the color tokens in `globals.css`, or set the new `NEXT_PUBLIC_BRAND_*` env vars to change name, logo accent and colors with no code changes. The gradient, glow, Open Graph images and emails all follow your accent automatically. See [Configuration](./docs/configuration.md#branding--theming)
+- **Blog**: file-based MDX blog at `/blog` with categories, per-category pages, an RSS feed at `/blog/rss.xml`, reading time, optional cover images and draft support. Writing a post is a Markdown file and a commit, no database. Six example posts included. See the [blog guide](./docs/blog.md)
+- **Newsletter waitlist**: double opt-in signup (Zod + honeypot + per-IP and per-email rate limit), branded confirmation and welcome emails, one-click unsubscribe, optional Resend Audience sync for sending Broadcasts, and an admin view with counts and a CSV export that doubles as the consent record. Powers the Pro pre-launch waitlist on the pricing page. See the [newsletter guide](./docs/newsletter.md)
+- **Contact form**: `/contact` with Zod validation, a honeypot, per-IP rate limiting and a privacy notice, delivered to the owner via Resend with the sender set as reply-to
+- **Technical SEO**: `sitemap.xml` and `robots.txt` generated from the real routes and blog content, dynamic Open Graph images for pages and posts (`next/og`), and Article JSON-LD on posts
+- **Marketing pages**: an `/about` scaffold and the `/contact` page, linked from the navbar and footer
+- **AI-ready**: ships agent instructions for Claude Code, Cursor and Copilot, with `AGENTS.md` as the single source and `.cursor/rules/` and `.github/copilot-instructions.md` pointing to it
+- **Shared rate limiter**: `checkRateLimit` gains a per-IP key helper and now guards the newsletter, contact and signup endpoints
+
+### Changed
+- The Pro pricing card now opens the waitlist signup instead of a mailto contact link
+- Blog and Contact added to the navbar and footer navigation
+
+### Notes
+- One additive migration: `add_newsletter_subscriber`; run `npx prisma migrate deploy`
+- Env: new optional `RESEND_AUDIENCE_ID` for the newsletter Audience sync (the database list works without it)
+- New dependencies: `next-mdx-remote` and `gray-matter` for the blog
+
 ## [1.2.0] - 2026-07-16
 
 💳 **Payments & polish.** The billing pillar is complete: one-time payments, multiple tiers, usage-based example. Plus onboarding and a public changelog.
@@ -82,6 +105,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[1.3.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.3.0
 [1.2.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.2.0
 [1.1.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.1.0
 [1.0.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.0.0

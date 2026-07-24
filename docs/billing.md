@@ -45,6 +45,8 @@ If a lifetime buyer also has an old subscription, the billing page surfaces it w
 
 The plan cards on `/dashboard/billing` render every active `Plan` row, with a monthly/yearly toggle when both intervals exist and a "Pay once" badge on one-time plans. To change your pricing you edit data, not components: update `prisma/seed.ts` (or the rows directly) and the UI follows.
 
+Next to them sits an optional sales-led card, `src/components/billing/enterprise-card.ts`, which is not a `Plan` row and starts no checkout. It follows the toggle too: set its `yearly` block to show a different figure on the annual side, for instance `$500` "per month" against `$5,000` "per year". Leave `yearly` out and the card reads the same on both sides.
+
 ## Usage-based billing
 
 The kit includes a minimal metered example: a `recordUsage()` helper, an inactive "Pay as you go" plan in the seed, and this guide. To turn it on:
