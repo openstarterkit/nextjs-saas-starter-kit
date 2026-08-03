@@ -8,24 +8,26 @@ export const metadata: Metadata = {
 }
 
 /**
- * Placeholder marketing page: a structural scaffold you fill with your story.
- * Both branches below are drafts, so the section reads as finished while the
- * real copy is still being written. Replace the text, drop the dashed note,
- * and the layout stays as it is.
+ * On the kit's own site this is the real page. In your clone it is a
+ * structural scaffold: the copy below is a draft that reads as finished, so
+ * the layout holds while you write your own. Replace the text, drop the
+ * dashed note, and nothing else needs touching.
  */
 const copy = isKitSite
   ? {
-      note: {
-        title: "Work in progress.",
-        body: "The long version of how this kit came together is still being written. Here is the short one.",
-      },
-      what: "A production-ready SaaS foundation: authentication, payments, an admin panel, transactional emails and a polished marketing site, ready to make your own.",
-      who: "Founders and developers who want to ship a real product this weekend instead of wiring the same plumbing for the tenth time.",
+      note: null,
+      what: "A complete starting point for a SaaS, not a demo of one. Authentication with OAuth, magic links and passwords. Stripe subscriptions, one-time payments and webhooks whose signature is verified before anything reaches the database. An admin panel with real revenue figures, transactional email, a file-based blog and the marketing site around it. It is the plumbing every product needs and nobody enjoys writing twice, in a codebase small enough to read in an afternoon and yours to change.",
+      who: "People shipping on their own or in a small team, who would rather spend the weekend on the part that makes their product different than on wiring a checkout for the tenth time. It assumes you know Next.js, and that you would rather own the code than rent a platform.",
       principles: [
         "Own your stack: no vendor lock-in, your data in your database.",
         "Payments belong in the free tier, not behind a paywall.",
         "Honest by default: real features, no smoke and mirrors.",
+        "Nothing is held back to sell later: what the kit does, it does for free.",
       ],
+      maintainer: {
+        name: "Michele Canini",
+        url: "https://michelecanini.dev",
+      },
     }
   : {
       note: {
@@ -39,6 +41,7 @@ const copy = isKitSite
         "Clear pricing, no surprises on the invoice.",
         "Honest by default: real features, no smoke and mirrors.",
       ],
+      maintainer: null,
     }
 
 export default function AboutPage() {
@@ -51,18 +54,15 @@ export default function AboutPage() {
         <p className="mt-4 text-lg text-muted-foreground">{siteConfig.description}</p>
 
         <div className="mt-12 space-y-8 leading-7 text-muted-foreground">
-          <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5 text-sm">
-            <p className="font-medium text-foreground">{copy.note.title}</p>
-            <p className="mt-1">
-              {copy.note.body}
-              {!isKitSite && (
-                <>
-                  {" "}
-                  Edit this page in <code>src/app/(public)/about/page.tsx</code>.
-                </>
-              )}
-            </p>
-          </div>
+          {copy.note && (
+            <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5 text-sm">
+              <p className="font-medium text-foreground">{copy.note.title}</p>
+              <p className="mt-1">
+                {copy.note.body} Edit this page in{" "}
+                <code>src/app/(public)/about/page.tsx</code>.
+              </p>
+            </div>
+          )}
 
           <div>
             <h2 className="mb-2 text-lg font-semibold text-foreground">What it is</h2>
@@ -82,6 +82,26 @@ export default function AboutPage() {
               ))}
             </ul>
           </div>
+
+          {copy.maintainer && (
+            <div>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">Who builds it</h2>
+              <p>
+                {siteConfig.name} is created and maintained by{" "}
+                <a
+                  href={copy.maintainer.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary underline underline-offset-4 hover:no-underline"
+                >
+                  {copy.maintainer.name}
+                </a>
+                . One person, working in the open: the roadmap says what is coming, the changelog
+                says what already shipped, and every release is a tag you can read. Issues and
+                questions are answered by the person who wrote the code.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </section>

@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.4.1] - 2026-08-03
+
+🔒 **Security patch.** Auth.js moves up to clear a critical advisory, together with the first weekly batch of dependency updates.
+
+### Security
+- **Critical advisory in `@auth/core`** (up to and including 0.41.2): a malformed `Authorization: Bearer` header makes `getToken()` throw an uncaught exception. Cleared by moving to `next-auth@5.0.0-beta.32` and `@auth/prisma-adapter@2.11.3`, which pin `@auth/core@0.41.3` between them, so a single copy is installed instead of two. **If you cloned before this release, pull and run `npm install`**
+- `npm audit` is now clear of every advisory that has a real fix. What remains lives inside Next.js's own dependency tree (`postcss`, `sharp`) and clears when Next ships an update, not when you run `npm audit fix`: see [Security](./README.md#-security)
+
+### Changed
+- Dependencies updated: Next 16.2.12, React 19.2.8, Prisma 7.9.1, Stripe 22.4.0, Resend 6.18.1, Radix UI and lucide
+- **Stripe API version** moved from `2026-05-27.dahlia` to `2026-07-29.dahlia` to match the SDK. If you pinned the previous one deliberately, `src/lib/stripe.ts` is the line to change back
+- The README no longer advertises "0 High/Critical audit". A count like that is a snapshot that goes stale on its own, so it now describes the practice instead of a number
+
+### Notes
+- No database migration, no new environment variables
+- The dependency updates arrived as five grouped Dependabot pull requests. Two failed CI, and both were real: the Auth.js split above, and the Stripe API version. This is what the test suite added in 1.4.0 is for
+
 ## [1.4.0] - 2026-08-03
 
 🧪 **Testing & Trust.** The kit now proves itself: unit, integration and end-to-end tests, environment validation that stops a half-configured deployment at boot instead of at the first payment, a health endpoint with a release smoke that catches a deploy serving the previous build, and grouped dependency updates. Public demos reset themselves on a schedule, and the kit ships looking more like an example to rewrite and less like our product.
@@ -140,6 +157,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[1.4.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.4.1
 [1.4.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.4.0
 [1.3.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.3.0
 [1.2.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.2.0

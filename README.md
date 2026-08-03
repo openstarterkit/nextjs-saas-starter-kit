@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.4.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.4.1-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -74,7 +74,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 | 🔎 | **SEO** | Sitemap, robots, dynamic Open Graph images and Article JSON-LD out of the box |
 | 📨 | **Waitlist & contact** | Double opt-in newsletter waitlist (admin export, Resend sync) and a spam-protected contact form |
 | 🤖 | **AI-ready** | Ships agent instructions for Claude Code, Cursor and Copilot (`AGENTS.md`) so your assistant is productive on day one |
-| ✅ | **CI + security** | GitHub Actions pipeline (lint, tests, build), security headers, per-endpoint rate limiting, 0 High/Critical audit |
+| ✅ | **CI + security** | GitHub Actions pipeline (lint, tests, build), security headers, per-endpoint rate limiting, Dependabot with grouped updates |
 
 ---
 
@@ -385,6 +385,8 @@ Other languages are **community driven and welcome**. If the one you need is mis
 Found a vulnerability **in the kit**? Please don't open a public issue: report it privately through [our security policy](https://github.com/openstarterkit/nextjs-saas-starter-kit/security/policy).
 
 Once this is your app, write your own policy: add a `SECURITY.md` to your repository, or one in a `.github` repository if you keep several projects under an organisation.
+
+**On dependencies**, the kit is kept clear of every advisory that has a fix, and Dependabot opens the updates weekly. What can still show up in `npm audit` are advisories inside Next.js's own dependency tree: those clear when Next ships a release, not when you run `npm audit fix`, and the "fix" npm suggests for them is a downgrade to an ancient major that you do not want. Run `npm audit` and read what it points at before assuming your clone is exposed.
 
 ## 🎨 Content & assets
 

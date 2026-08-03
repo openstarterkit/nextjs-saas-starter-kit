@@ -7,7 +7,7 @@ function getInstance(): Stripe {
     const key = process.env.STRIPE_SECRET_KEY
     if (!key) throw new Error("STRIPE_SECRET_KEY is not set")
     _instance = new Stripe(key, {
-      apiVersion: "2026-05-27.dahlia",
+      apiVersion: "2026-07-29.dahlia",
       typescript: true,
     })
   }
