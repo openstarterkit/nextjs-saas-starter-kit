@@ -34,7 +34,7 @@
     "@radix-ui/react-tabs": "^1.1.21",
     "@radix-ui/react-tooltip": "^1.2.16",
     "@stripe/stripe-js": "^9.12.1",
-    "@types/pg": "^8.20.0",
+    "@types/pg": "^8.20.1",
     "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
