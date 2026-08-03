@@ -1,19 +1,23 @@
 import type { Metadata } from "next"
 import ReactMarkdown, { type Components } from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { getChangelog } from "@/lib/changelog"
+import { getChangelog, CHANGELOG_BASE_DIR } from "@/lib/changelog"
+import { mapRepoHref } from "@/lib/markdown-links"
 import { Badge } from "@/components/ui/badge"
 import { siteConfig } from "@/config/site"
 
-// External links leave the changelog: open them in a new tab. Relative and
-// anchor links keep the default in-tab navigation.
+// The entries are written for the repository, where `./docs/blog.md` is the
+// right link. Here the same string would ask the browser for a page that does
+// not exist, so it is translated first (shared with the docs renderer).
+// External links then leave the site: open those in a new tab.
 const markdownComponents: Components = {
   // Only href/title/children reach the DOM: react-markdown's extra props
   // (like the mdast `node`) must not leak onto the element.
   a: ({ href, title, children }) => {
-    const isExternal = typeof href === "string" && /^https?:\/\//.test(href)
+    const mapped = mapRepoHref(href ?? "", CHANGELOG_BASE_DIR)
+    const isExternal = /^https?:\/\//.test(mapped)
     return (
-      <a href={href} title={title} {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+      <a href={mapped} title={title} {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
         {children}
       </a>
     )

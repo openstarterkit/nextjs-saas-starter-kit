@@ -32,6 +32,14 @@ const SOURCE = isKitSite
   ? path.join(process.cwd(), "CHANGELOG.md")
   : path.join(process.cwd(), "content", "changelog.md")
 
+/**
+ * Where the file above sits in the repository, so relative links inside it
+ * resolve from the right place when the page renders them. Same string means
+ * different files depending on this: `./docs/blog.md` is the guide from the
+ * root, something under `content/` from there.
+ */
+export const CHANGELOG_BASE_DIR = isKitSite ? "" : "content"
+
 export function getChangelog(): Changelog {
   const raw = fs.readFileSync(SOURCE, "utf8")
 

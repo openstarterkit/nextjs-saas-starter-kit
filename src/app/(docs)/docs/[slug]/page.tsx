@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { DOCS, getDoc, getDocContent, extractToc, slugify } from "@/lib/docs"
 import { OnThisPage } from "@/components/docs/on-this-page"
+import { mapRepoHref } from "@/lib/markdown-links"
 import { siteConfig } from "@/config/site"
 
 // Flatten a heading's React children to plain text, so its anchor id matches
@@ -41,19 +42,10 @@ export async function generateMetadata({
   }
 }
 
-// Repo-relative Markdown links → site or GitHub URLs, so the same files work
-// in both renderers: ./guide.md → /docs/guide, ../FILE → the file on GitHub.
-function mapHref(href: string): string {
-  if (/^(https?:|mailto:|#|\/)/.test(href)) return href
-  const clean = href.replace(/^\.\//, "")
-  if (clean.startsWith("../")) {
-    if (!siteConfig.links.github) return href
-    return `${siteConfig.links.github}/blob/main/${clean.slice(3)}`
-  }
-  if (/(^|\/)README\.md$/.test(clean)) return "/docs"
-  if (clean.endsWith(".md")) return `/docs/${clean.replace(/\.md$/, "")}`
-  return href
-}
+// These files live in docs/, so that is where their relative links resolve
+// from. The mapping itself is shared with the changelog renderer, which reads
+// files from the repository root: see src/lib/markdown-links.ts.
+const mapHref = (href: string) => mapRepoHref(href, "docs")
 
 export default async function DocPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
