@@ -30,10 +30,20 @@ describe("mapRepoHref", () => {
     expect(mapRepoHref("docs/billing.md")).toBe("/docs/billing")
   })
 
-  it("keeps the anchor when it maps a guide", () => {
+  // GitHub writes "Branding & theming" as branding--theming, this site as
+  // branding-theming: without the translation the link lands on the page and
+  // not on the section, which is the kind of half-broken link nobody reports.
+  it("translates a GitHub anchor into the one the site generates", () => {
     expect(mapRepoHref("./docs/configuration.md#branding--theming")).toBe(
-      "/docs/configuration#branding--theming",
+      "/docs/configuration#branding-theming",
     )
+    expect(mapRepoHref("./docs/billing.md#usage-based")).toBe("/docs/billing#usage-based")
+  })
+
+  // On files that stay on GitHub the anchor must not be touched: there the
+  // repository form is the correct one.
+  it("leaves the anchor alone on links that stay on GitHub", () => {
+    expect(mapRepoHref("./README.md#-a--b")).toBe(`${BLOB}/README.md#-a--b`)
   })
 
   // Same href, two meanings: from docs/ it is the docs index, from the root it

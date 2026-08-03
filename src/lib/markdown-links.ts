@@ -28,13 +28,29 @@ export function mapRepoHref(href: string, baseDir = ""): string {
   const repoPath = resolveRepoPath(baseDir, rawPath)
   if (!repoPath) return href
 
-  if (repoPath === "docs/README.md") return `/docs${hash}`
+  if (repoPath === "docs/README.md") return `/docs${siteAnchor(hash)}`
 
   const doc = DOCS.find((d) => `docs/${basename(d.file)}` === repoPath)
-  if (doc) return `/docs/${doc.slug}${hash}`
+  if (doc) return `/docs/${doc.slug}${siteAnchor(hash)}`
 
   const repo = siteConfig.links.github
   return repo ? `${repo}/blob/main/${repoPath}${hash}` : href
+}
+
+/**
+ * GitHub's heading anchors to the ones this site generates.
+ *
+ * The two disagree on one point: for "Branding & theming" GitHub drops the
+ * `&` and turns each remaining space into a dash, giving `branding--theming`,
+ * while `slugify` in lib/docs collapses whitespace and gives
+ * `branding-theming`. An anchor written for the repository therefore lands on
+ * the right page and the wrong place, which is the kind of half-broken link
+ * nobody reports. Only runs of dashes are collapsed, so anchors that already
+ * agree pass through untouched. Anchors pointing at files kept on GitHub are
+ * left alone by the caller, since there GitHub's form is the correct one.
+ */
+function siteAnchor(hash: string): string {
+  return hash.replace(/-{2,}/g, "-")
 }
 
 /** Collapses `.` and `..` into a repository path, or null if it escapes the root. */
