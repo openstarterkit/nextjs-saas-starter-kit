@@ -148,7 +148,12 @@ export function Hero() {
               {/* Sidebar */}
               <aside className="hidden w-52 flex-col border-r border-border bg-background sm:flex">
                 <div className="flex h-14 items-center border-b border-border px-4 text-sm font-bold tracking-tight">
-                  <Logo markClassName="h-6 w-6" />
+                  {/* Generic on purpose: this mockup is the customer's own
+                      product (dashboard.yoursaas.com, alex@acme.io), not ours.
+                      Greying the tile was not enough, because the mark itself
+                      is our bolt on the kit's site: `generic` swaps the symbol
+                      too, in both themes. */}
+                  <Logo generic markClassName="h-6 w-6" />
                 </div>
                 <nav className="flex-1 space-y-1 p-3">
                   {mockNav.map(({ label, icon: Icon, active }) => (

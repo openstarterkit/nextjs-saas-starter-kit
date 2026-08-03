@@ -1,0 +1,40 @@
+# What never gets uploaded to Vercel.
+#
+# Important: when this file exists Vercel uses it *instead of* .gitignore, not
+# in addition to it. Everything that must stay out has to be listed here, which
+# is why the dependency and build entries are repeated below rather than left
+# to .gitignore.
+#
+# The entry that matters most is .env: a CLI deploy uploads the working
+# directory, so without this line a local .env.local with production secrets
+# would travel to the build. Environment variables belong in the Vercel
+# project settings, never in the upload.
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# dependencies and build output (Vercel installs and builds on its side)
+node_modules
+.next
+out
+build
+coverage
+/src/generated/prisma
+
+# local tooling
+.git
+.vercel
+.vscode
+.cursor
+*.tsbuildinfo
+*.pem
+.DS_Store
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

@@ -130,7 +130,12 @@ export function Pricing() {
                   source="pricing-card"
                   disabled={isDemo || !waitlistOn}
                   cta="Join the Pro waitlist"
-                  note="One short email a week while we build it. Early adopters get a launch discount. Unsubscribe anytime, one click."
+                  // No cadence on purpose: a weekly promise starts a clock on
+                  // the first confirmed subscriber, and there is not a week's
+                  // worth of real news between here and the Pro launch. Say
+                  // what we will actually do. Same wording on the confirm page
+                  // and in the welcome email: change all three together.
+                  note="One short email when there is real news. Early adopters get a launch discount. Unsubscribe anytime, one click."
                   disabledNote={
                     isDemo
                       ? "Forms are disabled in the live demo."

@@ -1,0 +1,70 @@
+version: 2
+
+# Dependency updates, grouped so the inbox stays readable.
+#
+# The reason for grouping: an ungrouped Dependabot on a Next + Radix + Prisma
+# project opens a dozen pull requests a week, they get ignored, and the repo
+# ends up less up to date than one with no automation at all. Patch and minor
+# bumps arrive as one pull request per area; majors come one at a time, because
+# those are the ones that need reading.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # The framework and its immediate surroundings move together: bumping
+      # next without eslint-config-next tends to fail the build on its own.
+      next:
+        patterns:
+          - next
+          - next-auth
+          - "@auth/*"
+          - eslint-config-next
+        update-types: [minor, patch]
+      react:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+        update-types: [minor, patch]
+      prisma:
+        patterns:
+          - prisma
+          - "@prisma/*"
+          - pg
+          - "@types/pg"
+        update-types: [minor, patch]
+      ui:
+        patterns:
+          - "@radix-ui/*"
+          - tailwindcss
+          - "@tailwindcss/*"
+          - lucide-react
+          - class-variance-authority
+          - clsx
+          - tailwind-merge
+        update-types: [minor, patch]
+      # Anything else, including test and build tooling.
+      rest:
+        patterns:
+          - "*"
+        update-types: [minor, patch]
+    # Majors of the framework are release work, not maintenance: they land
+    # through the roadmap, not through an automated pull request.
+    ignore:
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2

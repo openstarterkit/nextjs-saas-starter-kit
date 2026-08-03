@@ -20,8 +20,10 @@ type Feature = { icon: LucideIcon; title: string; description: string }
 /**
  * Placeholder feature grid, written from your customer's point of view.
  * Every card here describes something the kit actually does, so the copy is
- * honest before you touch it: rewrite each one in terms of your product and
- * keep the nine-card rhythm, or drop to six.
+ * honest before you touch it: rewrite each one in terms of your product.
+ *
+ * Six of them, two full rows: enough to show the pattern without pretending
+ * to be your feature list. Add a third row if your product needs one.
  */
 const productFeatures: Feature[] = [
   {
@@ -59,24 +61,6 @@ const productFeatures: Feature[] = [
     title: "Admin controls",
     description:
       "See every member, their role and their plan in one place. Promote, review and step in when something needs a decision.",
-  },
-  {
-    icon: Rocket,
-    title: "Ready in minutes",
-    description:
-      "Create an account, name your first project and you are working. No onboarding call, no implementation project.",
-  },
-  {
-    icon: Unlock,
-    title: "No lock-in",
-    description:
-      "Month to month, cancel when you like, export what you built. We would rather earn the next month than trap you in it.",
-  },
-  {
-    icon: Mail,
-    title: "Kept in the loop",
-    description:
-      "A short welcome, a receipt when you pay, a note when something needs you. No noise, and one click to stop any of it.",
   },
 ]
 

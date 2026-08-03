@@ -14,5 +14,5 @@ Quick pointers:
 
 - The fastest possible start is in [Getting started](./getting-started.md): you can run the kit locally with just a database, no OAuth apps needed (there is a dev-only login).
 - Every environment variable is listed with comments in [.env.example](../.env.example) and explained in [Configuration](./configuration.md).
-- Found a security issue? See [SECURITY.md](../SECURITY.md), please do not open a public issue.
+- Found a security issue in the kit? Report it privately through [our security policy](https://github.com/openstarterkit/nextjs-saas-starter-kit/security/policy), please do not open a public issue.
 - What ships next lives in [ROADMAP.md](../ROADMAP.md), what already shipped in [CHANGELOG.md](../CHANGELOG.md).

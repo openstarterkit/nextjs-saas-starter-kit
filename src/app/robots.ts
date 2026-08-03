@@ -12,6 +12,9 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/dashboard", "/admin", "/api/", "/verify-request", "/reset-password"],
     },
-    sitemap: `${siteConfig.url}/sitemap.xml`,
+    // A demo deployment is `noindex` (see the root layout) and stays crawlable
+    // on purpose, so engines can read that noindex. It just has no sitemap to
+    // offer: advertising URLs we ask them to ignore is pure noise.
+    sitemap: process.env.DEMO_MODE === "true" ? undefined : `${siteConfig.url}/sitemap.xml`,
   }
 }

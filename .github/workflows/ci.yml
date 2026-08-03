@@ -30,6 +30,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Unit tests on the pure logic in src/lib. They need no database and no
+      # secrets, so they run before the build and fail fast.
+      - name: Test
+        run: npm test
+
       # `next build` type-checks and compiles. The env values below are
       # build-time placeholders, not real secrets: the build constructs clients
       # (Prisma adapter, Auth.js) at module load but never connects to a DB or

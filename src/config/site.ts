@@ -15,7 +15,7 @@ export const siteConfig = {
   tagline:
     process.env.NEXT_PUBLIC_BRAND_TAGLINE ||
     (isKitSite ? "Ship your SaaS this weekend" : "Ship your product faster"),
-  version: "1.3.0",
+  version: "1.4.0",
   description:
     process.env.NEXT_PUBLIC_BRAND_DESCRIPTION ||
     (isKitSite

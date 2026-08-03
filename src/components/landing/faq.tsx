@@ -11,8 +11,9 @@ import { isKitSite } from "@/config/kit"
 type Faq = { question: string; answer: string }
 
 /**
- * Placeholder FAQ: the six questions a visitor actually asks before signing
- * up for a SaaS. Answer them for your product, in your words. Every answer
+ * Placeholder FAQ: four questions a visitor actually asks before signing up
+ * for a SaaS, one per area (getting started, paying, privacy, support).
+ * Answer them for your product, in your words, and add your own. Every answer
  * below is true of the kit as it ships, so nothing here oversells until you
  * change it.
  */
@@ -28,24 +29,18 @@ const productFaqs: Faq[] = [
       "You pick a plan and pay by card. Upgrades and downgrades take effect right away and are prorated, invoices land in your inbox automatically, and you can see and change everything from the billing page in your account.",
   },
   {
-    question: "Can I change or cancel my plan later?",
-    answer:
-      "Any time, from your account, without writing to anyone. Cancelling keeps your access until the end of the period you already paid for, and nothing is deleted the moment you stop.",
-  },
-  {
     question: "Who can see my data?",
     answer:
       "You, and the people you invite. Your data lives in our own database rather than being scattered across third parties, card details are held by Stripe and never touch our servers, and we do not sell any of it.",
   },
   {
-    question: "Can I export what I put in?",
-    answer:
-      "Yes. Your work is yours: you can take it with you if you leave, and we would rather earn your renewal than rely on it being difficult to go.",
-  },
-  {
     question: "What if I need help?",
     answer:
-      `Write to us at ${siteConfig.contactEmail} or use the contact form. A person reads every message and answers, usually within a day.`,
+      `Write to us at ${siteConfig.contactEmail} or use the contact form. A person reads every message and answers, usually within a day.${
+        // On a demo deployment the form is disabled, so the promise above would
+        // be one the page cannot keep. Say so rather than leave it hanging.
+        process.env.DEMO_MODE === "true" ? " (In this demo the forms are disabled.)" : ""
+      }`,
   },
 ]
 

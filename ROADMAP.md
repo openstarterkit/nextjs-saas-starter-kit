@@ -23,25 +23,28 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - Polished onboarding flow
 - Public changelog page + session revocation on password reset
 
-## ✅ v1.3 - Content & SEO *(current)*
+## ✅ v1.3 - Content & SEO
 - MDX blog: categories, RSS feed, cover images, reading time and drafts (file-based, no CMS)
 - SEO: sitemap, robots, dynamic Open Graph images and Article JSON-LD
-- Newsletter waitlist: double opt-in, one-click unsubscribe, admin CSV export and optional Resend Audience sync. It also powers the **Pro early adopter waitlist**: one short email a week while we build the Pro, and a launch discount for subscribers
+- Newsletter waitlist: double opt-in, one-click unsubscribe, admin CSV export and optional Resend Audience sync. It also powers the **Pro early adopter waitlist**: one short email when there is real news on the Pro, and a launch discount for subscribers
 - Contact form done right (Resend + Zod validation + honeypot anti-spam + privacy notice)
 - Per-endpoint rate limiting on the public forms
 - Brand-neutral by default: rebrand the name, logo and colors from one config file or from env vars, no code changes. Plus a marketing pages scaffold (about, legal)
 - AI-ready: agent instructions for Claude Code, Cursor and Copilot included
 
-## 🔜 v1.4 - Testing & Trust
-- Vitest unit tests and Playwright end-to-end tests on the critical flows (signup, checkout, webhooks)
+## ✅ v1.4 - Testing & Trust *(current)*
+- Vitest unit tests, Playwright end-to-end tests on signup and checkout, and integration tests on the Stripe webhook signed with Stripe's own SDK
 - Typed environment validation with Zod (fail fast at boot)
-- Dependabot and a declared dependency update cadence
-- Test coverage visible in the README
+- Dependabot with grouped updates and a declared dependency update cadence
+- Test coverage visible in the README, reported by a command rather than a badge
+- `/api/health` and a release smoke script that checks a live deployment from the outside, including the version it actually serves
+- Scheduled daily reset for public demo deployments
 
-## 🔜 v1.5 - UI kit expansion
+## 🔜 v1.5 - UI kit expansion & Italian
 - 20+ additional components (modal, dropdown, toast, tabs, tooltip…)
 - Dashboard chart components
 - Form library with validation patterns
+- **Italian**: the kit ships in English and Italian, on an i18n foundation that makes adding a language a translation file rather than a refactor. Further languages come with Pro
 
 ## 🔜 v1.6 - Billing depth
 - Free trials, coupon and promo codes
@@ -53,11 +56,11 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - Active session management in Settings
 
 ## 🎯 Pro - Teams & scale *(paid, coming)*
-The paid tier, built for teams. A waitlist opens with v1.3: subscribers get weekly build updates and an early adopter discount at launch. Everything in the free kit, plus:
+The paid tier, built for teams. A waitlist opens with v1.3: subscribers get build updates when there is real news, and an early adopter discount at launch. Everything in the free kit, plus:
 - Multi-tenancy / teams & organizations
 - Role-based permissions (beyond USER/ADMIN)
 - Team billing & seat management
-- i18n (internationalization) scaffold
+- Every other language, on top of the English and Italian shipped in v1.5
 
 ---
 

@@ -34,6 +34,14 @@ The example posts ship vector covers that pick up your accent color. The sources
 
 Prefer your own artwork? Drop a file in `public/blog/covers/` and point `cover` at it: a static file wins over the route, so photos and exported PNGs work exactly as before.
 
+### Before you swap them for generated images
+
+The covers that ship here are abstract vector shapes: no people, no places, nothing photorealistic. That is worth a thought before you replace them with output from an image model.
+
+From 2 August 2026 the EU AI Act asks whoever publishes AI generated or manipulated content of a certain kind to disclose it. The rule targets content that resembles real people, objects or places and would pass as authentic, so abstract geometry sits outside it and these covers raise no question at all. A photorealistic generated image can sit inside it, and what counts is when the image was generated, so anything you produce from here on is worth a second look.
+
+This is not a reason to avoid generated art and it is not legal advice. It is a heads up that the choice carries a question the shipped covers do not, and that the question becomes yours the moment you deploy. If you would rather not have it, keep the covers as vectors or use your own photographs.
+
 Note this is separate from the social preview: every post also gets a dynamically generated Open Graph image for link unfurls, whether or not it has a cover.
 
 ## Categories

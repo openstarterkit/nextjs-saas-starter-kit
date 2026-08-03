@@ -13,6 +13,12 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: `${siteConfig.name} | ${siteConfig.tagline}`,
   description: siteConfig.description,
+  // A demo deployment mirrors the site it showcases, so search engines would
+  // find two near-identical sites and have to guess which one is the original.
+  // Keep the demo out of the index. `noindex` is the control that actually
+  // does it: robots.txt only stops the crawl, and a page that is never fetched
+  // can never be de-indexed either.
+  robots: process.env.DEMO_MODE === "true" ? { index: false, follow: false } : undefined,
 }
 
 // Applies the stored/system theme before first paint — inline and blocking

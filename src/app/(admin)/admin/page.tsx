@@ -311,49 +311,78 @@ export default async function AdminPage({
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="min-w-[220px]">Email</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden lg:table-cell">Requested</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {waitlistRecent.map((sub) => (
-                <TableRow key={sub.id}>
-                  <TableCell>
-                    <span className="text-sm font-medium text-foreground">{sub.email}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">{sub.source}</span>
-                  </TableCell>
-                  <TableCell>
-                    {sub.unsubscribedAt ? (
-                      <Badge variant="outline">Unsubscribed</Badge>
-                    ) : sub.confirmedAt ? (
-                      <Badge variant="success">Confirmed</Badge>
-                    ) : (
-                      <Badge variant="secondary">Pending</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">
-                      {formatJoined(sub.createdAt)}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {waitlistRecent.length === 0 && (
+          {/* Same story as the users table above: stack into cards below `md`. */}
+          <div className="space-y-3 md:hidden">
+            {waitlistRecent.map((sub) => (
+              <div key={sub.id} className="rounded-xl border border-border p-4">
+                <p className="truncate text-sm font-medium text-foreground">{sub.email}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {sub.unsubscribedAt ? (
+                    <Badge variant="outline">Unsubscribed</Badge>
+                  ) : sub.confirmedAt ? (
+                    <Badge variant="success">Confirmed</Badge>
+                  ) : (
+                    <Badge variant="secondary">Pending</Badge>
+                  )}
+                  <span className="text-sm text-muted-foreground">{sub.source}</span>
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {formatJoined(sub.createdAt)}
+                  </span>
+                </div>
+              </div>
+            ))}
+            {waitlistRecent.length === 0 && (
+              <p className="py-8 text-center text-muted-foreground">
+                No subscribers yet. The signup form lives on the pricing page.
+              </p>
+            )}
+          </div>
+
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
-                    No subscribers yet. The signup form lives on the pricing page.
-                  </TableCell>
+                  <TableHead className="min-w-[220px]">Email</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden lg:table-cell">Requested</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {waitlistRecent.map((sub) => (
+                  <TableRow key={sub.id}>
+                    <TableCell>
+                      <span className="text-sm font-medium text-foreground">{sub.email}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">{sub.source}</span>
+                    </TableCell>
+                    <TableCell>
+                      {sub.unsubscribedAt ? (
+                        <Badge variant="outline">Unsubscribed</Badge>
+                      ) : sub.confirmedAt ? (
+                        <Badge variant="success">Confirmed</Badge>
+                      ) : (
+                        <Badge variant="secondary">Pending</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">
+                        {formatJoined(sub.createdAt)}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {waitlistRecent.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                      No subscribers yet. The signup form lives on the pricing page.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

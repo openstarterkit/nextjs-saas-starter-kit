@@ -292,8 +292,8 @@ export async function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: str
 }
 
 /**
- * Mirrors a confirmed subscriber onto the Resend Audience so the weekly
- * numbers can be sent as Broadcasts from the Resend dashboard. No-op when
+ * Mirrors a confirmed subscriber onto the Resend Audience so issues can be
+ * sent as Broadcasts from the Resend dashboard. No-op when
  * RESEND_AUDIENCE_ID is unset: the database list still works on its own.
  */
 export async function syncNewsletterContact(email: string) {
@@ -321,12 +321,16 @@ function newsletterConfirmTemplate(confirmUrl: string) {
 function newsletterWelcomeTemplate(unsubscribeUrl: string) {
   // The kit's own waitlist sells the Pro tier; your clone's list promises
   // only what a generic waitlist can: news when there is some.
+  //
+  // Neither branch promises a cadence, and that is deliberate. A frequency
+  // written here is the one the subscriber keeps in their inbox and can hold
+  // you to, so only promise what you will still be doing in three months.
   return baseTemplate(`
     <p>You're in. Here is the deal:</p>
     <div class="highlight">
     ${
       isKitSite
-        ? `  <p>📬 <strong>One short email a week</strong> while we build the Pro.</p>
+        ? `  <p>📬 <strong>One short email</strong> when there is real news on the Pro.</p>
       <p>🎟️ <strong>A launch discount</strong> reserved for early adopters.</p>`
         : `  <p>📬 <strong>One short email</strong> when there is real news to share.</p>
       <p>🎟️ <strong>Early access</strong> when what you signed up for goes live.</p>`

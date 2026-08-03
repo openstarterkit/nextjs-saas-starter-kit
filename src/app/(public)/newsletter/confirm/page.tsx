@@ -61,8 +61,8 @@ export default async function NewsletterConfirmPage({
           <>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">You&apos;re in 🎉</h1>
             <p className="mt-4 text-muted-foreground">
-              One short email a week, and a discount waiting for you at launch. Unsubscribe anytime,
-              one click.
+              One short email when there is real news, and a discount waiting for you at launch.
+              Unsubscribe anytime, one click.
             </p>
           </>
         )}

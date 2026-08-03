@@ -114,12 +114,21 @@ export function getDocContent(doc: DocEntry): string {
   return matter(fs.readFileSync(doc.file, "utf8")).content
 }
 
+/**
+ * Removes the inline Markdown markers from a heading's text.
+ *
+ * Underscores follow the CommonMark rule: they mark emphasis only at a word
+ * boundary (`_emphasis_`), never inside one. Stripping them unconditionally
+ * turned "DATABASE_URL" into "DATABASEURL" in the outline, which matters here
+ * because the docs are full of env var names.
+ */
+function stripInlineMarkdown(text: string): string {
+  return text.replace(/[`*~]/g, "").replace(/(?<!\w)_+|_+(?!\w)/g, "")
+}
+
 /** GitHub-style heading slug. Kept in sync with the heading ids the page renders. */
 export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[`*_~]/g, "")
+  return stripInlineMarkdown(text.toLowerCase().trim())
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-")
 }
@@ -142,7 +151,7 @@ export function extractToc(markdown: string): TocItem[] {
     if (inFence) continue
     const match = /^(#{2,3})\s+(.+?)\s*#*$/.exec(line)
     if (match) {
-      const text = match[2].replace(/[`*_~]/g, "").trim()
+      const text = stripInlineMarkdown(match[2]).trim()
       toc.push({ depth: match[1].length, text, slug: slugify(text) })
     }
   }

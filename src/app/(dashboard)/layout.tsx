@@ -32,7 +32,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col">
+      {/* min-w-0: without it this flex item keeps `min-width: auto`, so any wide
+          child (a table) inflates the whole column past the viewport instead of
+          scrolling inside its own container. */}
+      <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:px-6">
           <SidebarCollapseToggle />
           <div className="flex items-center gap-1 md:hidden">
@@ -59,7 +62,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </div>
           </div>
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        {/* Same container as the public pages (mx-auto max-w-6xl px-6). Without the cap the
+            content stretched to the full viewport, so on a wide screen the three stat cards
+            were over 400px each to hold one word. */}
+        <main className="mx-auto w-full max-w-6xl flex-1 p-6">{children}</main>
         <footer className="flex items-center justify-center border-t border-border px-6 py-4">
           <PoweredBy />
         </footer>
