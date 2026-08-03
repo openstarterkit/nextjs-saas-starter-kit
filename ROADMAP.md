@@ -61,6 +61,7 @@ The paid tier, built for teams. A waitlist opens with v1.3: subscribers get buil
 - Multi-tenancy / teams & organizations
 - Role-based permissions (beyond USER/ADMIN)
 - Team billing & seat management
+- Get paid your way: extra payment methods and alternative providers, merchant of record included
 
 ---
 

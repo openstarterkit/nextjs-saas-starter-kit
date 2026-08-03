@@ -24,6 +24,7 @@ const proFeatures = [
   "Role-based permissions beyond USER/ADMIN",
   "Team billing & seat management",
   "Member invitations & access control",
+  "More ways to get paid (providers & methods)",
 ]
 
 
