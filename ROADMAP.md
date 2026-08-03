@@ -40,11 +40,12 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - `/api/health` and a release smoke script that checks a live deployment from the outside, including the version it actually serves
 - Scheduled daily reset for public demo deployments
 
-## 🔜 v1.5 - UI kit expansion & Italian
+## 🔜 v1.5 - UI kit expansion & i18n
 - 20+ additional components (modal, dropdown, toast, tabs, tooltip…)
 - Dashboard chart components
 - Form library with validation patterns
-- **Italian**: the kit ships in English and Italian, on an i18n foundation that makes adding a language a translation file rather than a refactor. Further languages come with Pro
+- **i18n, in the free kit**: the scaffold plus the interface in **English and Italian**. Adding a language becomes a translation file rather than a refactor
+- Any other language is **welcome from the community**: open a pull request with the translation and it ships. Languages beyond EN and IT are added progressively, with no guaranteed schedule
 
 ## 🔜 v1.6 - Billing depth
 - Free trials, coupon and promo codes
@@ -60,7 +61,6 @@ The paid tier, built for teams. A waitlist opens with v1.3: subscribers get buil
 - Multi-tenancy / teams & organizations
 - Role-based permissions (beyond USER/ADMIN)
 - Team billing & seat management
-- Every other language, on top of the English and Italian shipped in v1.5
 
 ---
 

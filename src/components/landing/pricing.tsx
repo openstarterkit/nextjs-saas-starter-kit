@@ -24,7 +24,6 @@ const proFeatures = [
   "Role-based permissions beyond USER/ADMIN",
   "Team billing & seat management",
   "Member invitations & access control",
-  "i18n scaffold",
 ]
 
 
