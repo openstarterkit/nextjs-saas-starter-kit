@@ -32,7 +32,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - Brand-neutral by default: rebrand the name, logo and colors from one config file or from env vars, no code changes. Plus a marketing pages scaffold (about, legal)
 - AI-ready: agent instructions for Claude Code, Cursor and Copilot included
 
-## ✅ v1.4 - Testing & Trust *(current)*
+## ✅ v1.4 - Testing & Trust
 - Vitest unit tests, Playwright end-to-end tests on signup and checkout, and integration tests on the Stripe webhook signed with Stripe's own SDK
 - Typed environment validation with Zod (fail fast at boot)
 - Dependabot with grouped updates and a declared dependency update cadence
@@ -40,7 +40,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - `/api/health` and a release smoke script that checks a live deployment from the outside, including the version it actually serves
 - Scheduled daily reset for public demo deployments
 
-## 🔜 v1.5 - SEO foundations & runtime *(next)*
+## ✅ v1.5 - SEO foundations & runtime *(current)*
 - Canonical URLs on every public page, distinct meta descriptions, and the missing H1 on pricing
 - Structured data beyond articles: `FAQPage` and `Organization` JSON-LD
 - **Node 24 is the supported runtime**, declared in `engines`. Node 20 reached end of life in April 2026: the code still runs on it, the support promise no longer covers it
@@ -48,7 +48,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - `npm audit` in the pipeline with a declared threshold, so a new advisory is a build signal instead of a discovery
 - Maintainer name and site configurable from env, like the rest of the branding
 
-## 🔜 v1.6 - i18n
+## 🔜 v1.6 - i18n *(next)*
 - **i18n, in the free kit**: the scaffold plus the interface in **English and Italian**. Adding a language becomes a translation file rather than a refactor
 - Routing with a prefix only for non-default languages: your English URLs stay exactly as they are today
 - `hreflang` and `x-default` done properly, sitemap covering every language, and no automatic redirect based on browser headers: visitors switch language from a visible selector
