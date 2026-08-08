@@ -36,7 +36,13 @@ function CheckIcon() {
   )
 }
 
-export function Pricing() {
+/**
+ * `heading` is the level of the section title, not its look: on the landing
+ * page this block sits under the hero and stays an h2, on /pricing it is the
+ * page's own heading and must be the h1. Same styling either way.
+ */
+export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
+  const Heading = heading
   // Production gate (COO #007 §5): the waitlist must not collect real emails
   // until the real privacy policy is live on the showcase. Off by default,
   // so a deploy that forgets the overlay ships a disabled form, not a live
@@ -47,9 +53,9 @@ export function Pricing() {
     <section id="pricing" className="bg-muted/30 py-24">
       <div className="mx-auto max-w-6xl px-6">
         <Reveal className="mb-16 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <Heading className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Start free, scale when you grow
-          </h2>
+          </Heading>
           <p className="mt-4 text-lg text-muted-foreground">
             Open source and free forever: auth, payments, admin and emails included.
             Teams & multi-tenancy are coming as Pro.

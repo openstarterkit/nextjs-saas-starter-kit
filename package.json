@@ -1,7 +1,10 @@
 {
   "name": "openstarterkit",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -61,7 +64,7 @@
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.20",
-    "@types/node": "^20.19.43",
+    "@types/node": "^24.13.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^4.1.10",
@@ -71,7 +74,7 @@
     "eslint-config-next": "16.2.12",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
-    "typescript": "^5",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   }
 }

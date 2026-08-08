@@ -1,6 +1,6 @@
 # Getting started
 
-From zero to a running app in about 10 minutes. You only need Node 20+ and a PostgreSQL database.
+From zero to a running app in about 10 minutes. You only need Node 24+ and a PostgreSQL database.
 
 ## 1. Clone and install
 

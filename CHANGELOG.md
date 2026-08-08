@@ -7,6 +7,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.5.0] - 2026-08-08
+
+🔎 **SEO foundations & runtime.** The pages that matter most were the least looked after: the home page and `/pricing` had no canonical, `/pricing` had no heading at all, and structured data existed only inside blog posts. This release fixes the foundations every page stands on, moves the supported runtime to Node 24, and clears two broken-link bugs.
+
+### Added
+- **Canonical URLs** on the home page, `/pricing`, `/blog` and `/docs`. Until now only blog posts had one, and it is the protection that matters most when a demo deployment mirrors the site it showcases. All of them are built from `NEXT_PUBLIC_APP_URL`
+- **Structured data for the site**, not only for articles: `Organization`, and `FAQPage` on the home page generated from the same questions you edit in `src/components/landing/faq.tsx`, so answering them for your product updates both at once
+- **An H1 on `/pricing`**, which had two H2s and no heading of its own: an error for search engines, and a page with no title for anyone using a screen reader. The pricing section takes the heading role on its own page and stays an H2 on the landing, with no visual change
+- **A description of its own for `/pricing`**, which until now inherited the site-wide one and repeated the home page in search results
+- `NEXT_PUBLIC_SEO_TITLE`: the title used in `<title>` and in search results. Unset, it stays `name | tagline`. Set it when the words people search for are not the claim you want readers to see, and the tagline keeps its job on the page
+- `NEXT_PUBLIC_MAINTAINER_NAME` and `NEXT_PUBLIC_MAINTAINER_URL`: who builds the product, shown on the About page. The section hides when the name is unset, and the URL is optional
+- **`npm audit` in CI**, set at `critical`. It runs last on purpose: a new advisory is not a defect of the commit being tested, so it must never hide the result of lint, tests and build
+- A **SEO section** in `docs/configuration.md`, covering what the kit already does on its own and the one variable you have to set in production
+
+### Changed
+- **Node 24 is the supported runtime**, now declared in `engines`, which the kit never did before. Node 20 reached end of life in April 2026. The code still runs on it, so nothing breaks today: what changed is the version we support and test against
+- **TypeScript 6.** Not 7, which Next.js does not yet support without an experimental flag that would end up in your project too
+- GitHub Actions updated from v4 to v7, and `@types/node`, `@types/react`, `@types/react-dom` and `@types/pg` moved up
+
+### Fixed
+*Both of these have been on `main` since 3 August and are already live on the showcase, but they were never part of a tagged release. If you cloned at `v1.4.1` you do not have them, so they are listed here.*
+
+- **Relative links on the changelog page returned 404.** The docs pages already translated links written for the repository, the changelog page did not, so `./docs/blog.md` and `./README.md` were dead ends. That logic now lives in `src/lib/markdown-links.ts` and both pages use it, taking the file's own directory into account: the same href means different things from `docs/` and from the root
+- **Anchor links landed on the right page and the wrong section.** A heading like "Branding & theming" becomes `branding--theming` on GitHub and `branding-theming` here. Anchors are now translated for links that stay on the site, and left alone for links that point at GitHub
+
+### Notes
+- No database migration. Every new variable is optional, and with none of them set the kit behaves exactly as before
+- **Set `NEXT_PUBLIC_APP_URL` in production.** Canonical URLs are built from it, and unset it falls back to `localhost`, which is worse than having no canonical at all
+
 ## [1.4.1] - 2026-08-03
 
 🔒 **Security patch.** Auth.js moves up to clear a critical advisory, together with the first weekly batch of dependency updates.

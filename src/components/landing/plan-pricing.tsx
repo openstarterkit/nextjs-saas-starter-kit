@@ -13,8 +13,11 @@ import { Reveal } from "@/components/landing/reveal"
  * `pricing.tsx` is a hand-written alternative (free tier plus a waitlist for
  * a paid one), enabled with KIT_SITE="true".
  */
-export async function PlanPricing() {
+export async function PlanPricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
   const isDemo = process.env.DEMO_MODE === "true"
+  // See `Pricing`: h2 under the hero on the landing, h1 when it is the
+  // heading of /pricing. The styling does not change.
+  const Heading = heading
 
   // Metered plans stay docs-only; one-time plans (Lifetime) live on the
   // billing page, the landing shows the classic recurring triad.
@@ -39,9 +42,9 @@ export async function PlanPricing() {
     <section id="pricing" className="bg-muted/30 py-24">
       <div className="mx-auto max-w-6xl px-6">
         <Reveal className="mb-16 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <Heading className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Simple, transparent pricing
-          </h2>
+          </Heading>
           <p className="mt-4 text-lg text-muted-foreground">
             {isDemo
               ? "These are example plans, rendered live from the database with monthly and yearly tiers. Sign in to the demo to see the full billing flow, including a one-time lifetime purchase."

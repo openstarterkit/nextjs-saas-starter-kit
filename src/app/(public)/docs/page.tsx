@@ -7,6 +7,7 @@ import { isKitSite } from "@/config/kit"
 export const metadata: Metadata = {
   title: `Documentation | ${siteConfig.name}`,
   description: `Guides for ${siteConfig.name}: getting started, configuration, authentication and deployment.`,
+  alternates: { canonical: `${siteConfig.url}/docs` },
 }
 
 export default function DocsIndexPage() {

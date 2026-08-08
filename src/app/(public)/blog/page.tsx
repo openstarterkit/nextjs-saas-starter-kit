@@ -8,7 +8,10 @@ import { siteConfig } from "@/config/site"
 export const metadata: Metadata = {
   title: `Blog | ${siteConfig.name}`,
   description: `Guides, product updates and build notes from ${siteConfig.name}.`,
-  alternates: { types: { "application/rss+xml": "/blog/rss.xml" } },
+  alternates: {
+    canonical: `${siteConfig.url}/blog`,
+    types: { "application/rss+xml": "/blog/rss.xml" },
+  },
 }
 
 export default function BlogIndexPage() {

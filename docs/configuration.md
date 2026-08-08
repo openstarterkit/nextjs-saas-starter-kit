@@ -80,12 +80,25 @@ The kit ships **brand-neutral**: a placeholder name and a black + grayscale them
 | Variable | Notes |
 |---|---|
 | `NEXT_PUBLIC_BRAND_NAME` | App name, shown everywhere: wordmark, metadata, emails. |
-| `NEXT_PUBLIC_BRAND_TAGLINE` | Headline / tagline. |
+| `NEXT_PUBLIC_BRAND_TAGLINE` | Headline / tagline. Shown on the page: hero, footer, social image, emails. |
 | `NEXT_PUBLIC_BRAND_DESCRIPTION` | Meta description. |
+| `NEXT_PUBLIC_SEO_TITLE` | Title for `<title>` and search results. Unset, the title is `name \| tagline`. Set it when the words people search for are not the claim you want on the page: the tagline stays where a reader sees it, this one works for the machine. |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Public contact address. |
+| `NEXT_PUBLIC_MAINTAINER_NAME`, `NEXT_PUBLIC_MAINTAINER_URL` | Who builds the product, shown in a "Who builds it" section on the About page. The section hides entirely when the name is unset; the URL is optional and the name renders without a link. |
 | `NEXT_PUBLIC_GITHUB_ORG_URL`, `NEXT_PUBLIC_X_URL` | Social links; footer icons hide when unset. |
 | `NEXT_PUBLIC_BRAND_WORDMARK_ACCENT` | Substring of the name to gradient-highlight in the logo. |
 | `NEXT_PUBLIC_BRAND_PRIMARY`, `NEXT_PUBLIC_BRAND_PRIMARY_2` | Accent colors (hex). The gradient, glow and Open Graph images follow them automatically. |
 | `NEXT_PUBLIC_BRAND_GRADIENT` | Full CSS gradient, if you prefer to set it explicitly instead of deriving it. |
 
 The code is MIT, so use it for anything. The "Built with" footer badge is optional (`NEXT_PUBLIC_REMOVE_BRANDING="true"`).
+
+## SEO
+
+Most of it is already wired, and follows your branding rather than asking to be repeated:
+
+- **Titles and descriptions** per page, with `NEXT_PUBLIC_SEO_TITLE` above for the home page when the searchable title and the readable tagline differ
+- **Canonical URLs** on the home page, `/pricing`, `/blog`, `/docs` and every post, built from `NEXT_PUBLIC_APP_URL`. **Set that variable in production**: unset, it falls back to `localhost` and every canonical points at a machine nobody can reach
+- **Structured data**: `Organization` and `FAQPage` on the home page, `Article` on each post. The FAQ markup is generated from the same questions you edit in `src/components/landing/faq.tsx`, so answering them for your product updates both at once
+- **`sitemap.xml` and `robots.txt`** generated from the code, with drafts excluded
+
+The FAQ section renders on more than one page, so the structured data is emitted only where `<FAQ withJsonLd />` is used, which is the home page by default. If you move it, move the flag with it and keep it on a single page: the same FAQ published under several URLs is worth less than under one.

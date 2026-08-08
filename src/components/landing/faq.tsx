@@ -80,9 +80,31 @@ const kitFaqs: Faq[] = [
 
 const faqs = isKitSite ? kitFaqs : productFaqs
 
-export function FAQ() {
+/**
+ * `withJsonLd` emits the FAQPage structured data that can earn an expandable
+ * result in search. Pass it on **one** page only — the questions are the same
+ * everywhere this section appears, and repeating the markup across pages
+ * gives search engines the same FAQ under several URLs.
+ */
+export function FAQ({ withJsonLd = false }: { withJsonLd?: boolean }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  }
+
   return (
     <section id="faq" className="py-24">
+      {withJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <div className="mx-auto max-w-3xl px-6">
         <Reveal className="mb-16 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">

@@ -11,7 +11,10 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: `${siteConfig.name} | ${siteConfig.tagline}`,
+  // `seoTitle` wins when set, so the words people search can lead the title
+  // without touching the tagline that reads on the page. Unset, nothing
+  // changes: the title stays "name | tagline".
+  title: siteConfig.seoTitle ?? `${siteConfig.name} | ${siteConfig.tagline}`,
   description: siteConfig.description,
   // A demo deployment mirrors the site it showcases, so search engines would
   // find two near-identical sites and have to guess which one is the original.

@@ -24,10 +24,6 @@ const copy = isKitSite
         "Honest by default: real features, no smoke and mirrors.",
         "Nothing is held back to sell later: what the kit does, it does for free.",
       ],
-      maintainer: {
-        name: "Michele Canini",
-        url: "https://michelecanini.dev",
-      },
     }
   : {
       note: {
@@ -41,7 +37,6 @@ const copy = isKitSite
         "Clear pricing, no surprises on the invoice.",
         "Honest by default: real features, no smoke and mirrors.",
       ],
-      maintainer: null,
     }
 
 export default function AboutPage() {
@@ -83,19 +78,23 @@ export default function AboutPage() {
             </ul>
           </div>
 
-          {copy.maintainer && (
+          {siteConfig.maintainer.name && (
             <div>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Who builds it</h2>
               <p>
                 {siteConfig.name} is created and maintained by{" "}
-                <a
-                  href={copy.maintainer.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-primary underline underline-offset-4 hover:no-underline"
-                >
-                  {copy.maintainer.name}
-                </a>
+                {siteConfig.maintainer.url ? (
+                  <a
+                    href={siteConfig.maintainer.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary underline underline-offset-4 hover:no-underline"
+                  >
+                    {siteConfig.maintainer.name}
+                  </a>
+                ) : (
+                  <span className="font-medium text-foreground">{siteConfig.maintainer.name}</span>
+                )}
                 . One person, working in the open: the roadmap says what is coming, the changelog
                 says what already shipped, and every release is a tag you can read. Issues and
                 questions are answered by the person who wrote the code.

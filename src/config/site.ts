@@ -15,7 +15,18 @@ export const siteConfig = {
   tagline:
     process.env.NEXT_PUBLIC_BRAND_TAGLINE ||
     (isKitSite ? "Ship your SaaS this weekend" : "Ship your product faster"),
-  version: "1.4.1",
+
+  /**
+   * Title for `<title>` and search results, where the words people type matter
+   * more than the claim that convinces them. Leave it unset and the title is
+   * `name | tagline`, which is what a fresh clone gets: set it only when the
+   * text for the machine and the text for the reader need to differ. The
+   * tagline keeps its job on the page (hero, footer, social image, emails).
+   */
+  seoTitle:
+    process.env.NEXT_PUBLIC_SEO_TITLE ||
+    (isKitSite ? "Next.js SaaS Starter Kit | Free & Open Source" : null),
+  version: "1.5.0",
   description:
     process.env.NEXT_PUBLIC_BRAND_DESCRIPTION ||
     (isKitSite
@@ -50,5 +61,16 @@ export const siteConfig = {
      * is a marketing site and the demo runs elsewhere.
      */
     demo: process.env.NEXT_PUBLIC_DEMO_URL || null,
+  },
+
+  /**
+   * Who builds and maintains this deployment — shown in the "Who builds it"
+   * section of the About page, which disappears entirely when the name is
+   * unset. Both values live in env so they belong to the deployment rather
+   * than to the code: a clone starts without them and adds its own.
+   */
+  maintainer: {
+    name: process.env.NEXT_PUBLIC_MAINTAINER_NAME || null,
+    url: process.env.NEXT_PUBLIC_MAINTAINER_URL || null,
   },
 }

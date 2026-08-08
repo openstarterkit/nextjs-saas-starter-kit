@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -45,3 +45,18 @@ jobs:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
           AUTH_SECRET: ci-build-placeholder-not-a-real-secret
           NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+      # Security net for the release cadence: dependency updates wait for the
+      # next release, so a serious advisory has to announce itself instead of
+      # waiting to be noticed.
+      #
+      # Deliberately set to `critical` and not `high`. Some high advisories live
+      # inside Next.js's own dependency tree (postcss, sharp) and have no real
+      # fix: the only remedy npm offers is downgrading Next itself. Set to
+      # `high`, this step would be red from day one for things we cannot fix,
+      # and an alarm that is always on is an alarm nobody reads.
+      #
+      # It runs last on purpose. A new advisory is not a defect of the code in
+      # this commit, so it must never hide the result of lint, test and build.
+      - name: Audit dependencies
+        run: npm audit --audit-level=critical
