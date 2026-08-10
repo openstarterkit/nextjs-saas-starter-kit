@@ -376,9 +376,9 @@ OpenStarterKit ships continuously and stays free: pull `main` for updates. A pai
 
 ## 🌍 Languages
 
-The kit ships in English. From **v1.5** it also ships in **Italian**, and the i18n scaffold that makes it work is part of the free kit, not of Pro: whatever language you need, the plumbing is already yours.
+The kit ships in English today. **Italian, and the i18n scaffold behind it, arrive with v1.6**: in the free kit, not in Pro, because whatever language you need the plumbing should be yours.
 
-Other languages are **community driven and welcome**. If the one you need is missing, open a pull request with its translation file. They land progressively, on no guaranteed schedule, which is the honest version: a translation ships when someone writes it, and that someone can be you.
+Other languages will be **community driven and welcome**: once the scaffold ships, if the one you need is missing, open a pull request with its translation file. They land progressively, on no guaranteed schedule, which is the honest version: a translation ships when someone writes it, and that someone can be you.
 
 ## 🔒 Security
 
