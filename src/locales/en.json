@@ -561,7 +561,7 @@
       "items": [
         {
           "question": "How do I get started?",
-          "answer": "Create an account, name your first project and you are in. ${siteConfig.name} works in the browser, there is nothing to install, and you can invite the rest of your team whenever you are ready."
+          "answer": "Create an account, name your first project and you are in. {site} works in the browser, there is nothing to install, and you can invite the rest of your team whenever you are ready."
         },
         {
           "question": "How does billing work?",
@@ -581,7 +581,7 @@
         },
         {
           "question": "Why not ShipFast or Makerkit?",
-          "answer": "${siteConfig.name} uses a best-of-breed stack where every component is independent. No Supabase lock-in, no proprietary auth layer. If a dependency releases a breaking change, you update one package, not the entire stack."
+          "answer": "{site} uses a best-of-breed stack where every component is independent. No Supabase lock-in, no proprietary auth layer. If a dependency releases a breaking change, you update one package, not the entire stack."
         },
         {
           "question": "Which database providers are supported?",

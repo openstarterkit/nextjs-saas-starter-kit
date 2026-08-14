@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.6.2] - 2026-08-14
+
+🔤 **Copy fixes.** Two FAQ answers were printing a template literal instead of the product name, and the test suite reported its failures in Italian.
+
+### Fixed
+- **Two FAQ answers rendered `${siteConfig.name}` literally**, one on the landing page and one in a clone, and both inside the home page `FAQPage` JSON-LD, so search engines were served the source code as well. The i18n work moved those strings from a component into a message file, where a template literal is text and nothing interpolates it. They now use the `{site}` placeholder, and the FAQ component substitutes it the way the transactional emails already did, because `t.raw` returns a message untouched: with `raw`, even the correct placeholder would have printed literally
+- **Test failure messages were written in Italian**, nine of them across four files, along with two source comments. They ship with the kit, so the first time one of your keys goes missing you would have read the reason in a language you may not speak
+
+### Added
+- **A test that fails when a message file contains template literal syntax.** That syntax is never valid there, and no existing check could see it: the key exists, the type is right, the value is a valid string and the build stays green
+
+---
+
 ## [1.6.1] - 2026-08-14
 
 🔧 **The staleness check now works in your repository, not only in ours.** Same day as 1.6.0, because a check that passes only where it was written is worse than no check at all: it reports success to the one person who does not need it.
@@ -237,6 +250,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[1.6.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.2
 [1.6.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.1
 [1.6.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.0
 [1.5.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.5.0

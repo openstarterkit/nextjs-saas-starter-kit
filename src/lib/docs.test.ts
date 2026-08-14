@@ -19,7 +19,7 @@ describe("the docs index", () => {
 
   it("links every guide in the folder", () => {
     const missing = guides.filter((f) => !index.includes(`(./${f})`))
-    expect(missing, `guide senza riga in docs/README.md:\n${missing.join("\n")}`).toEqual([])
+    expect(missing, `guides with no row in docs/README.md:\n${missing.join("\n")}`).toEqual([])
   })
 
   it("links nothing that is not there", () => {
@@ -78,16 +78,16 @@ describe("the frontmatter of every translation", () => {
     let data: Record<string, unknown> = {}
     expect(() => {
       data = matter(raw).data
-    }, `${label}: frontmatter YAML non valido (una descrizione con i due punti va tra virgolette)`).not.toThrow()
+    }, `${label}: invalid frontmatter YAML (a description containing a colon must be quoted)`).not.toThrow()
 
     for (const field of ["title", "description", "translated_from", "source_checksum"]) {
-      expect(data[field], `${label}: manca "${field}" nel frontmatter`).toBeTruthy()
+      expect(data[field], `${label}: missing "${field}" in the frontmatter`).toBeTruthy()
     }
     // Without this, check:translations silently skips a file whose
     // translated_from points at a guide that has since been renamed.
     expect(
       fs.existsSync(path.join(dir, String(data.translated_from))),
-      `${label}: translated_from punta a un file che non esiste`,
+      `${label}: translated_from points at a file that does not exist`,
     ).toBe(true)
   })
 })

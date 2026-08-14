@@ -24,9 +24,9 @@ const raw = JSON.parse(fs.readFileSync(path.join(SRC, "locales", "en.json"), "ut
 
 type Node = Record<string, unknown>
 
-// La stessa funzione che gira in produzione, importata e non ricopiata: le
-// due copie precedenti sono divergute in un commit, e quella a runtime
-// trasformava gli array in oggetti.
+// The same function production runs, imported rather than copied: the two
+// earlier copies drifted apart within one commit, and the runtime one turned
+// arrays into objects.
 /** Both deployments run the same components, so a key has to exist in both. */
 const views: [string, Node][] = [
   ["vetrina", collapseMessages(raw, true) as Node],
@@ -199,7 +199,7 @@ describe("message keys", () => {
           .map((u) => `${u.ns}.${u.key} (${u.file})`)
       ),
     ]
-    expect(missing, `chiavi lette dal codice e assenti:\n${missing.join("\n")}`).toEqual([])
+    expect(missing, `keys read from the code that en.json does not have:\n${missing.join("\n")}`).toEqual([])
   })
 
   it("every key in another locale exists in en.json too", () => {
@@ -214,7 +214,7 @@ describe("message keys", () => {
       const strays = leaves(JSON.parse(fs.readFileSync(file, "utf8"))).filter(
         (key) => !source.has(key)
       )
-      expect(strays, `chiavi in ${locale}.json che en.json non ha:\n${strays.join("\n")}`).toEqual(
+      expect(strays, `keys in ${locale}.json that en.json does not have:\n${strays.join("\n")}`).toEqual(
         []
       )
     }
@@ -235,6 +235,44 @@ describe("message keys", () => {
           .filter((key) => ![...dynamic].some((ns) => key.startsWith(`${ns}.`)))
       ),
     ]
-    expect(orphans, `chiavi in en.json che nessuno legge:\n${orphans.join("\n")}`).toEqual([])
+    expect(orphans, `keys in en.json that nothing reads:\n${orphans.join("\n")}`).toEqual([])
+  })
+})
+
+/**
+ * A template literal inside a message file is not a placeholder, it is text.
+ * `${siteConfig.name}` in JSON renders literally, and in the case that produced
+ * this test it reached two FAQ answers and the `FAQPage` JSON-LD on the home
+ * page, so search engines were served the source code as well.
+ *
+ * Nothing already here could catch it: the key exists, the type is right, the
+ * value is a valid string, and the build stays green. It is only visible by
+ * opening the page.
+ *
+ * Real interpolation has two forms, both with single braces: `t("key", { site })`
+ * for a message read on its own, and substitution by hand after `t.raw()`, which
+ * returns lists and email bodies untouched.
+ */
+describe("message files", () => {
+  const locales = fs
+    .readdirSync(path.join(SRC, "locales"))
+    .filter((f) => f.endsWith(".json"))
+
+  it.each(locales)("%s carries no template literal", (file) => {
+    const messages = JSON.parse(fs.readFileSync(path.join(SRC, "locales", file), "utf8"))
+    const found: string[] = []
+    const walk = (node: unknown, at: string) => {
+      if (typeof node === "string") {
+        const hits = node.match(/\$\{[^}]*\}/g)
+        if (hits) found.push(`${at}: ${hits.join(" ")}`)
+      } else if (Array.isArray(node)) node.forEach((v, i) => walk(v, `${at}.${i}`))
+      else if (node && typeof node === "object")
+        Object.entries(node).forEach(([k, v]) => walk(v, at ? `${at}.${k}` : k))
+    }
+    walk(messages, "")
+    expect(
+      found,
+      `template literal syntax in ${file}, rendered literally on screen:\n${found.join("\n")}`
+    ).toEqual([])
   })
 })

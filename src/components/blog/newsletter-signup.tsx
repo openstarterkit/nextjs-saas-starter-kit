@@ -23,8 +23,8 @@ export async function NewsletterSignup({ source }: { source?: string }) {
   return (
     <aside className="not-prose my-12 rounded-2xl border border-primary/25 bg-primary/[0.04] p-6 text-center sm:p-8">
       <p className="text-lg font-semibold tracking-tight text-foreground">{t("title")}</p>
-      {/* Stretto piu della card: un testo centrato regge la lettura solo se
-          la riga e corta, e a piena larghezza le due righe si spezzavano male. */}
+      {/* Narrower than the card: centred text only reads well on short lines,
+          and at full width these two broke in the wrong places. */}
       <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">{t("body")}</p>
       <div className="mx-auto mt-5 max-w-md">
         <WaitlistForm

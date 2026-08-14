@@ -34,7 +34,7 @@ describe("locale routing", () => {
     // not exist yet.
     for (const locale of routing.locales) {
       const file = join(process.cwd(), "src", "locales", `${locale}.json`)
-      expect(existsSync(file), `manca src/locales/${locale}.json`).toBe(true)
+      expect(existsSync(file), `missing src/locales/${locale}.json`).toBe(true)
     }
   })
 })

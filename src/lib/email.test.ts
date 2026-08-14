@@ -51,7 +51,7 @@ function messagesAt(key: string): { view: string; text: string }[] {
     )
     return typeof value === "string" ? [{ view, text: value }] : []
   })
-  expect(found.length, `chiave assente in en.json su ogni deploy: email.${key}`).toBeGreaterThan(0)
+  expect(found.length, `key missing from en.json on every deployment: email.${key}`).toBeGreaterThan(0)
   return found
 }
 

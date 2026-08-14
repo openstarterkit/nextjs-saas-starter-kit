@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl"
+import { siteConfig } from "@/config/site"
 import {
   Accordion,
   AccordionItem,
@@ -28,7 +29,15 @@ export function FAQ({ withJsonLd = false }: { withJsonLd?: boolean }) {
   const t = useTranslations("faq")
   // The list itself differs per deployment, so it comes from the messages
   // rather than a constant sized to whichever branch happens to be longer.
-  const items = t.raw("items") as Faq[]
+  //
+  // `t.raw` returns the message untouched, so `{site}` is substituted here the
+  // way the transactional emails do it. Reading each answer with `t()` instead
+  // would interpolate on its own, but it would turn one list into a numbered
+  // family of keys and lose the count that drives this section.
+  const items = (t.raw("items") as Faq[]).map((faq) => ({
+    question: faq.question.replaceAll("{site}", siteConfig.name),
+    answer: faq.answer.replaceAll("{site}", siteConfig.name),
+  }))
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
