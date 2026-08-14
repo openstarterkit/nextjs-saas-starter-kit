@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// Points next-intl at the request config that loads the message files.
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 // Security headers applied to every route. These are safe, high-value defaults
 // for an auth + payments app. A full Content-Security-Policy is intentionally
@@ -24,14 +28,17 @@ const nextConfig: NextConfig = {
   // The /docs pages render the repo's docs/*.md at request time (the navbar
   // session check makes them dynamic), so the files must ship with the
   // serverless bundle.
+  // NOTE: these keys are route paths, so they carry the `[locale]` segment
+  // since the public pages moved under it. Getting them wrong does not fail
+  // the build: the readers treat a missing folder as "no content", so the docs
+  // and the blog would come back *empty* in production instead of erroring.
   outputFileTracingIncludes: {
-    "/docs/[slug]": ["./docs/**"],
+    "/[locale]/docs/[slug]": ["./docs/**"],
     // Same story for the blog: posts and cover art are read from content/ at
-    // request time. Without this they never reach the serverless bundle, and
-    // because the reader treats a missing folder as "no posts", the blog would
-    // come back empty in production instead of failing loudly.
-    "/blog": ["./content/blog/**"],
-    "/blog/**": ["./content/blog/**"],
+    // request time. Without this they never reach the serverless bundle.
+    "/[locale]/blog": ["./content/blog/**"],
+    "/[locale]/blog/**": ["./content/blog/**"],
+    // Not localized: these two live outside `[locale]`.
     "/sitemap.xml": ["./content/blog/**"],
     "/llms.txt": ["./content/blog/**"],
   },
@@ -40,4 +47,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -1,12 +1,12 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { requestPasswordReset } from "@/app/actions/auth"
 import { LogoMark } from "@/components/logo"
 import { PendingButton } from "@/components/auth/pending-button"
 import { AuthNotice } from "@/components/auth/auth-notice"
 import { Input } from "@/components/ui/input"
 import { siteConfig } from "@/config/site"
-import { isKitSite } from "@/config/kit"
 
 export default async function ForgotPasswordPage({
   searchParams,
@@ -14,6 +14,7 @@ export default async function ForgotPasswordPage({
   searchParams: Promise<{ sent?: string }>
 }) {
   const { sent } = await searchParams
+  const t = await getTranslations("auth.forgotPassword")
 
   // On the public demo the page stays visible as a showcase, but the form is
   // disabled: no email service is attached there.
@@ -32,61 +33,54 @@ export default async function ForgotPasswordPage({
           <div className="mb-4 flex justify-center">
             <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Reset your password</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Enter your email and we&apos;ll send you a reset link
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         {isDemo && (
           <AuthNotice>
-            This live demo has no email service attached, so password reset is disabled here.
-            {isKitSite ? (
-              <>
-                {" "}
-                In your own deployment, wire an email provider (the kit ships with{" "}
+            {t("demoNotice")}{" "}
+            {t.rich("demoNoticeExtra", {
+              resend: (chunks) => (
                 <a
                   href="https://resend.com"
                   className="underline underline-offset-2"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Resend
+                  {chunks}
                 </a>
-                ) and this flow goes live.
-              </>
-            ) : (
-              " Everything else works as it would in production."
-            )}
+              ),
+            })}
           </AuthNotice>
         )}
         {!isDemo && !hasEmailService && (
           <AuthNotice>
-            Password reset needs an email service. Set <code>RESEND_API_KEY</code> to enable it (
-            {isKitSite && "the kit ships with Resend, "}see <code>docs/configuration.md</code>).
+            {t.rich("noEmailService", {
+              code: (chunks) => <code>{chunks}</code>,
+            })}
           </AuthNotice>
         )}
 
         {sent === "1" && !formDisabled ? (
           <p className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-center text-sm text-primary">
-            If an account exists for that email, a reset link is on its way. It&apos;s valid for 30
-            minutes.
+            {t("sent")}
           </p>
         ) : (
           <form action={requestPasswordReset} className="flex flex-col gap-3">
-            <Input name="email" type="email" placeholder="you@example.com" autoComplete="email" required disabled={formDisabled} className="h-12 rounded-full px-4" />
+            <Input name="email" type="email" placeholder={t("emailPlaceholder")} autoComplete="email" required disabled={formDisabled} className="h-12 rounded-full px-4" />
             <PendingButton
               disabled={formDisabled}
               className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-all hover:-translate-y-0.5 hover:shadow-soft disabled:pointer-events-none disabled:opacity-45"
             >
-              Send reset link
+              {t("submit")}
             </PendingButton>
           </form>
         )}
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
           <Link href="/login" className="underline underline-offset-4 hover:text-foreground">
-            Back to sign in
+            {t("backToSignIn")}
           </Link>
         </p>
       </div>

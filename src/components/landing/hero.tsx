@@ -8,70 +8,51 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
 import { siteConfig } from "@/config/site"
-import { isKitSite } from "@/config/kit"
 
 /**
- * Headline support copy. The first block is the placeholder your clone
- * ships with: say what your product does and who it is for, then replace the
- * trust line with whatever is true of your offer. The second block is the
- * kit's own site (KIT_SITE="true").
+ * The hero copy lives in the message files, under two parallel namespaces:
+ * `hero.product` is the placeholder your clone ships with, `hero.kit` is the
+ * kit's own site (KIT_SITE="true"). Editing either one is a translation file,
+ * not a component.
  *
- * `headline` overrides how the H1 is split: give it the plain part and the
- * gradient part, and it renders them on two lines. Leave it null and the H1
- * follows `tagline` from src/config/site.ts, accenting the last word, so
+ * `headlineHead` / `headlineAccent` override how the H1 is split: the plain
+ * part and the gradient part, rendered on two lines. Leave them empty and the
+ * H1 follows `tagline` from src/config/site.ts, accenting the last word, so
  * rebranding from env still reshapes the headline for you.
  */
-type Headline = { head: string; accent: string } | null
 
-const copy: {
-  headline: Headline
-  subtitle: string
-  cta: string
-  trust: string
-  pill: string
-} = isKitSite
-  ? {
-      headline: { head: "Ship your SaaS", accent: "this weekend." },
-      subtitle:
-        "Production-ready boilerplate with auth, payments, dashboard, and admin panel. No vendor lock-in, swap any component without rewriting everything.",
-      cta: "Start free",
-      trust: "Free & open source · No credit card required · Pro (teams) coming soon",
-      pill: "Now open source & free",
-    }
-  : {
-      headline: null,
-      subtitle:
-        "One workspace for your projects, your customers and your billing. Invite your team and get back to the work that matters.",
-      cta: "Get started",
-      trust: "Set up in minutes · No credit card required · Cancel anytime",
-      pill: "Now in public beta",
-    }
-
-const mockNav: { label: string; icon: LucideIcon; active?: boolean }[] = [
-  { label: "Dashboard", icon: LayoutGrid, active: true },
-  { label: "Projects", icon: FolderKanban },
-  { label: "Billing", icon: CreditCard },
-  { label: "Settings", icon: Settings },
+// The fake dashboard behind the headline. Labels are keys like everywhere
+// else: it is a picture of a product, but the words in it are still read.
+const mockNav: { key: string; icon: LucideIcon; active?: boolean }[] = [
+  { key: "navDashboard", icon: LayoutGrid, active: true },
+  { key: "navProjects", icon: FolderKanban },
+  { key: "navBilling", icon: CreditCard },
+  { key: "navSettings", icon: Settings },
 ]
 
 const mockStats = [
-  { label: "Current Plan", value: "Pro" },
-  { label: "Status", value: "Active", badge: true },
-  { label: "Next Billing", value: "Jul 24" },
+  { key: "statPlan", value: "Pro" },
+  { key: "statStatus", valueKey: "statStatusValue", badge: true },
+  { key: "statBilling", value: "Jul 24" },
 ]
 
 // Decorative revenue bars (% heights) for the mock chart
 const mockBars = [38, 52, 45, 63, 58, 74, 69, 85, 78, 92, 88, 100]
 
 export function Hero() {
-  // Explicit split when `headline` is set, otherwise derive it from the
-  // tagline with the last word gradient-accented.
+  const t = useTranslations("hero")
+  const tm = useTranslations("hero.mock")
+  // Explicit split when the message provides one, otherwise derive it from
+  // the tagline with the last word gradient-accented.
   const words = siteConfig.tagline.split(" ")
   const taglineLast = words.pop() ?? ""
-  const headline = copy.headline ?? { head: words.join(" "), accent: taglineLast }
+  const headline = t("headlineHead")
+    ? { head: t("headlineHead"), accent: t("headlineAccent") }
+    : { head: words.join(" "), accent: taglineLast }
 
   return (
     <section className="relative overflow-hidden pb-24 pt-16 md:pb-32 md:pt-24">
@@ -87,7 +68,7 @@ export function Hero() {
           <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
             <Sparkles className="h-3 w-3" /> v{siteConfig.version}
           </span>
-          <span className="text-muted-foreground">{copy.pill}</span>
+          <span className="text-muted-foreground">{t("pill")}</span>
         </div>
 
         <h1
@@ -103,7 +84,7 @@ export function Hero() {
           className="mx-auto mt-6 max-w-2xl animate-fade-in-up text-lg text-muted-foreground md:text-xl"
           style={{ animationDelay: "120ms" }}
         >
-          {copy.subtitle}
+          {t("subtitle")}
         </p>
 
         <div
@@ -112,7 +93,7 @@ export function Hero() {
         >
           <Button asChild variant="gradient" size="xl">
             <a href="#pricing">
-              {copy.cta} <ArrowRight className="h-5 w-5" />
+              {t("cta")} <ArrowRight className="h-5 w-5" />
             </a>
           </Button>
           <Button asChild variant="outline" size="xl">
@@ -124,7 +105,7 @@ export function Hero() {
           className="mt-5 animate-fade-in-up text-sm text-muted-foreground"
           style={{ animationDelay: "240ms" }}
         >
-          {copy.trust}
+          {t("trust")}
         </p>
 
         {/* Dashboard mockup — mirrors the real app shell */}
@@ -156,15 +137,15 @@ export function Hero() {
                   <Logo generic markClassName="h-6 w-6" />
                 </div>
                 <nav className="flex-1 space-y-1 p-3">
-                  {mockNav.map(({ label, icon: Icon, active }) => (
+                  {mockNav.map(({ key, icon: Icon, active }) => (
                     <div
-                      key={label}
+                      key={key}
                       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ${
                         active ? "bg-primary/10 text-primary" : "text-muted-foreground"
                       }`}
                     >
                       <Icon className="h-4 w-4" />
-                      {label}
+                      {tm(key)}
                     </div>
                   ))}
                 </nav>
@@ -196,13 +177,13 @@ export function Hero() {
 
                   {/* Stat cards */}
                   <div className="grid grid-cols-3 gap-3">
-                    {mockStats.map(({ label, value, badge }) => (
-                      <div key={label} className="rounded-xl border border-border bg-card p-3">
-                        <p className="text-[11px] text-muted-foreground">{label}</p>
+                    {mockStats.map(({ key, value, valueKey, badge }) => (
+                      <div key={key} className="rounded-xl border border-border bg-card p-3">
+                        <p className="text-[11px] text-muted-foreground">{tm(key)}</p>
                         {badge ? (
                           <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            {value}
+                            {valueKey ? tm(valueKey) : value}
                           </span>
                         ) : (
                           <p className="mt-1 text-lg font-bold text-foreground">{value}</p>

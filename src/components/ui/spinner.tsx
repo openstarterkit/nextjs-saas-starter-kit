@@ -1,3 +1,6 @@
+"use client"
+
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { LogoMark } from "@/components/logo"
 
@@ -35,6 +38,7 @@ export function BrandLoader({
   label?: string
   className?: string
 }) {
+  const t = useTranslations("loading")
   return (
     <div
       role="status"
@@ -60,8 +64,13 @@ export function BrandLoader({
           <LogoMark className="h-11 w-11 rounded-2xl ring-1 ring-primary/15" iconClassName="h-5 w-5" />
         </span>
       </div>
-      {label && <p className="animate-pulse text-sm font-medium text-muted-foreground">{label}</p>}
-      <span className="sr-only">Loading</span>
+      {/* One announcement, not two: with a visible label the sr-only copy
+          repeated it to a screen reader. */}
+      {label ? (
+        <p className="animate-pulse text-sm font-medium text-muted-foreground">{label}</p>
+      ) : (
+        <span className="sr-only">{t("default")}</span>
+      )}
     </div>
   )
 }

@@ -1,0 +1,23 @@
+{
+  "docs": {
+    "title": "Documentazione",
+    "sectionLabel": "Documentazione",
+    "overview": "Panoramica",
+    "onThisPage": "In questa pagina",
+    "needHelp": "Serve aiuto?",
+    "contactSupport": "Scrivi al supporto",
+    "starNote": "Salvalo nei tuoi preferiti con una <star></star>",
+    "$kit": {
+      "intro": "Tutto quello che serve per passare da <code>git clone</code> alla produzione. Le stesse guide vivono nella <repo>cartella docs/</repo> del repository, quindi cambiano insieme al codice.",
+      "metaDescription": "Guide di installazione per {site}: primi passi, configurazione, autenticazione, pagamenti e deployment."
+    },
+    "$product": {
+      "intro": "Guide per sfruttare al meglio <site></site>. Ognuna è un file Markdown in <code>content/docs/</code>, quindi la documentazione viaggia e cambia insieme alla tua app.",
+      "metaDescription": "Guide per {site}, scritte come file Markdown che viaggiano e cambiano insieme all'app."
+    }
+  },
+  "language": {
+    "label": "Cambia lingua",
+    "notTranslated": "Questa pagina non è ancora tradotta in {language}, quindi stai leggendo l'originale."
+  }
+}

@@ -10,6 +10,13 @@ import { z } from "zod"
 // Cost 12: ~100ms per hash. A sane brute-force brake without hurting UX.
 const BCRYPT_COST = 12
 
+/**
+ * The two strings below stay in English on purpose, and it is worth knowing
+ * why before "fixing" them: no user ever sees them. Every caller reacts to
+ * `success: false` by redirecting with an error code (`?error=policy`), and
+ * the page turns that code into a translated sentence from the `auth`
+ * namespace. These messages exist for whoever reads a failed parse in a log.
+ */
 export const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters")

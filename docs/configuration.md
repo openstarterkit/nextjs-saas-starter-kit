@@ -59,9 +59,19 @@ Setup: create an account at [resend.com](https://resend.com), verify your domain
 | `DEMO_MODE` | `"true"` turns the deployment into a public demo: one-click shared accounts, real OAuth disabled, email-based auth forms hidden. Use an isolated database. |
 | `NEXT_PUBLIC_DEMO_URL` | On a marketing deployment, points the sign-in links at your demo instance. |
 | `CRON_SECRET` | Demo deployments only. `vercel.json` schedules a daily reseed at 04:00 UTC so shared demo data does not drift; Vercel sends this value as a bearer token and the route refuses to run when it is unset, so an empty value just leaves the reset off. The route deletes every user, and `DEMO_MODE="true"` is the guard that keeps it away from a real database. |
-| `KIT_SITE` | Leave it empty. Reserved for the deployment that sells the kit itself: `"true"` switches the landing copy, pricing (hand-written open source tiers plus a Pro waitlist instead of your `Plan` rows), FAQ, footer license links and the dashboard upsell to talk about the repository rather than about your product. |
+| `KIT_SITE` | Leave it empty. Reserved for the deployment that sells the kit itself: `"true"` switches the landing copy, pricing (hand-written open source tiers plus a Pro waitlist instead of your `Plan` rows), FAQ, footer license links and the dashboard upsell to talk about the repository rather than about your product. See below. |
 | `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` removes the "Built with" footer badge. Free to use, no unlock. |
 | `NEXT_PUBLIC_GITHUB_URL` | Repo link shown in the navbar/footer. |
+
+### Two deployments from one codebase
+
+`KIT_SITE` exists because openstarterkit.dev and the kit you cloned are one repository. The alternative was a second copy of the marketing site, and a copy drifts: the day we fixed something on the site it would stop being the code you clone.
+
+**Turning it on in your app gives you our site, not a template of one.** Our headline, our open source tiers and Pro waitlist in place of your `Plan` rows, the license FAQ, the MIT links in the footer, and our name and contact address anywhere you have not set the branding vars. Off is the state you want, and off is the default.
+
+**The mechanism under it is worth having, and that part is yours.** Sections whose wording differs between two deployments carry both variants under `$kit` and `$product` in the message files, and the build drops the one that cannot render, so neither deployment ships the other's copy. Rename the flag, put your own wording under the markers, and you have a marketing site and an app on two domains from one repo, diverging only where they have to. [Languages](./i18n.md) has the details.
+
+**If what you want is a second deployment to show the product off, that is `DEMO_MODE`, not this**: shared one-click accounts, real OAuth off, a daily reseed, and your own app untouched on its own domain.
 
 ## Branding & theming
 

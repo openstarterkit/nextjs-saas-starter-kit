@@ -50,13 +50,21 @@ jobs:
       # next release, so a serious advisory has to announce itself instead of
       # waiting to be noticed.
       #
-      # Deliberately set to `critical` and not `high`. Some high advisories live
-      # inside Next.js's own dependency tree (postcss, sharp) and have no real
-      # fix: the only remedy npm offers is downgrading Next itself. Set to
-      # `high`, this step would be red from day one for things we cannot fix,
-      # and an alarm that is always on is an alarm nobody reads.
+      # Scoped to production dependencies, at `high`. Two deliberate choices.
+      #
+      # `--omit=dev` because those are the packages that end up in the product
+      # you ship to your own users. Dev tooling advisories are often blocked
+      # upstream by a peer range nobody controls, so gating on them means a red
+      # build you cannot fix, and an alarm that is always on is an alarm nobody
+      # reads.
+      #
+      # `high` and not `critical` because in this ecosystem critical is rare, and
+      # a threshold that never fires is not a safety net. This step sat at
+      # `critical` while the high advisories inside Next.js's own tree (postcss,
+      # sharp) had no fix short of downgrading Next. Next 16.3.0 shipped that
+      # fix, so the reason is gone.
       #
       # It runs last on purpose. A new advisory is not a defect of the code in
       # this commit, so it must never hide the result of lint, test and build.
       - name: Audit dependencies
-        run: npm audit --audit-level=critical
+        run: npm audit --omit=dev --audit-level=high

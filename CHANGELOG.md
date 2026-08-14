@@ -7,6 +7,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.6.0] - 2026-08-13
+
+🌍 **i18n & docs.** Every string a user can read now lives in a message file instead of inside a component. Shipping your product in a language that is not English becomes one JSON file to fill rather than a hundred components to hunt through, and the routing, the fallback and the language switch are already there rather than a refactor you pay for later. The documentation is bilingual, and the plumbing that makes it bilingual is yours.
+
+### Added
+- **i18n across the whole kit, built on [next-intl](https://next-intl.dev)**, with no translation service and no account required: plain JSON in the standard layout, so running it through Crowdin or anything else is your call and costs nothing today
+- **A second locale that actually runs.** Italian ships alongside English because a scaffold that has never been executed with a second language is untested code, and the first person to add one would find the bugs. Removing it is three deletions, written down in `docs/i18n.md`
+- **Routing with a prefix only for non-default languages**, so your English URLs stay exactly where they are. No automatic redirect from `Accept-Language`: a shared link resolves the same way for everyone
+- **Fallback per key and per file.** A missing key renders the English text rather than a gap, and a documentation page with no translation is served in English with a note saying so, rather than a 404
+- **A language switch in the documentation**, and Markdown docs that translate one file at a time: `getting-started.md` is translated by `getting-started.it.md`, with no index to update
+- **`npm run check:translations`**: every translated doc records the revision of the English file it came from, and this fails when that file has moved on. A stale translation never breaks, it quietly becomes instructions for an older version of your product
+- **`hreflang` and `x-default`, emitted only where a translation exists.** Declaring them on a page that falls back would tell a search engine that two URLs hold the same page in two languages when they hold it in one
+- **A figure component for diagrams**: an image linked to itself opens in an overlay instead of a new tab, and your posts get it without changing a line of Markdown. The portable form still renders on GitHub and in a feed reader
+- **A newsletter signup block usable inside a post**, so a reader who is already convinced does not have to navigate to a different page to act
+- **`FAQPage` structured data from post frontmatter**: a post declares `faq: [{q,a}]` and the page emits it alongside `Article`. On `main` since 3 August and never part of a tagged release
+- **`docs/i18n.md`**, a guide for the whole of the above: adding a language, translating the docs, and the checks that catch a stale one
+
+### Changed
+- **The documentation section keeps the site header** like every other page, the two side columns stay put while only the article scrolls, and on a phone the content comes before its navigation rather than after nine links
+- The docs pages end with the site footer, which until now only the documentation index had
+- Plan and marketing copy that differs between a showcase deployment and the product it ships as is now resolved at build time, so a clone no longer carries wording it can never render inside its own HTML. `docs/configuration.md` explains how to point the same mechanism at a marketing site and an app of your own, on two domains from one repo
+
+### Fixed
+*These were all in `v1.5.0`, so a clone from that tag has them.*
+- **Dates and currency were formatted with `en-US` written by hand** in five and two places. A date is interface: a language that writes the day first was showing the wrong one
+- **Two plurals were English ternaries**, which hold only for languages with two forms. Both are ICU messages now, and one of them had its zero case as a separate `if` that is part of the message
+- **The documentation index in `docs/README.md` was two guides behind the folder**, and nothing said so. A test now fails when it drifts again
+
+### Security
+- **`next` and `eslint-config-next` moved to 16.3.0**, and `npm audit fix` for the rest: production advisories go from five high to zero. The CI threshold moves from `critical` to `--omit=dev --audit-level=high`, because with the old one those five passed green
+
+---
+
 ## [1.5.0] - 2026-08-08
 
 🔎 **SEO foundations & runtime.** The pages that matter most were the least looked after: the home page and `/pricing` had no canonical, `/pricing` had no heading at all, and structured data existed only inside blog posts. This release fixes the foundations every page stands on, moves the supported runtime to Node 24, and clears two broken-link bugs.

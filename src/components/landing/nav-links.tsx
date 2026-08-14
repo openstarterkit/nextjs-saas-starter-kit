@@ -1,11 +1,14 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname } from "@/i18n/navigation"
 import { cn } from "@/lib/utils"
 import { sections, useActiveSection } from "@/components/landing/use-active-section"
 
 export function NavLinks() {
+  const t = useTranslations("nav")
   const current = useActiveSection()
   const pathname = usePathname()
 
@@ -17,19 +20,19 @@ export function NavLinks() {
 
   return (
     <nav className="hidden items-center gap-1 md:flex">
-      {sections.map(({ id, label }) => (
+      {sections.map(({ id }) => (
         <Link key={id} href={`/#${id}`} className={linkClass(current === id)}>
-          {label}
+          {t(id)}
         </Link>
       ))}
       <Link href="/docs" className={linkClass(pathname.startsWith("/docs"))}>
-        Docs
+        {t("docs")}
       </Link>
       <Link href="/blog" className={linkClass(pathname.startsWith("/blog"))}>
-        Blog
+        {t("blog")}
       </Link>
       <Link href="/changelog" className={linkClass(pathname.startsWith("/changelog"))}>
-        Changelog
+        {t("changelog")}
       </Link>
     </nav>
   )

@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useState } from "react"
 import { toggleUserRole } from "@/app/actions/admin"
 import { Button } from "@/components/ui/button"
@@ -11,6 +13,7 @@ interface PromoteUserButtonProps {
 }
 
 export function PromoteUserButton({ userId, currentRole }: PromoteUserButtonProps) {
+  const t = useTranslations("admin")
   const [loading, setLoading] = useState(false)
 
   async function handleClick() {
@@ -19,7 +22,7 @@ export function PromoteUserButton({ userId, currentRole }: PromoteUserButtonProp
       const result = await toggleUserRole(userId)
       toast.success(`User promoted to ${result.role}`)
     } catch {
-      toast.error("Failed to update role")
+      toast.error(t("roleFailed"))
     } finally {
       setLoading(false)
     }

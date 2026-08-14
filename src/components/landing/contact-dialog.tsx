@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import { Check, Copy, Mail } from "lucide-react"
 import { toast } from "sonner"
@@ -28,6 +30,7 @@ export function ContactDialog({
   subject?: string
   body?: string
 }) {
+  const t = useTranslations("contactDialog")
   const [copied, setCopied] = React.useState(false)
 
   const params = new URLSearchParams()
@@ -40,10 +43,10 @@ export function ContactDialog({
     try {
       await navigator.clipboard.writeText(siteConfig.contactEmail)
       setCopied(true)
-      toast.success("Email address copied")
+      toast.success(t("copied"))
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error("Couldn't copy - the address is shown above")
+      toast.error(t("copyFailed"))
     }
   }
 
@@ -57,7 +60,7 @@ export function ContactDialog({
               <Mail className="h-5 w-5" />
             </span>
           </div>
-          <DialogTitle>Get in touch</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
             Questions, feedback, ideas - we read everything and reply fast.
           </DialogDescription>
@@ -82,7 +85,7 @@ export function ContactDialog({
           {/* flex-1 only in the row layout: in the mobile column it would
               zero the flex-basis and squash the buttons' height. */}
           <Button onClick={copyEmail} className="sm:flex-1">
-            {copied ? "Copied!" : "Copy email"}
+            {copied ? t("copiedShort") : t("copy")}
           </Button>
           <Button asChild variant="outline" className="sm:flex-1">
             <a href={mailto}>Open mail app</a>

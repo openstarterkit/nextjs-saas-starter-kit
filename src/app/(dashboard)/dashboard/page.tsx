@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { getFormatter, getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { getEntitlement } from "@/lib/billing"
@@ -11,6 +12,8 @@ import { CheckoutStatusToast } from "@/components/billing/checkout-status-toast"
 import { isKitSite } from "@/config/kit"
 
 export default async function DashboardPage() {
+  const t = await getTranslations("dashboard.home")
+  const format = await getFormatter()
   const session = await auth()
   if (!session) redirect("/login")
 
@@ -26,8 +29,11 @@ export default async function DashboardPage() {
     }),
   ])
 
+  // Formatted through next-intl rather than a hardcoded "en-US": a date is
+  // part of the interface, and a locale that reads dates day-first would show
+  // the wrong one otherwise.
   const renewalDate = subscription?.currentPeriodEnd
-    ? new Date(subscription.currentPeriodEnd).toLocaleDateString("en-US", {
+    ? format.dateTime(new Date(subscription.currentPeriodEnd), {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -39,9 +45,9 @@ export default async function DashboardPage() {
       <CheckoutStatusToast />
       <div>
         <h1 className="text-2xl font-bold">
-          Welcome back, {session.user.name?.split(" ")[0] ?? "there"} 👋
+          {t("greeting", { name: session.user.name?.split(" ")[0] ?? t("greetingFallback") })}
         </h1>
-        <p className="mt-1 text-muted-foreground">Here&apos;s what&apos;s happening with your account.</p>
+        <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {!userRow?.onboardingDismissedAt && (
@@ -56,16 +62,12 @@ export default async function DashboardPage() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-base">Projects</CardTitle>
-              <CardDescription>
-                {projectCount === 0
-                  ? "Create your first project to get started."
-                  : `You have ${projectCount} project${projectCount === 1 ? "" : "s"}.`}
-              </CardDescription>
+              <CardTitle className="text-base">{t("projectsTitle")}</CardTitle>
+              <CardDescription>{t("projectsCount", { count: projectCount })}</CardDescription>
             </div>
             <Button asChild size="sm" variant="outline">
               <Link href="/dashboard/projects">
-                {projectCount === 0 ? "Create one" : "View all"}
+                {projectCount === 0 ? t("projectsCreate") : t("projectsViewAll")}
               </Link>
             </Button>
           </div>
@@ -75,34 +77,34 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Current Plan</CardDescription>
+            <CardDescription>{t("currentPlan")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">
-              {lifetime?.plan.name ?? subscription?.plan.name ?? "Free"}
+              {lifetime?.plan.name ?? subscription?.plan.name ?? t("planFree")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Status</CardDescription>
+            <CardDescription>{t("status")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Badge
               variant={lifetime || subscription?.status === "ACTIVE" ? "success" : "secondary"}
             >
-              {lifetime ? "Lifetime" : subscription?.status ?? "Free tier"}
+              {lifetime ? t("statusLifetime") : subscription?.status ?? t("statusFree")}
             </Badge>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Next Billing</CardDescription>
+            <CardDescription>{t("nextBilling")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{lifetime ? "None" : renewalDate ?? "None"}</p>
+            <p className="text-2xl font-bold">{lifetime ? t("none") : renewalDate ?? t("none")}</p>
           </CardContent>
         </Card>
       </div>
@@ -114,18 +116,16 @@ export default async function DashboardPage() {
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader>
             <CardTitle className="text-base">
-              {isKitSite ? "Teams, coming soon" : "Do more with a plan"}
+              {t("upsellTitle")}
             </CardTitle>
             <CardDescription>
-              {isKitSite
-                ? "Multi-tenancy, roles and team billing are on the way. Tell us what you'd need."
-                : "Unlock the full workspace for you and your team. Change or cancel whenever you like."}
+              {t("upsellBody")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline">
               <Link href={isKitSite ? "/pricing" : "/dashboard/billing"}>
-                {isKitSite ? "Learn more" : "See plans"}
+                {t("upsellCta")}
               </Link>
             </Button>
           </CardContent>

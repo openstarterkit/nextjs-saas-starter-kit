@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import Link from "next/link"
 import { Settings, CreditCard, LogOut, ChevronsUpDown } from "lucide-react"
@@ -25,6 +27,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ name, email, image, side = "top", hideDetails = false }: UserMenuProps) {
+  const t = useTranslations("dashboard.userMenu")
   const initial = name?.[0]?.toUpperCase() ?? email?.[0]?.toUpperCase() ?? "U"
   const [signOutOpen, setSignOutOpen] = React.useState(false)
 
@@ -32,7 +35,7 @@ export function UserMenu({ name, email, image, side = "top", hideDetails = false
     <>
       <DropdownMenu>
         <DropdownMenuTrigger
-          aria-label={hideDetails ? "Open account menu" : undefined}
+          aria-label={hideDetails ? t("open") : undefined}
           className={
             hideDetails
               ? "flex items-center rounded-full transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -40,7 +43,7 @@ export function UserMenu({ name, email, image, side = "top", hideDetails = false
           }
         >
           <Avatar>
-            {image ? <AvatarImage src={image} alt={name ?? "Avatar"} /> : null}
+            {image ? <AvatarImage src={image} alt={name ?? t("avatarAlt")} /> : null}
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
           {!hideDetails && (
@@ -54,7 +57,7 @@ export function UserMenu({ name, email, image, side = "top", hideDetails = false
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" side={side} className="w-56">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("myAccount")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/dashboard/settings">

@@ -4,28 +4,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Reveal } from "@/components/landing/reveal"
 import { WaitlistForm } from "@/components/landing/waitlist-form"
+import { useTranslations } from "next-intl"
 import { siteConfig } from "@/config/site"
 
-const freeFeatures = [
-  "Next.js 16 + TypeScript + Tailwind 4",
-  "Auth.js v5: Google & GitHub OAuth",
-  "Prisma 7 + PostgreSQL schema",
-  "Stripe Checkout + webhooks + Customer Portal",
-  "Admin panel (users, metrics, roles)",
-  "Transactional emails (Resend)",
-  "Dashboard, dark mode, route protection",
-  "1-click Vercel deploy + demo mode",
-  "MIT license, use in client projects",
-]
-
-const proFeatures = [
-  "Everything in Free, plus:",
-  "Teams & organizations (multi-tenancy)",
-  "Role-based permissions beyond USER/ADMIN",
-  "Team billing & seat management",
-  "Member invitations & access control",
-  "More ways to get paid (providers & methods)",
-]
 
 
 function CheckIcon() {
@@ -42,7 +23,10 @@ function CheckIcon() {
  * page's own heading and must be the h1. Same styling either way.
  */
 export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
+  const t = useTranslations("pricing")
   const Heading = heading
+  const freeFeatures = t.raw("freeFeatures") as string[]
+  const proFeatures = t.raw("proFeatures") as string[]
   // Production gate (COO #007 §5): the waitlist must not collect real emails
   // until the real privacy policy is live on the showcase. Off by default,
   // so a deploy that forgets the overlay ships a disabled form, not a live
@@ -54,11 +38,10 @@ export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
       <div className="mx-auto max-w-6xl px-6">
         <Reveal className="mb-16 text-center">
           <Heading className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Start free, scale when you grow
+            {t("title")}
           </Heading>
           <p className="mt-4 text-lg text-muted-foreground">
-            Open source and free forever: auth, payments, admin and emails included.
-            Teams & multi-tenancy are coming as Pro.
+            {t("subtitle")}
           </p>
         </Reveal>
 
@@ -67,11 +50,11 @@ export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
           <Reveal>
             <Card className="flex h-full flex-col">
               <CardHeader className="pt-8">
-                <CardTitle className="text-2xl">Free</CardTitle>
-                <CardDescription>Open source, the complete core</CardDescription>
+                <CardTitle className="text-2xl">{t("freeTitle")}</CardTitle>
+                <CardDescription>{t("freeDescription")}</CardDescription>
                 <div className="mt-4">
                   <span className="text-5xl font-extrabold text-foreground">$0</span>
-                  <span className="ml-2 text-muted-foreground">forever</span>
+                  <span className="ml-2 text-muted-foreground">{t("forever")}</span>
                 </div>
               </CardHeader>
 
@@ -93,11 +76,11 @@ export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Get it on GitHub
+                    {t("getOnGithub")}
                   </a>
                 </Button>
                 <p className="text-center text-xs text-muted-foreground">
-                  Clone, star, and ship. No signup required
+                  {t("noSignup")}
                 </p>
               </CardFooter>
             </Card>
@@ -108,13 +91,13 @@ export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
             <Card className="border-gradient-brand relative flex h-full flex-col overflow-hidden shadow-[var(--shadow-glow)]">
               <CardHeader className="pt-8">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl">Pro · Teams</CardTitle>
-                  <Badge>Coming soon</Badge>
+                  <CardTitle className="text-2xl">{t("proTitle")}</CardTitle>
+                  <Badge>{t("comingSoon")}</Badge>
                 </div>
-                <CardDescription>For teams that scale. Help us shape it</CardDescription>
+                <CardDescription>{t("proDescription")}</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-extrabold text-foreground">Coming soon</span>
-                  <p className="mt-1 text-sm text-muted-foreground">You tell us the price</p>
+                  <span className="text-4xl font-extrabold text-foreground">{t("comingSoon")}</span>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("youTellUs")}</p>
                 </div>
               </CardHeader>
 
@@ -135,16 +118,16 @@ export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
                 <WaitlistForm
                   source="pricing-card"
                   disabled={isDemo || !waitlistOn}
-                  cta="Join the Pro waitlist"
+                  cta={t("waitlistCta")}
                   // No cadence on purpose: a weekly promise starts a clock on
                   // the first confirmed subscriber, and there is not a week's
                   // worth of real news between here and the Pro launch. Say
                   // what we will actually do. Same wording on the confirm page
                   // and in the welcome email: change all three together.
-                  note="One short email when there is real news. Early adopters get a launch discount. Unsubscribe anytime, one click."
+                  note={t("waitlistNote")}
                   disabledNote={
                     isDemo
-                      ? "Forms are disabled in the live demo."
+                      ? t("formsDisabled")
                       : "The waitlist opens shortly - check back soon."
                   }
                 />

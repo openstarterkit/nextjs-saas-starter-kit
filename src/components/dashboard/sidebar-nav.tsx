@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import Link from "next/link"
 import { useRenderedPathname } from "@/hooks/use-rendered-pathname"
 import {
@@ -18,12 +20,12 @@ const menus = {
   dashboard: [
     // `exact`: section roots match only themselves, otherwise "Dashboard"
     // would light up on every sub-page too.
-    { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true },
-    { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
-    { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    { href: "/dashboard", key: "dashboard", icon: LayoutGrid, exact: true },
+    { href: "/dashboard/projects", key: "projects", icon: FolderKanban },
+    { href: "/dashboard/billing", key: "billing", icon: CreditCard },
+    { href: "/dashboard/settings", key: "settings", icon: Settings },
   ],
-  admin: [{ href: "/admin", label: "Overview", icon: LayoutGrid, exact: true }],
+  admin: [{ href: "/admin", key: "overview", icon: LayoutGrid, exact: true }],
 }
 
 function linkClass(active: boolean) {
@@ -48,6 +50,7 @@ export function SidebarNav({
   variant: keyof typeof menus
   showAdminLink?: boolean
 }) {
+  const t = useTranslations("dashboard.nav")
   const pathname = useRenderedPathname()
   const isActive = (item: { href: string; exact?: boolean }) =>
     item.exact
@@ -59,25 +62,25 @@ export function SidebarNav({
       {menus[variant].map((item) => {
         const Icon = item.icon
         return (
-          <Link key={item.href} href={item.href} title={item.label} className={linkClass(isActive(item))}>
+          <Link key={item.href} href={item.href} title={t(item.key)} className={linkClass(isActive(item))}>
             <Icon className="h-4 w-4 shrink-0" />
-            <NavLabel>{item.label}</NavLabel>
+            <NavLabel>{t(item.key)}</NavLabel>
           </Link>
         )
       })}
       {variant === "dashboard" && showAdminLink && (
         <div className="mt-4 border-t border-border pt-4">
-          <Link href="/admin" title="Admin Panel" className={linkClass(false)}>
+          <Link href="/admin" title={t("adminPanel")} className={linkClass(false)}>
             <Shield className="h-4 w-4 shrink-0" />
-            <NavLabel>Admin Panel</NavLabel>
+            <NavLabel>{t("adminPanel")}</NavLabel>
           </Link>
         </div>
       )}
       {variant === "admin" && (
         <div className="mt-4 border-t border-border pt-4">
-          <Link href="/dashboard" title="Back to Dashboard" className={linkClass(false)}>
+          <Link href="/dashboard" title={t("backToDashboard")} className={linkClass(false)}>
             <ArrowLeft className="h-4 w-4 shrink-0" />
-            <NavLabel>Back to Dashboard</NavLabel>
+            <NavLabel>{t("backToDashboard")}</NavLabel>
           </Link>
         </div>
       )}

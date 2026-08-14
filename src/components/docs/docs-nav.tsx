@@ -1,12 +1,18 @@
 "use client"
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useTranslations } from "next-intl"
+import { Link, usePathname } from "@/i18n/navigation"
 import { cn } from "@/lib/utils"
 
 // Sidebar of the /docs section. Client component so the current page can
 // stay highlighted (same pattern as the dashboard SidebarNav).
+//
+// Links and pathname come from `@/i18n/navigation`, not from `next/link`: a
+// reader on `/it/docs` has to stay in Italian when moving between guides, and
+// the highlight has to compare `/docs/billing` against a pathname that has
+// already had the prefix taken off it.
 export function DocsNav({ items }: { items: { slug: string; title: string }[] }) {
+  const t = useTranslations("docs")
   const pathname = usePathname()
   const linkClass = (active: boolean) =>
     cn(
@@ -19,7 +25,7 @@ export function DocsNav({ items }: { items: { slug: string; title: string }[] })
   return (
     <nav className="flex flex-col gap-1">
       <Link href="/docs" className={linkClass(pathname === "/docs")}>
-        Overview
+        {t("overview")}
       </Link>
       {items.map((d) => (
         <Link key={d.slug} href={`/docs/${d.slug}`} className={linkClass(pathname === `/docs/${d.slug}`)}>

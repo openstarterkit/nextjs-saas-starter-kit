@@ -1,8 +1,11 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname } from "@/i18n/navigation"
 import { Menu } from "lucide-react"
+import { GithubIcon } from "@/components/icons/github"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
@@ -15,11 +18,16 @@ import { sections, useActiveSection } from "@/components/landing/use-active-sect
 
 export function MobileMenu({
   signInHref,
+  starHref,
   isAuthenticated,
 }: {
   signInHref: string
+  /** Set only on the kit's own site: see the comment in `navbar.tsx`. */
+  starHref?: string | null
   isAuthenticated: boolean
 }) {
+  const t = useTranslations("nav")
+  const tCommon = useTranslations("common")
   const current = useActiveSection()
   const pathname = usePathname()
 
@@ -39,14 +47,14 @@ export function MobileMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          aria-label="Open menu"
+          aria-label={t("openMenu")}
           className="flex h-11 w-11 items-center justify-center rounded-[var(--radius)] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
         >
           <Menu size={24} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60 md:hidden">
-        {sections.map(({ id, label }) => (
+        {sections.map(({ id }) => (
           <DropdownMenuItem key={id} asChild>
             <Link
               href={`/#${id}`}
@@ -55,7 +63,7 @@ export function MobileMenu({
                 current === id && "bg-primary/10 font-medium text-primary"
               )}
             >
-              {label}
+              {t(id)}
             </Link>
           </DropdownMenuItem>
         ))}
@@ -76,16 +84,28 @@ export function MobileMenu({
         ) : (
           <>
             <DropdownMenuItem asChild>
-              <Link href={signInHref}>Sign in</Link>
+              <Link href={signInHref}>{t("signIn")}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link
-                href="/#pricing"
-                onClick={(e) => scrollToSection(e, "pricing")}
-                className="font-semibold text-primary"
-              >
-                Get started
-              </Link>
+              {starHref ? (
+                <a
+                  href={starHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-primary"
+                >
+                  <GithubIcon className="h-4 w-4" />
+                  {tCommon("starOnGitHub")}
+                </a>
+              ) : (
+                <Link
+                  href="/#pricing"
+                  onClick={(e) => scrollToSection(e, "pricing")}
+                  className="font-semibold text-primary"
+                >
+                  {t("getStarted")}
+                </Link>
+              )}
             </DropdownMenuItem>
           </>
         )}

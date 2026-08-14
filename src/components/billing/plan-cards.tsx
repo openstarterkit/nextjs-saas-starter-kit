@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useState } from "react"
 import Link from "next/link"
 import { Check } from "lucide-react"
@@ -129,6 +131,7 @@ export function PlanCards({
   ctaHref?: string
   contactCard?: ContactCardData
 }) {
+  const t = useTranslations("billing.plans")
   const recurring = plans.filter((p) => p.interval !== "ONE_TIME")
   const oneTime = plans.filter((p) => p.interval === "ONE_TIME")
 
@@ -174,7 +177,7 @@ export function PlanCards({
               <CardHeader>
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-lg">{base.name}</CardTitle>
-                  {isCurrent && <Badge>Current plan</Badge>}
+                  {isCurrent && <Badge>{t("current")}</Badge>}
                 </div>
                 {base.description && <CardDescription>{base.description}</CardDescription>}
                 <div key={active.id} className="animate-price-swap pt-2">
@@ -203,7 +206,7 @@ export function PlanCards({
                     disabled={checkoutDisabled || isCurrent}
                     className="w-full"
                   >
-                    {isCurrent ? "Current plan" : `Upgrade to ${base.name}`}
+                    {isCurrent ? t("current") : t("upgradeTo", { plan: base.name })}
                   </UpgradeButton>
                 )}
               </CardFooter>
@@ -218,7 +221,7 @@ export function PlanCards({
               <CardHeader>
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-lg">{plan.name}</CardTitle>
-                  {isCurrent ? <Badge>Current plan</Badge> : <Badge variant="secondary">Pay once</Badge>}
+                  {isCurrent ? <Badge>{t("current")}</Badge> : <Badge variant="secondary">{t("payOnce")}</Badge>}
                 </div>
                 {plan.description && <CardDescription>{plan.description}</CardDescription>}
                 <div className="pt-2">
@@ -242,7 +245,7 @@ export function PlanCards({
                     disabled={checkoutDisabled || isCurrent}
                     className="w-full"
                   >
-                    {isCurrent ? "Current plan" : `Get ${plan.name}`}
+                    {isCurrent ? t("current") : t("get", { plan: plan.name })}
                   </UpgradeButton>
                 )}
               </CardFooter>

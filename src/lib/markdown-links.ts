@@ -1,4 +1,4 @@
-import { DOCS } from "@/lib/docs"
+import { getDocs } from "@/lib/docs"
 import { siteConfig } from "@/config/site"
 
 /**
@@ -30,7 +30,10 @@ export function mapRepoHref(href: string, baseDir = ""): string {
 
   if (repoPath === "docs/README.md") return `/docs${siteAnchor(hash)}`
 
-  const doc = DOCS.find((d) => `docs/${basename(d.file)}` === repoPath)
+  // Matched against the English source, not the rendered file: a link inside
+  // `billing.it.md` still reads `./configuration.md`, because that is the file
+  // name on GitHub, and it has to resolve to the same page either way.
+  const doc = getDocs().find((d) => `docs/${basename(d.source)}` === repoPath)
   if (doc) return `/docs/${doc.slug}${siteAnchor(hash)}`
 
   const repo = siteConfig.links.github

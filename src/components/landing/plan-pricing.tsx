@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server"
 import { prisma } from "@/lib/prisma"
 import { PlanCards, type PlanCardData } from "@/components/billing/plan-cards"
 import { exampleEnterpriseCard } from "@/components/billing/enterprise-card"
@@ -14,6 +15,7 @@ import { Reveal } from "@/components/landing/reveal"
  * a paid one), enabled with KIT_SITE="true".
  */
 export async function PlanPricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
+  const t = await getTranslations("planPricing")
   const isDemo = process.env.DEMO_MODE === "true"
   // See `Pricing`: h2 under the hero on the landing, h1 when it is the
   // heading of /pricing. The styling does not change.
@@ -43,18 +45,16 @@ export async function PlanPricing({ heading = "h2" }: { heading?: "h1" | "h2" })
       <div className="mx-auto max-w-6xl px-6">
         <Reveal className="mb-16 text-center">
           <Heading className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Simple, transparent pricing
+            {t("title")}
           </Heading>
           <p className="mt-4 text-lg text-muted-foreground">
-            {isDemo
-              ? "These are example plans, rendered live from the database with monthly and yearly tiers. Sign in to the demo to see the full billing flow, including a one-time lifetime purchase."
-              : "Start free and upgrade when you need more. Every plan below comes straight from your database, so your pricing changes without a deploy."}
+            {isDemo ? t("subtitleDemo") : t("subtitle")}
           </p>
         </Reveal>
 
         <Reveal delay={100}>
           <div className="mx-auto max-w-5xl">
-            <PlanCards plans={plans} ctaHref="/login" contactCard={exampleEnterpriseCard} />
+            <PlanCards plans={plans} ctaHref="/login" contactCard={await exampleEnterpriseCard()} />
           </div>
         </Reveal>
       </div>

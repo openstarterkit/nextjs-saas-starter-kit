@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useEffect, useState } from "react"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 
@@ -12,6 +14,7 @@ const STORAGE_KEY = "sidebar-collapsed"
  * (see `sidebarInit`). Hidden on mobile, where MobileNav takes over.
  */
 export function SidebarCollapseToggle() {
+  const t = useTranslations("dashboard.sidebar")
   // null = not mounted yet (avoids hydration mismatch on the icon)
   const [collapsed, setCollapsed] = useState<boolean | null>(null)
 
@@ -27,7 +30,7 @@ export function SidebarCollapseToggle() {
     setCollapsed(next)
   }
 
-  const label = collapsed ? "Expand sidebar" : "Collapse sidebar"
+  const label = collapsed ? t("expand") : t("collapse")
   return (
     <button
       aria-label={label}

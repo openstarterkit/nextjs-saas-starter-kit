@@ -1,4 +1,5 @@
 import { auth } from "@/auth"
+import { getTranslations } from "next-intl/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -10,6 +11,7 @@ import { SidebarCollapseToggle } from "@/components/dashboard/sidebar-collapse-t
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
+  const t = await getTranslations("admin")
   if (!session) redirect("/login")
   if (session.user.role !== "ADMIN") redirect("/dashboard")
 
@@ -20,7 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/" className="flex items-center gap-2 font-bold text-foreground">
             <Logo wordmarkClassName="sidebar-collapsed:hidden" />
           </Link>
-          <span className="ml-2 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive sidebar-collapsed:hidden">Admin</span>
+          <span className="ml-2 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive sidebar-collapsed:hidden">{t("badge")}</span>
         </div>
         <SidebarNav variant="admin" />
         <div className="border-t border-border p-3">
@@ -41,7 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="flex items-center gap-1 md:hidden">
             <MobileNav variant="admin" />
             <Logo wordmarkClassName="text-base font-bold text-foreground" />
-            <span className="ml-1 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive">Admin</span>
+            <span className="ml-1 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive">{t("badge")}</span>
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <ThemeToggle />

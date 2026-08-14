@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useActionState, useEffect } from "react"
 import { updateProfile, type ProfileState } from "@/app/actions/profile"
 import { Button } from "@/components/ui/button"
@@ -15,18 +17,19 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ name, email, image }: ProfileFormProps) {
+  const t = useTranslations("dashboard.profile")
   const [state, action, isPending] = useActionState<ProfileState, FormData>(updateProfile, {})
 
   useEffect(() => {
-    if (state.success) toast.success("Profile updated")
+    if (state.success) toast.success(t("updated"))
     else if (state.error) toast.error(state.error)
-  }, [state])
+  }, [state, t])
 
   return (
     <form action={action} className="space-y-5">
       <div className="flex items-center gap-4">
         <Avatar className="h-16 w-16">
-          {image ? <AvatarImage src={image} alt={name ?? "Avatar"} /> : null}
+          {image ? <AvatarImage src={image} alt={name ?? t("avatarAlt")} /> : null}
           <AvatarFallback className="text-xl">{name?.[0]?.toUpperCase() ?? "U"}</AvatarFallback>
         </Avatar>
         <div>
@@ -36,12 +39,12 @@ export function ProfileForm({ name, email, image }: ProfileFormProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="name">Display name</Label>
+        <Label htmlFor="name">{t("displayName")}</Label>
         <Input
           id="name"
           name="name"
           defaultValue={name ?? ""}
-          placeholder="Your name"
+          placeholder={t("namePlaceholder")}
           error={state.error}
           maxLength={50}
         />

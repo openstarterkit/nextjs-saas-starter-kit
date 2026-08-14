@@ -40,7 +40,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - `/api/health` and a release smoke script that checks a live deployment from the outside, including the version it actually serves
 - Scheduled daily reset for public demo deployments
 
-## ✅ v1.5 - SEO foundations & runtime *(current)*
+## ✅ v1.5 - SEO foundations & runtime
 - Canonical URLs on every public page, distinct meta descriptions, and the missing H1 on pricing
 - Structured data beyond articles: `FAQPage` and `Organization` JSON-LD
 - **Node 24 is the supported runtime**, declared in `engines`. Node 20 reached end of life in April 2026: the code still runs on it, the support promise no longer covers it
@@ -48,17 +48,23 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - `npm audit` in the pipeline with a declared threshold, so a new advisory is a build signal instead of a discovery
 - Maintainer name and site configurable from env, like the rest of the branding
 
-## 🔜 v1.6 - i18n *(next)*
-- **i18n, in the free kit**: the scaffold plus the interface in **English and Italian**. Adding a language becomes a translation file rather than a refactor
-- Routing with a prefix only for non-default languages: your English URLs stay exactly as they are today
-- `hreflang` and `x-default` done properly, sitemap covering every language, and no automatic redirect based on browser headers: visitors switch language from a visible selector
-- Any other language is **welcome from the community**: open a pull request with the translation and it ships. Languages beyond EN and IT are added progressively, with no guaranteed schedule
+## ✅ v1.6 - i18n & docs *(current)*
+- **i18n across the whole kit, with next-intl**: every user facing string moves out of the components and into message files. Shipping your product in one language that is not English becomes one file to fill, not a hundred components to edit
+- `en.json` complete, and `it.json` populated **by us for the documentation only**: enough to exercise the whole path, so routing, switcher and fallback are proven rather than described. The rest is yours to fill, and it is a translation file rather than a refactor
+- **No translation service and no account required.** Plain JSON in the standard layout: compatible with Crowdin or any other workflow, tied to none of them
+- Routing with a prefix only for non-default languages, so your English URLs stay exactly as they are today. `hreflang`, `x-default`, and no automatic redirect based on browser headers: visitors switch language from a visible control
+- Untranslated keys **fall back to English** instead of leaving a gap, so a partial translation is honest rather than broken
+- **Bilingual documentation**: the docs carry their own language switch, English primary and Italian beside it, and it works the same way for the product docs your clone ships
+- Every translated doc records the English revision it came from, so a stale translation is caught by the release checklist instead of by a reader
+- **Blog**: a figure component with real zoom for diagrams, and a newsletter signup block usable inside posts. Both ship in the kit, so your own posts get them too
+- `FAQPage` structured data generated from post frontmatter
 
-## 🔜 v1.7 - UI kit expansion
+## 🔜 v1.7 - UI kit expansion *(next)*
 - The form primitives the kit still leaves to plain HTML: select, checkbox, radio group, textarea
 - Overlays and navigation: popover, sheet, alert and alert dialog, breadcrumb, pagination, skeleton
 - Dashboard chart components
 - Form library with validation patterns, sharing the Zod schemas already used on the server
+- **Mobile audit across the whole kit**: every page and every flow opened on a phone, not the marketing pages alone. Dashboard tables, settings tabs, billing cards, docs navigation and the admin panel are where a desktop first build breaks, and most of what an audit like that turns up is a primitive, which is why it belongs in the release that adds them
 
 ## 🔜 v1.8 - Billing depth
 - Free trials, coupon and promo codes

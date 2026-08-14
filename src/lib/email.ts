@@ -1,7 +1,24 @@
 import { Resend } from "resend"
 import { siteConfig } from "@/config/site"
 import { emailAccent } from "@/config/brand"
-import { isKitSite } from "@/config/kit"
+import { getTranslations } from "next-intl/server"
+import { routing } from "@/i18n/routing"
+
+/**
+ * Subjects for the transactional emails.
+ *
+ * Resolved against an **explicit** locale, not the request one. These are sent
+ * from a Stripe webhook and from Auth.js callbacks: those requests come from a
+ * server, not from the recipient's browser, so there is no locale to inherit
+ * and asking for one would silently give you the default anyway.
+ *
+ * Sending in the recipient's own language needs somewhere to store it, which
+ * today is nowhere: there is no language column on the user. Add one and pass
+ * it here, and the subjects follow without touching this file again.
+ */
+function emailStrings() {
+  return getTranslations({ locale: routing.defaultLocale, namespace: "email" })
+}
 
 let _instance: Resend | null = null
 
@@ -21,8 +38,8 @@ export async function sendWelcomeEmail(to: string, name: string) {
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: `Welcome to ${siteConfig.name}!`,
-    html: welcomeTemplate(name),
+    subject: (await emailStrings())("welcome", { site: siteConfig.name }),
+    html: await welcomeTemplate(name),
   })
 }
 
@@ -38,8 +55,8 @@ export async function sendSubscriptionConfirmation(
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: `Your ${planName} subscription is active`,
-    html: subscriptionTemplate(name, planName, amount, currency, renewalDate),
+    subject: (await emailStrings())("subscriptionActive", { plan: planName }),
+    html: await subscriptionTemplate(name, planName, amount, currency, renewalDate),
   })
 }
 
@@ -54,8 +71,8 @@ export async function sendPurchaseConfirmation(
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: `Your ${planName} purchase is confirmed`,
-    html: purchaseTemplate(name, planName, amount, currency),
+    subject: (await emailStrings())("purchaseConfirmed", { plan: planName }),
+    html: await purchaseTemplate(name, planName, amount, currency),
   })
 }
 
@@ -64,8 +81,8 @@ export async function sendMagicLinkEmail(to: string, url: string) {
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: `Sign in to ${siteConfig.name}`,
-    html: magicLinkTemplate(url),
+    subject: (await emailStrings())("magicLink", { site: siteConfig.name }),
+    html: await magicLinkTemplate(url),
   })
 }
 
@@ -74,8 +91,8 @@ export async function sendPasswordResetEmail(to: string, url: string) {
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: `Reset your ${siteConfig.name} password`,
-    html: passwordResetTemplate(url),
+    subject: (await emailStrings())("passwordReset", { site: siteConfig.name }),
+    html: await passwordResetTemplate(url),
   })
 }
 
@@ -84,8 +101,8 @@ export async function sendSubscriptionCancelledEmail(to: string, name: string, e
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: `Your ${siteConfig.name} subscription has been cancelled`,
-    html: cancellationTemplate(name, endDate),
+    subject: (await emailStrings())("subscriptionCancelled", { site: siteConfig.name }),
+    html: await cancellationTemplate(name, endDate),
   })
 }
 
@@ -128,106 +145,100 @@ function baseTemplate(content: string) {
 </html>`
 }
 
-function welcomeTemplate(name: string) {
+async function welcomeTemplate(name: string) {
+  const t = await emailStrings()
   return baseTemplate(`
-    <p>Hey ${name || "there"} 👋</p>
-    ${
-      isKitSite
-        ? `<p>Welcome to ${siteConfig.name}! Your account is ready. You're now part of a community of developers shipping SaaS products faster.</p>
-    <p>Here's what you can do right now:</p>
+    <p>${t("welcomeBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
+    <p>${t("welcomeBody.intro", { site: siteConfig.name })}</p>
+    <p>${t("welcomeBody.whatNext")}</p>
     <div class="highlight">
-      <p>🔐 <strong>Authentication</strong>: Google & GitHub OAuth, fully configured</p>
-      <p>💳 <strong>Billing</strong>: Stripe checkout ready to go</p>
-      <p>📊 <strong>Dashboard</strong>: Track your subscription and account</p>
-    </div>`
-        : `<p>Welcome to ${siteConfig.name}! Your account is ready and there is nothing left to set up.</p>
-    <p>Here's what you can do right now:</p>
-    <div class="highlight">
-      <p>📁 <strong>Start a project</strong>: create your first one and invite your team</p>
-      <p>⚙️ <strong>Make it yours</strong>: add your name and preferences in settings</p>
-      <p>💳 <strong>Pick a plan</strong>: upgrade when you need more, cancel any time</p>
-    </div>`
-    }
-    <p>Ready to dive in?</p>
-    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">Go to Dashboard →</a>
-    <p style="margin-top:24px">If you have any questions, just reply to this email. We're happy to help.</p>
+      ${t.raw("welcomeBody.bullets")}
+    </div>
+    <p>${t("welcomeBody.ready")}</p>
+    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="btn">${t("welcomeBody.cta")}</a>
+    <p style="margin-top:24px">${t("welcomeBody.help")}</p>
   `)
 }
 
-function magicLinkTemplate(url: string) {
+async function magicLinkTemplate(url: string) {
+  const t = await emailStrings()
   return baseTemplate(`
-    <p>Hey there 👋</p>
-    <p>Click the button below to sign in to ${siteConfig.name}. The link is valid for 15 minutes and can be used once.</p>
-    <a href="${url}" class="btn">Sign in to ${siteConfig.name} →</a>
-    <p style="margin-top:24px">If you didn't request this email, you can safely ignore it: nothing happens unless the link is clicked.</p>
+    <p>${t("magicLinkBody.hello")}</p>
+    <p>${t("magicLinkBody.intro", { site: siteConfig.name })}</p>
+    <a href="${url}" class="btn">${t("magicLinkBody.cta", { site: siteConfig.name })}</a>
+    <p style="margin-top:24px">${t("magicLinkBody.ignore")}</p>
   `)
 }
 
-function passwordResetTemplate(url: string) {
+async function passwordResetTemplate(url: string) {
+  const t = await emailStrings()
   return baseTemplate(`
-    <p>Hey there,</p>
-    <p>We received a request to reset your ${siteConfig.name} password. Click the button below to choose a new one. The link is valid for 30 minutes and can be used once.</p>
-    <a href="${url}" class="btn">Reset password →</a>
-    <p style="margin-top:24px">If you didn't request a password reset, you can safely ignore this email: your password will not change.</p>
+    <p>${t("passwordResetBody.hello")}</p>
+    <p>${t("passwordResetBody.intro", { site: siteConfig.name })}</p>
+    <a href="${url}" class="btn">${t("passwordResetBody.cta")}</a>
+    <p style="margin-top:24px">${t("passwordResetBody.ignore")}</p>
   `)
 }
 
-function subscriptionTemplate(
+async function subscriptionTemplate(
   name: string,
   planName: string,
   amount: number,
   currency: string,
   renewalDate: string
 ) {
-  const formatted = new Intl.NumberFormat("en-US", {
+  const t = await emailStrings()
+  const formatted = new Intl.NumberFormat(routing.defaultLocale, {
     style: "currency",
     currency: currency.toUpperCase(),
   }).format(amount / 100)
 
   return baseTemplate(`
-    <p>Hey ${name || "there"} 👋</p>
-    <p>Your <strong>${planName}</strong> subscription is now active. Thanks for subscribing!</p>
+    <p>${t("subscriptionBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
+    <p>${t.raw("subscriptionBody.intro").replace("{plan}", planName)}</p>
     <div class="highlight">
-      <p><strong>Plan:</strong> ${planName}</p>
-      <p><strong>Amount:</strong> ${formatted}</p>
-      <p><strong>Next renewal:</strong> ${renewalDate}</p>
+      <p><strong>${t("subscriptionBody.labelPlan")}</strong> ${planName}</p>
+      <p><strong>${t("subscriptionBody.labelAmount")}</strong> ${formatted}</p>
+      <p><strong>${t("subscriptionBody.labelRenewal")}</strong> ${renewalDate}</p>
     </div>
-    <p>You have full access to all ${siteConfig.name} features.</p>
-    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing" class="btn">Manage Billing →</a>
-    <p style="margin-top:24px">Need to make changes? You can manage your subscription anytime from your billing page.</p>
+    <p>${t("subscriptionBody.access", { site: siteConfig.name })}</p>
+    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing" class="btn">${t("subscriptionBody.cta")}</a>
+    <p style="margin-top:24px">${t("subscriptionBody.changes")}</p>
   `)
 }
 
-function purchaseTemplate(name: string, planName: string, amount: number, currency: string) {
-  const formatted = new Intl.NumberFormat("en-US", {
+async function purchaseTemplate(name: string, planName: string, amount: number, currency: string) {
+  const t = await emailStrings()
+  const formatted = new Intl.NumberFormat(routing.defaultLocale, {
     style: "currency",
     currency: currency.toUpperCase(),
   }).format(amount / 100)
 
   return baseTemplate(`
-    <p>Hey ${name || "there"} 👋</p>
-    <p>Your <strong>${planName}</strong> purchase is confirmed. It was a one-time payment: no renewals, no recurring billing.</p>
+    <p>${t("purchaseBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
+    <p>${t.raw("purchaseBody.intro").replace("{plan}", planName)}</p>
     <div class="highlight">
-      <p><strong>Plan:</strong> ${planName}</p>
-      <p><strong>Amount:</strong> ${formatted} (one time)</p>
+      <p><strong>${t("purchaseBody.labelPlan")}</strong> ${planName}</p>
+      <p><strong>${t("purchaseBody.labelAmount")}</strong> ${formatted} ${t("purchaseBody.oneTime")}</p>
     </div>
-    <p>You now have full access to all ${siteConfig.name} features.</p>
-    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing" class="btn">View billing →</a>
-    <p style="margin-top:24px">Your receipt is available on the billing page. Questions? Just reply to this email.</p>
+    <p>${t("purchaseBody.access", { site: siteConfig.name })}</p>
+    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing" class="btn">${t("purchaseBody.cta")}</a>
+    <p style="margin-top:24px">${t("purchaseBody.receipt")}</p>
   `)
 }
 
-function cancellationTemplate(name: string, endDate: string) {
+async function cancellationTemplate(name: string, endDate: string) {
+  const t = await emailStrings()
   return baseTemplate(`
-    <p>Hey ${name || "there"},</p>
-    <p>Your ${siteConfig.name} subscription has been cancelled. You'll continue to have access until <strong>${endDate}</strong>.</p>
+    <p>${t("cancellationBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
+    <p>${t.raw("cancellationBody.intro").replace("{site}", siteConfig.name).replace("{date}", endDate)}</p>
     <div class="highlight">
-      <p>📅 <strong>Access ends:</strong> ${endDate}</p>
-      <p>Your data is safe and will remain available.</p>
+      <p>📅 <strong>${t("cancellationBody.labelEnds")}</strong> ${endDate}</p>
+      <p>${t("cancellationBody.dataSafe")}</p>
     </div>
-    <p>Changed your mind? You can resubscribe anytime before your access expires.</p>
-    <a href="${process.env.NEXT_PUBLIC_APP_URL}/pricing" class="btn">Resubscribe →</a>
-    <p style="margin-top:24px">If you'd like to share feedback on why you cancelled, just reply to this email - we read every response.</p>
+    <p>${t("cancellationBody.changedMind")}</p>
+    <a href="${process.env.NEXT_PUBLIC_APP_URL}/pricing" class="btn">${t("cancellationBody.cta")}</a>
+    <p style="margin-top:24px">${t("cancellationBody.feedback")}</p>
   `)
 }
 
@@ -244,7 +255,7 @@ export async function sendContactMessage(fromEmail: string, name: string | undef
     from: FROM_ADDRESS,
     to: siteConfig.contactEmail,
     replyTo: fromEmail,
-    subject: `Contact form: ${name || fromEmail}`,
+    subject: (await emailStrings())("contact", { from: name || fromEmail }),
     html: contactTemplate(escapeHtml(fromEmail), name ? escapeHtml(name) : undefined, escapeHtml(message)),
   })
 }
@@ -276,8 +287,8 @@ export async function sendNewsletterConfirmEmail(to: string, confirmUrl: string)
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: `Confirm your spot on the ${siteConfig.name} waitlist`,
-    html: newsletterConfirmTemplate(confirmUrl),
+    subject: (await emailStrings())("newsletterConfirm", { site: siteConfig.name }),
+    html: await newsletterConfirmTemplate(confirmUrl),
   })
 }
 
@@ -286,8 +297,8 @@ export async function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: str
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: "You're on the list",
-    html: newsletterWelcomeTemplate(unsubscribeUrl),
+    subject: (await emailStrings())("newsletterWelcome"),
+    html: await newsletterWelcomeTemplate(unsubscribeUrl),
   })
 }
 
@@ -310,33 +321,29 @@ export async function removeNewsletterContact(email: string) {
   await resend.contacts.remove({ email, audienceId })
 }
 
-function newsletterConfirmTemplate(confirmUrl: string) {
+async function newsletterConfirmTemplate(confirmUrl: string) {
+  const t = await emailStrings()
   return baseTemplate(`
-    <p>You asked to join the ${siteConfig.name} waitlist. Click below to confirm.</p>
-    <a href="${confirmUrl}" class="btn">Confirm my spot →</a>
-    <p style="margin-top:24px">The link expires in 7 days. If this was not you, just ignore this email and nothing will happen.</p>
+    <p>${t("newsletterConfirmBody.intro", { site: siteConfig.name })}</p>
+    <a href="${confirmUrl}" class="btn">${t("newsletterConfirmBody.cta")}</a>
+    <p style="margin-top:24px">${t("newsletterConfirmBody.expiry")}</p>
   `)
 }
 
-function newsletterWelcomeTemplate(unsubscribeUrl: string) {
+async function newsletterWelcomeTemplate(unsubscribeUrl: string) {
   // The kit's own waitlist sells the Pro tier; your clone's list promises
   // only what a generic waitlist can: news when there is some.
   //
   // Neither branch promises a cadence, and that is deliberate. A frequency
   // written here is the one the subscriber keeps in their inbox and can hold
   // you to, so only promise what you will still be doing in three months.
+  const t = await emailStrings()
   return baseTemplate(`
-    <p>You're in. Here is the deal:</p>
+    <p>${t("newsletterWelcomeBody.intro")}</p>
     <div class="highlight">
-    ${
-      isKitSite
-        ? `  <p>📬 <strong>One short email</strong> when there is real news on the Pro.</p>
-      <p>🎟️ <strong>A launch discount</strong> reserved for early adopters.</p>`
-        : `  <p>📬 <strong>One short email</strong> when there is real news to share.</p>
-      <p>🎟️ <strong>Early access</strong> when what you signed up for goes live.</p>`
-    }
+      ${t.raw("newsletterWelcomeBody.bullets")}
     </div>
-    <p>No spam, no daily drip. Unsubscribe anytime with one click.</p>
-    <p style="margin-top:24px"><a href="${unsubscribeUrl}" style="color:#94a3b8">Unsubscribe</a></p>
+    <p>${t("newsletterWelcomeBody.noSpam")}</p>
+    <p style="margin-top:24px"><a href="${unsubscribeUrl}" style="color:#94a3b8">${t("newsletterWelcomeBody.unsubscribe")}</a></p>
   `)
 }

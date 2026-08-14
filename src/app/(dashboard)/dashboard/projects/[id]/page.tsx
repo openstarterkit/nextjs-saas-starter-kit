@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect, notFound } from "next/navigation"
+import { getFormatter, getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { prisma } from "@/lib/prisma"
@@ -13,6 +14,8 @@ export default async function ProjectDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const t = await getTranslations("dashboard.projectDetail")
+  const format = await getFormatter()
   const session = await auth()
   if (!session) redirect("/login")
 
@@ -24,7 +27,7 @@ export default async function ProjectDetailPage({
   if (!project || project.userId !== session.user.id) notFound()
 
   const dateFmt = (d: Date) =>
-    new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    format.dateTime(new Date(d), { year: "numeric", month: "long", day: "numeric" })
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -33,18 +36,18 @@ export default async function ProjectDetailPage({
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to projects
+        {t("back")}
       </Link>
 
       <div>
         <h1 className="text-2xl font-bold">{project.name}</h1>
-        <p className="mt-1 text-muted-foreground">Edit the details or delete this project.</p>
+        <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Details</CardTitle>
-          <CardDescription>Update the project name and description.</CardDescription>
+          <CardTitle>{t("detailsTitle")}</CardTitle>
+          <CardDescription>{t("detailsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <ProjectEditForm id={project.id} name={project.name} description={project.description} />
@@ -53,15 +56,15 @@ export default async function ProjectDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Metadata</CardTitle>
+          <CardTitle>{t("metadataTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <div className="flex justify-between border-b border-border pb-3">
-            <span className="text-muted-foreground">Created</span>
+            <span className="text-muted-foreground">{t("created")}</span>
             <span className="font-medium">{dateFmt(project.createdAt)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Last updated</span>
+            <span className="text-muted-foreground">{t("updated")}</span>
             <span className="font-medium">{dateFmt(project.updatedAt)}</span>
           </div>
         </CardContent>
@@ -69,14 +72,14 @@ export default async function ProjectDetailPage({
 
       <Card className="border-destructive/20 bg-destructive/5">
         <CardHeader>
-          <CardTitle className="text-base text-destructive">Danger zone</CardTitle>
-          <CardDescription>Deleting a project is permanent and cannot be undone.</CardDescription>
+          <CardTitle className="text-base text-destructive">{t("dangerTitle")}</CardTitle>
+          <CardDescription>{t("dangerDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={deleteProject}>
             <input type="hidden" name="id" value={project.id} />
             <Button type="submit" variant="destructive" size="sm">
-              Delete project
+              {t("delete")}
             </Button>
           </form>
         </CardContent>

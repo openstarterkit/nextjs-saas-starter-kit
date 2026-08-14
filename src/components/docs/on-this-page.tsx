@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import type { TocItem } from "@/lib/docs"
 
@@ -10,6 +11,7 @@ import type { TocItem } from "@/lib/docs"
  * screens (it's the third column, shown from xl up).
  */
 export function OnThisPage({ items }: { items: TocItem[] }) {
+  const t = useTranslations("docs")
   const [active, setActive] = useState<string>(items[0]?.slug ?? "")
 
   useEffect(() => {
@@ -32,9 +34,9 @@ export function OnThisPage({ items }: { items: TocItem[] }) {
   if (items.length === 0) return null
 
   return (
-    <nav aria-label="On this page">
+    <nav aria-label={t("onThisPage")}>
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        On this page
+        {t("onThisPage")}
       </p>
       <ul className="space-y-1 text-sm">
         {items.map((item) => (

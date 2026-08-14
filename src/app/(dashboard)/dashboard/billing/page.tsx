@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { getFormatter, getTranslations } from "next-intl/server"
 import { prisma } from "@/lib/prisma"
 import { getEntitlement } from "@/lib/billing"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,14 +20,9 @@ const STATUS_VARIANTS: Record<string, "success" | "default" | "destructive" | "s
   INCOMPLETE: "secondary",
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  ACTIVE: "Active",
-  TRIALING: "Trial",
-  PAST_DUE: "Past Due",
-  CANCELED: "Canceled",
-  UNPAID: "Unpaid",
-  INCOMPLETE: "Incomplete",
-}
+// Subscription statuses come from Stripe as stable codes; their labels live
+// in the message files under `dashboard.billing.status`.
+const STATUS_CODES = ["ACTIVE", "TRIALING", "PAST_DUE", "CANCELED", "UNPAID", "INCOMPLETE"]
 
 async function getInvoices(customerId: string | null) {
   if (!customerId || !process.env.STRIPE_SECRET_KEY) return []
@@ -40,6 +36,8 @@ async function getInvoices(customerId: string | null) {
 }
 
 export default async function BillingPage() {
+  const t = await getTranslations("dashboard.billing")
+  const format = await getFormatter()
   const session = await auth()
   if (!session) redirect("/login")
 
@@ -86,8 +84,8 @@ export default async function BillingPage() {
   }))
   const checkoutDisabled = isDemo || !process.env.STRIPE_SECRET_KEY
   const disabledNote = isDemo
-    ? "Checkout is disabled in the public demo."
-    : "Connect Stripe to enable checkout: set STRIPE_SECRET_KEY and the price IDs, then reseed."
+    ? t("checkoutDisabledDemo")
+    : t("checkoutDisabledStripe")
 
   const renewalDate = subscription?.currentPeriodEnd
     ? new Date(subscription.currentPeriodEnd).toLocaleDateString("en-US", {
@@ -97,7 +95,7 @@ export default async function BillingPage() {
     })
     : null
   const purchaseDate = purchase
-    ? new Date(purchase.createdAt).toLocaleDateString("en-US", {
+    ? format.dateTime(new Date(purchase.createdAt), {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -108,35 +106,37 @@ export default async function BillingPage() {
     <div className="space-y-6">
       <CheckoutStatusToast />
       <div>
-        <h1 className="text-2xl font-bold">Billing</h1>
-        <p className="mt-1 text-muted-foreground">Manage your plan and payment history.</p>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Current Plan</CardTitle>
+          <CardTitle>{t("currentPlan")}</CardTitle>
           <CardDescription>
             {purchase
-              ? `Purchased on ${purchaseDate}`
+              ? t("purchasedOn", { date: purchaseDate ?? "" })
               : subscription
-                ? `Renews on ${renewalDate}`
-                : "You are on the free plan"}
+                ? t("renewsOn", { date: renewalDate ?? "" })
+                : t("onFreePlan")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="font-semibold text-lg">
-                {purchase?.plan.name ?? subscription?.plan.name ?? "Free"}
+                {purchase?.plan.name ?? subscription?.plan.name ?? t("free")}
               </p>
-              {purchase && <Badge variant="success">Lifetime access</Badge>}
+              {purchase && <Badge variant="success">{t("lifetimeAccess")}</Badge>}
               {!purchase && subscription && (
                 <Badge variant={STATUS_VARIANTS[subscription.status] ?? "secondary"}>
-                  {STATUS_LABELS[subscription.status] ?? subscription.status}
+                  {STATUS_CODES.includes(subscription.status)
+                    ? t(`status.${subscription.status}`)
+                    : subscription.status}
                 </Badge>
               )}
               {!purchase && subscription?.cancelAtPeriodEnd && (
-                <p className="text-sm text-muted-foreground">Cancels at end of billing period</p>
+                <p className="text-sm text-muted-foreground">{t("cancelsAtPeriodEnd")}</p>
               )}
             </div>
             <div className="text-right">
@@ -149,17 +149,16 @@ export default async function BillingPage() {
               </p>
               <p className="text-sm text-muted-foreground">
                 {purchase
-                  ? "one time"
+                  ? t("oneTime")
                   : subscription
                     ? `/ ${subscription.plan.interval.toLowerCase()}`
-                    : "/ month"}
+                    : t("perMonth")}
               </p>
             </div>
           </div>
           {purchase && subscription && (
             <p className="text-sm text-muted-foreground">
-              You also have a {subscription.plan.name} subscription. Since lifetime access covers
-              everything, you can cancel it in the billing portal.
+              {t("alsoSubscribed", { plan: subscription.plan.name })}
             </p>
           )}
           {(subscription || (purchase && user?.stripeCustomerId)) && (
@@ -167,7 +166,7 @@ export default async function BillingPage() {
               <ManageBillingButton className="w-full sm:w-auto" />
               {subscription && !purchase && (
                 <p className="text-sm text-muted-foreground">
-                  Switch plans or update your payment method in the billing portal.
+                  {t("portalHint")}
                 </p>
               )}
             </div>
@@ -178,47 +177,45 @@ export default async function BillingPage() {
       {entitlement.kind === "free" && plans.length > 0 && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-lg font-semibold">Available plans</h2>
+            <h2 className="text-lg font-semibold">{t("availablePlans")}</h2>
             <p className="text-sm text-muted-foreground">
-              These are the seeded example plans: replace them with your own pricing.
+              {t("availablePlansHint")}
             </p>
           </div>
           <PlanCards
             plans={plans}
             checkoutDisabled={checkoutDisabled}
             disabledNote={disabledNote}
-            contactCard={isDemo ? exampleEnterpriseCard : undefined}
+            contactCard={isDemo ? await exampleEnterpriseCard() : undefined}
           />
         </div>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Invoice History</CardTitle>
-          <CardDescription>Your past payments and invoices.</CardDescription>
+          <CardTitle>{t("invoiceHistory")}</CardTitle>
+          <CardDescription>{t("invoiceHistoryHint")}</CardDescription>
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              {process.env.STRIPE_SECRET_KEY
-                ? "No invoices yet."
-                : "Connect Stripe to see your invoice history."}
+              {process.env.STRIPE_SECRET_KEY ? t("noInvoices") : t("noInvoicesStripe")}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Invoice</TableHead>
+                  <TableHead>{t("colDate")}</TableHead>
+                  <TableHead>{t("colAmount")}</TableHead>
+                  <TableHead>{t("colStatus")}</TableHead>
+                  <TableHead>{t("colInvoice")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {invoices.map((invoice) => (
                   <TableRow key={invoice.id}>
                     <TableCell>
-                      {new Date((invoice.created ?? 0) * 1000).toLocaleDateString("en-US", {
+                      {format.dateTime(new Date((invoice.created ?? 0) * 1000), {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
@@ -230,7 +227,7 @@ export default async function BillingPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={invoice.status === "paid" ? "success" : "secondary"}>
-                        {invoice.status ?? "unknown"}
+                        {invoice.status ?? t("statusUnknown")}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -241,7 +238,7 @@ export default async function BillingPage() {
                           rel="noopener noreferrer"
                           className="text-sm text-primary hover:underline"
                         >
-                          View PDF
+                          {t("viewPdf")}
                         </a>
                       ) : (
                         <span className="text-sm text-muted-foreground">-</span>

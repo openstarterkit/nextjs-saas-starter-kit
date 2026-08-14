@@ -5,6 +5,8 @@ import { SessionProvider } from "@/components/auth/session-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { siteConfig } from "@/config/site"
 import { brandOverrideCss } from "@/config/brand"
+import { getLocale } from "next-intl/server"
+import { NextIntlClientProvider } from "next-intl"
 import "./globals.css"
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
@@ -35,14 +37,27 @@ const themeInit =
 const sidebarInit =
   "try{if(localStorage.getItem('sidebar-collapsed')==='1')document.documentElement.classList.add('sidebar-collapsed')}catch(e){}"
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const brandCss = brandOverrideCss()
+  // Read from the request instead of hardcoded. This layout sits above
+  // `[locale]` so it cannot take the segment as a param, but the locale is
+  // already resolved when it renders. Outside the localized surface (dashboard,
+  // admin, sign-in) this returns the default locale, which is correct: those
+  // pages are not translated.
+  const locale = await getLocale()
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: `${themeInit};${sidebarInit}` }} />
         {brandCss && <style dangerouslySetInnerHTML={{ __html: brandCss }} />}
-        <SessionProvider>{children}</SessionProvider>
+        {/* Sits at the root, not inside `[locale]`, so that client components
+            in the dashboard, the admin panel and the sign-in pages can read
+            translations too. Those areas are outside the locale prefix and
+            always render in the default locale, but their strings still live
+            in the message files rather than in the components. */}
+        <NextIntlClientProvider>
+          <SessionProvider>{children}</SessionProvider>
+        </NextIntlClientProvider>
         <Toaster />
         <Analytics />
       </body>

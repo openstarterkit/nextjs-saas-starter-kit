@@ -1,21 +1,13 @@
-"use client"
+import type { ReactNode } from "react"
 
-import { usePathname } from "next/navigation"
-
-export function NavbarWrapper({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const isDocsPage = pathname?.startsWith("/docs")
-
-  // Completely hide and do not render the navbar on documentation pages.
-  if (isDocsPage) {
-    return null
-  }
-
-  // Stickiness lives on the layout wrapper (banner + navbar stick together
-  // in demo mode), not here.
-  return (
-    <header className="w-full px-4 pt-4">
-      {children}
-    </header>
-  )
+/**
+ * Outer shell of the navbar.
+ *
+ * It used to hide the navbar on `/docs` entirely. That is gone: the
+ * documentation keeps the site's header like every other page, and the
+ * stickiness lives on the layout wrapper (banner and navbar pin together in
+ * demo mode) rather than here.
+ */
+export function NavbarWrapper({ children }: { children: ReactNode }) {
+  return <header className="w-full px-4 pt-4">{children}</header>
 }

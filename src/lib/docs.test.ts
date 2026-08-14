@@ -1,5 +1,96 @@
 import { describe, it, expect } from "vitest"
-import { slugify, extractToc } from "@/lib/docs"
+import fs from "node:fs"
+import path from "node:path"
+import matter from "gray-matter"
+import { slugify, extractToc, getDocs } from "@/lib/docs"
+import { routing } from "@/i18n/routing"
+
+const ROOT = process.cwd()
+
+describe("the docs index", () => {
+  // `docs/README.md` is the entry point on GitHub, where the site's generated
+  // sidebar does not exist. It had drifted two guides behind the folder and
+  // nothing said so, which is the same failure as documentation that lies
+  // about a folder it no longer ships.
+  const index = fs.readFileSync(path.join(ROOT, "docs", "README.md"), "utf8")
+  const guides = fs
+    .readdirSync(path.join(ROOT, "docs"))
+    .filter((f) => f.endsWith(".md") && f !== "README.md" && !/\.[a-z]{2}\.md$/.test(f))
+
+  it("links every guide in the folder", () => {
+    const missing = guides.filter((f) => !index.includes(`(./${f})`))
+    expect(missing, `guide senza riga in docs/README.md:\n${missing.join("\n")}`).toEqual([])
+  })
+
+  it("links nothing that is not there", () => {
+    const broken = [...index.matchAll(/\(\.\/([\w.-]+\.md)\)/g)]
+      .map((m) => m[1])
+      .filter((f) => !fs.existsSync(path.join(ROOT, "docs", f)))
+    expect(broken, `link a file inesistenti:\n${broken.join("\n")}`).toEqual([])
+  })
+})
+
+describe("docs in another language", () => {
+  it("keeps every page, translated or not, so a gap is never a 404", () => {
+    const source = getDocs(routing.defaultLocale)
+    for (const locale of routing.locales) {
+      const docs = getDocs(locale)
+      expect(docs.map((d) => d.slug)).toEqual(source.map((d) => d.slug))
+      for (const doc of docs) expect(fs.existsSync(doc.file)).toBe(true)
+    }
+  })
+
+  it("says which language each page is actually written in", () => {
+    // What the "you are reading the original" notice is decided on. Reading it
+    // off the requested locale instead would make the notice never appear.
+    for (const doc of getDocs("it")) {
+      const translated = doc.file.endsWith(".it.md")
+      expect(doc.locale, doc.file).toBe(translated ? "it" : routing.defaultLocale)
+    }
+  })
+})
+
+describe("the frontmatter of every translation", () => {
+  // Both folders, read off disk rather than through getDocs: the tests run
+  // with KIT_SITE unset, so getDocs only ever opens content/docs/ and the
+  // repo's own docs/ folder is never parsed by anything else here.
+  //
+  // The regression: an unquoted colon in a description ("Ogni variabile
+  // d'ambiente spiegata: database, ...") is invalid YAML. The build stayed
+  // green, and the page fell back to English at request time with the
+  // exception in a server log nobody reads. Every symptom of an untranslated
+  // page, from a translation that was right there.
+  const files = (["docs", path.join("content", "docs")] as const).flatMap((dir) => {
+    const full = path.join(ROOT, dir)
+    if (!fs.existsSync(full)) return []
+    return fs
+      .readdirSync(full)
+      .filter((f) => /\.[a-z]{2}\.md$/.test(f))
+      .map((f) => ({ label: `${dir}/${f}`, dir: full, file: f }))
+  })
+
+  it("has at least one to check", () => {
+    expect(files.length).toBeGreaterThan(0)
+  })
+
+  it.each(files)("parses and declares its source: $label", ({ label, dir, file }) => {
+    const raw = fs.readFileSync(path.join(dir, file), "utf8")
+    let data: Record<string, unknown> = {}
+    expect(() => {
+      data = matter(raw).data
+    }, `${label}: frontmatter YAML non valido (una descrizione con i due punti va tra virgolette)`).not.toThrow()
+
+    for (const field of ["title", "description", "translated_from", "source_commit"]) {
+      expect(data[field], `${label}: manca "${field}" nel frontmatter`).toBeTruthy()
+    }
+    // Without this, check:translations silently skips a file whose
+    // translated_from points at a guide that has since been renamed.
+    expect(
+      fs.existsSync(path.join(dir, String(data.translated_from))),
+      `${label}: translated_from punta a un file che non esiste`,
+    ).toBe(true)
+  })
+})
 
 describe("slugify", () => {
   it("lowercases and joins words with hyphens", () => {

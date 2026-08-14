@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Sun, Moon, Monitor, Check } from "lucide-react"
 import {
   DropdownMenu,
@@ -11,13 +12,22 @@ import {
 
 type Theme = "light" | "dark" | "system"
 
-const options: { value: Theme; label: string; icon: typeof Sun }[] = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
-  { value: "system", label: "System", icon: Monitor },
+const options: { value: Theme; icon: typeof Sun }[] = [
+  { value: "light", icon: Sun },
+  { value: "dark", icon: Moon },
+  { value: "system", icon: Monitor },
 ]
 
 export function ThemeToggle() {
+  const t = useTranslations("theme")
+  // Spelled out rather than `t(value)`: a key built from a variable cannot be
+  // matched against the message file, and the check that catches a renamed or
+  // orphaned key stops covering this namespace the moment one appears.
+  const labels: Record<Theme, string> = {
+    light: t("light"),
+    dark: t("dark"),
+    system: t("system"),
+  }
   // null = not mounted yet (avoids hydration mismatch on the icon)
   const [theme, setTheme] = useState<Theme | null>(null)
   const [, force] = useState(0)
@@ -62,17 +72,17 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          aria-label="Change theme"
+          aria-label={t("label")}
           className="flex h-9 w-9 items-center justify-center rounded-[var(--radius)] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
           {theme === null ? null : isDark ? <Moon size={18} /> : <Sun size={18} />}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[8rem]">
-        {options.map(({ value, label, icon: Icon }) => (
+        {options.map(({ value, icon: Icon }) => (
           <DropdownMenuItem key={value} onClick={() => apply(value)}>
             <Icon />
-            {label}
+            {labels[value]}
             {theme === value && <Check className="ml-auto" />}
           </DropdownMenuItem>
         ))}

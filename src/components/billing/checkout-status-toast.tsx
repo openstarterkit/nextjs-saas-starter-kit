@@ -1,10 +1,13 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { Suspense, useEffect, useRef } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 
 function CheckoutStatusToastInner() {
+  const t = useTranslations("billing.checkout")
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
@@ -18,18 +21,18 @@ function CheckoutStatusToastInner() {
     fired.current = true
 
     if (success) {
-      toast.success("Payment successful. Your plan updates in a few seconds.")
+      toast.success(t("paid"))
       // The redirect from Stripe races the webhook that records the grant:
       // refresh once shortly after landing so the new plan shows up without
       // a manual reload.
       setTimeout(() => router.refresh(), 2500)
     } else {
-      toast("Checkout canceled. You have not been charged.")
+      toast(t("canceled"))
     }
 
     // Strip the params so a refresh or back-navigation doesn't re-toast.
     router.replace(pathname, { scroll: false })
-  }, [success, canceled, pathname, router])
+  }, [success, canceled, pathname, router, t])
 
   return null
 }

@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import Link from "next/link"
 import { useRenderedPathname } from "@/hooks/use-rendered-pathname"
 import {
@@ -24,12 +26,12 @@ import {
 // takes over.
 const menus = {
   dashboard: [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
-    { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
-    { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    { href: "/dashboard", key: "dashboard", icon: LayoutGrid },
+    { href: "/dashboard/projects", key: "projects", icon: FolderKanban },
+    { href: "/dashboard/billing", key: "billing", icon: CreditCard },
+    { href: "/dashboard/settings", key: "settings", icon: Settings },
   ],
-  admin: [{ href: "/admin", label: "Overview", icon: LayoutGrid }],
+  admin: [{ href: "/admin", key: "overview", icon: LayoutGrid }],
 }
 
 /** Hamburger nav for the app areas below `md`, where the sidebar is hidden. */
@@ -40,6 +42,7 @@ export function MobileNav({
   variant: keyof typeof menus
   showAdminLink?: boolean
 }) {
+  const t = useTranslations("dashboard.nav")
   const pathname = useRenderedPathname()
   const isActive = (href: string) =>
     href === "/dashboard" || href === "/admin"
@@ -50,18 +53,18 @@ export function MobileNav({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          aria-label="Open navigation"
+          aria-label={t("openNavigation")}
           className="flex h-11 w-11 items-center justify-center rounded-[var(--radius)] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
         >
           <Menu size={24} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-60 md:hidden">
-        {menus[variant].map(({ href, label, icon: Icon }) => (
+        {menus[variant].map(({ href, key, icon: Icon }) => (
           <DropdownMenuItem key={href} asChild>
             <Link href={href} className={isActive(href) ? "bg-primary/10 font-medium text-primary" : undefined}>
               <Icon />
-              {label}
+              {t(key)}
             </Link>
           </DropdownMenuItem>
         ))}

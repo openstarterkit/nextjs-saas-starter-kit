@@ -1,5 +1,49 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
+import createIntlMiddleware from "next-intl/middleware"
+import { routing } from "@/i18n/routing"
+
+/**
+ * Locale handling for the public surface only.
+ *
+ * The private areas below are matched by prefix, and a locale segment in front
+ * of `/dashboard` would stop those prefixes from matching: `/it/dashboard`
+ * would not look protected. Rather than teach every list here to strip a
+ * locale, the private areas stay outside the prefix entirely, so those URLs do
+ * not exist. See `src/i18n/routing.ts` for how to lift that if you want your
+ * dashboard localized.
+ */
+const intlMiddleware = createIntlMiddleware(routing)
+
+/**
+ * Everything that must never carry a locale prefix.
+ *
+ * Two kinds of thing end up here. The private areas and the sign-in pages,
+ * which live outside `src/app/[locale]/` by design. And the root level
+ * metadata routes, which Next serves from `src/app/` directly: prefixing those
+ * asks for `/en/sitemap.xml`, which does not exist, so the file 404s instead of
+ * being served. That failure is quiet in the worst way, since nothing links to
+ * a favicon or a sitemap from inside the app.
+ *
+ * Adding a file at the root of `src/app/` means adding it here too.
+ */
+const UNLOCALIZED = [
+  // Private areas and auth, matched by prefix.
+  "/dashboard",
+  "/admin",
+  "/api",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-request",
+  // Root level metadata routes.
+  "/sitemap.xml",
+  "/robots.txt",
+  "/llms.txt",
+  "/icon",
+  "/opengraph-image",
+]
 
 /**
  * Private surfaces, matched by prefix. Anything not listed here falls through
@@ -43,7 +87,14 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login", req.nextUrl))
   }
 
-  return NextResponse.next()
+  // Past the guards. Anything that is not a private area is public surface, so
+  // it goes through locale resolution; the private areas keep the plain
+  // response they have always had.
+  if (UNLOCALIZED.some((r) => pathname.startsWith(r))) {
+    return NextResponse.next()
+  }
+
+  return intlMiddleware(req)
 })
 
 export const config = {

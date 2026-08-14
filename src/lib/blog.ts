@@ -10,10 +10,17 @@ import { isKitSite } from "@/config/kit"
  * `draft: true` stay out of every list, the feed and the sitemap.
  *
  * The three posts in there are examples written for a product audience:
- * rewrite them, add your own, delete what you don't need. The kit's own site
- * (KIT_SITE="true") reads content/blog-kit/ instead, where the posts explain
- * the kit itself, so one repo can serve two blogs without them overlapping.
+ * rewrite them, add your own, delete what you don't need.
+ *
+ * `KIT_SITE="true"` switches the source to `content/blog-kit/`, a folder that
+ * is **not** part of this repository. It is how one codebase can serve a
+ * product's blog and a second, unrelated one without the two overlapping.
+ * Leave the flag unset, as your app does, and only `content/blog/` is ever
+ * read; set it and create the folder if you want the same split yourself.
  */
+
+/** One question and its answer, from a post's optional `faq:` frontmatter. */
+export type PostFaq = { q: string; a: string }
 
 export type Post = {
   slug: string
@@ -24,6 +31,13 @@ export type Post = {
   category: string
   /** Optional cover image path (e.g. "/blog/covers/my-post.svg"). */
   cover?: string
+  /**
+   * Optional Q&A pairs, published as FAQPage structured data by the post page.
+   * Search engines require every answer you declare to be visible to the
+   * reader, so these repeat an FAQ section written in the body: they never
+   * replace it.
+   */
+  faq?: PostFaq[]
   content: string
   readingMinutes: number
 }
@@ -52,6 +66,19 @@ export function getAllPosts(): Post[] {
     for (const field of ["title", "description", "date", "category"] as const) {
       if (!data[field]) throw new Error(`content/blog/${file}: missing "${field}" in frontmatter`)
     }
+    // Same rule for the optional FAQ: a half-written entry would ship a broken
+    // rich result, which is worse than none, so it stops the build instead.
+    let faq: PostFaq[] | undefined
+    if (data.faq !== undefined) {
+      if (!Array.isArray(data.faq)) throw new Error(`content/blog/${file}: "faq" must be a list`)
+      faq = data.faq.map((entry: unknown, i: number) => {
+        const { q, a } = (entry ?? {}) as { q?: unknown; a?: unknown }
+        if (typeof q !== "string" || typeof a !== "string" || !q.trim() || !a.trim()) {
+          throw new Error(`content/blog/${file}: faq[${i}] needs both "q" and "a"`)
+        }
+        return { q, a }
+      })
+    }
     const words = content.split(/\s+/).filter(Boolean).length
     posts.push({
       slug: file.replace(/\.mdx?$/, ""),
@@ -61,6 +88,7 @@ export function getAllPosts(): Post[] {
       date: data.date instanceof Date ? data.date.toISOString().slice(0, 10) : String(data.date),
       category: String(data.category),
       cover: data.cover ? String(data.cover) : undefined,
+      faq,
       content,
       readingMinutes: Math.max(1, Math.round(words / 220)),
     })

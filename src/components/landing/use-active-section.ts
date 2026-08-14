@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname } from "@/i18n/navigation"
 
-const sections = [
-  { id: "features", label: "Features" },
-  { id: "pricing", label: "Pricing" },
-  { id: "faq", label: "FAQ" },
-] as const
+// Ids only. The visible names live in the `nav` namespace, where both the
+// desktop links and the mobile menu read them: the `label` that used to sit
+// here was a second copy, and the two navigations had already drifted onto
+// different sources for the same three words.
+const sections = [{ id: "features" }, { id: "pricing" }, { id: "faq" }] as const
 
 export type SectionId = (typeof sections)[number]["id"]
 

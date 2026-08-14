@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { Home, HelpCircle } from "lucide-react"
 import { siteConfig } from "@/config/site"
 
 export default function NotFound() {
+  const t = useTranslations("notFound")
   const router = useRouter()
   const [secondsLeft, setSecondsLeft] = useState(30)
 
@@ -33,18 +35,16 @@ export default function NotFound() {
       <div className="relative z-10 mx-auto max-w-md text-center">
         {/* Decorative 404 tag */}
         <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary ring-1 ring-inset ring-primary/20">
-          404 Error
+          {t("badge")}
         </span>
 
         {/* Title */}
         <h1 className="mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-          Page not found
+          {t("title")}
         </h1>
 
         {/* Description */}
-        <p className="mt-6 text-base leading-7 text-muted-foreground">
-          Sorry, we couldn’t find the page you’re looking for. Perhaps you’ve mistyped the URL or the page has been moved.
-        </p>
+        <p className="mt-6 text-base leading-7 text-muted-foreground">{t("body")}</p>
 
         {/* Action Buttons */}
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -53,20 +53,23 @@ export default function NotFound() {
             className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-glow hover:bg-primary/95 transition-all hover:-translate-y-0.5"
           >
             <Home className="h-4 w-4" />
-            Back to Home
+            {t("home")}
           </Link>
           <Link
             href="/docs"
             className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-soft hover:bg-accent hover:text-foreground transition-all hover:-translate-y-0.5"
           >
             <HelpCircle className="h-4 w-4 text-muted-foreground" />
-            Check Documentation
+            {t("docs")}
           </Link>
         </div>
 
         {/* Countdown */}
         <p className="mt-8 text-xs text-muted-foreground/80">
-          Redirecting to homepage in <span className="font-semibold text-foreground">{secondsLeft}s</span>...
+          {t.rich("redirecting", {
+            seconds: secondsLeft,
+            strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+          })}
         </p>
 
         {/* Branding Footer */}

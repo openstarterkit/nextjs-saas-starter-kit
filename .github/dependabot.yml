@@ -23,6 +23,9 @@ updates:
           - next-auth
           - "@auth/*"
           - eslint-config-next
+          # Sits on top of the App Router and follows its majors, so it belongs
+          # with them: on its own it would be the one dependency nobody watches.
+          - next-intl
         update-types: [minor, patch]
       react:
         patterns:

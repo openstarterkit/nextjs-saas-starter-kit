@@ -1,6 +1,6 @@
 import { siteConfig } from "@/config/site"
 import { isKitSite } from "@/config/kit"
-import { DOCS } from "@/lib/docs"
+import { getDocs } from "@/lib/docs"
 import { getAllPosts, getCategories } from "@/lib/blog"
 
 /**
@@ -14,7 +14,7 @@ export function GET(): Response {
   const base = siteConfig.url
   const repo = siteConfig.links.github
 
-  const docs = DOCS.map(
+  const docs = getDocs().map(
     (d) => `- [${d.title}](${base}/docs/${d.slug}): ${d.description}`,
   ).join("\n")
 

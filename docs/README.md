@@ -8,6 +8,9 @@ Everything you need to go from `git clone` to production.
 | [Configuration](./configuration.md) | Setting up env vars, OAuth apps, Stripe, email and branding |
 | [Authentication](./authentication.md) | Understanding the sign-in methods, password reset and account linking |
 | [Billing & payments](./billing.md) | Subscriptions, one-time payments, usage-based billing and entitlements |
+| [Blog & content](./blog.md) | File-based MDX blog with categories, RSS and per-post SEO |
+| [Newsletter & waitlist](./newsletter.md) | Double opt-in mailing list, consent record, Resend sync and admin export |
+| [Languages](./i18n.md) | Adding a language, translating the docs, and keeping translations current |
 | [Deployment](./deployment.md) | Shipping to Vercel, production env, webhooks, going admin |
 
 Quick pointers:

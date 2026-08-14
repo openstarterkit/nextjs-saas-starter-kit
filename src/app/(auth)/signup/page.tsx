@@ -1,18 +1,12 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { registerUser } from "@/app/actions/auth"
 import { LogoMark } from "@/components/logo"
 import { PendingButton } from "@/components/auth/pending-button"
 import { AuthNotice } from "@/components/auth/auth-notice"
 import { Input } from "@/components/ui/input"
 import { siteConfig } from "@/config/site"
-import { isKitSite } from "@/config/kit"
-
-const ERROR_MESSAGES: Record<string, string> = {
-  invalid: "Check your details: valid email and a password of at least 8 characters.",
-  exists: "An account with this email already exists. Sign in instead.",
-  rate: "Too many attempts. Try again in a few minutes.",
-}
 
 export default async function SignupPage({
   searchParams,
@@ -20,7 +14,10 @@ export default async function SignupPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const { error } = await searchParams
-  const errorMessage = error ? (ERROR_MESSAGES[error] ?? "Something went wrong. Try again.") : null
+  const t = await getTranslations("auth.signup")
+  // An unknown code must not throw: the query string is user controlled, so a
+  // key that does not exist falls back to the generic message.
+  const errorMessage = error ? (t.has(`errors.${error}`) ? t(`errors.${error}`) : t("errors.generic")) : null
 
   // On the public demo the page stays visible as a showcase, but the form is
   // disabled: the demo has no email service attached and runs on shared
@@ -38,41 +35,34 @@ export default async function SignupPage({
           <div className="mb-4 flex justify-center">
             <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Create your account</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {hasEmailService
-              ? "We'll email you a link to verify your address and sign you in"
-              : "Sign up with your email and a password"}
+            {hasEmailService ? t("subtitleVerified") : t("subtitlePassword")}
           </p>
         </div>
 
         {isDemo && (
           <AuthNotice>
-            This live demo has no email service attached, so sign-up is disabled here.
-            {isKitSite ? (
-              <>
-                {" "}
-                In your own deployment, wire an email provider (the kit ships with{" "}
+            {t("demoNotice")}{" "}
+            {t.rich("demoNoticeExtra", {
+              resend: (chunks) => (
                 <a
                   href="https://resend.com"
                   className="underline underline-offset-2"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Resend
+                  {chunks}
                 </a>
-                ) and this flow goes live.
-              </>
-            ) : (
-              " Everything else works as it would in production."
-            )}
+              ),
+            })}
           </AuthNotice>
         )}
         {!isDemo && !hasEmailService && (
           <AuthNotice>
-            No email service is configured, so accounts are created without email verification. Set{" "}
-            <code>RESEND_API_KEY</code> to enable it ({isKitSite && "the kit ships with Resend, "}
-            see <code>docs/configuration.md</code>).
+            {t.rich("noEmailService", {
+              code: (chunks) => <code>{chunks}</code>,
+            })}
           </AuthNotice>
         )}
 
@@ -83,12 +73,12 @@ export default async function SignupPage({
         )}
 
         <form action={registerUser} className="flex flex-col gap-3">
-          <Input name="name" type="text" placeholder="Name (optional)" autoComplete="name" maxLength={100} disabled={isDemo} className="h-12 rounded-full px-4" />
-          <Input name="email" type="email" placeholder="you@example.com" autoComplete="email" required disabled={isDemo} className="h-12 rounded-full px-4" />
+          <Input name="name" type="text" placeholder={t("namePlaceholder")} autoComplete="name" maxLength={100} disabled={isDemo} className="h-12 rounded-full px-4" />
+          <Input name="email" type="email" placeholder={t("emailPlaceholder")} autoComplete="email" required disabled={isDemo} className="h-12 rounded-full px-4" />
           <Input
             name="password"
             type="password"
-            placeholder="Password (min 8 characters)"
+            placeholder={t("passwordPlaceholder")}
             autoComplete="new-password"
             required
             minLength={8}
@@ -100,22 +90,29 @@ export default async function SignupPage({
             disabled={isDemo}
             className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-all hover:-translate-y-0.5 hover:shadow-soft disabled:pointer-events-none disabled:opacity-45"
           >
-            Create account
+            {t("submit")}
           </PendingButton>
         </form>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login" className="underline underline-offset-4 hover:text-foreground">
-            Sign in
-          </Link>
+          {t.rich("haveAccount", {
+            signin: (chunks) => (
+              <Link href="/login" className="underline underline-offset-4 hover:text-foreground">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          By signing up, you agree to our{" "}
-          <a href="/terms" className="underline underline-offset-4 hover:text-foreground">Terms</a>
-          {" "}and{" "}
-          <a href="/privacy" className="underline underline-offset-4 hover:text-foreground">Privacy Policy</a>.
+          {t.rich("legal", {
+            terms: (chunks) => (
+              <Link href="/terms" className="underline underline-offset-4 hover:text-foreground">{chunks}</Link>
+            ),
+            privacy: (chunks) => (
+              <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">{chunks}</Link>
+            ),
+          })}
         </p>
       </div>
     </div>

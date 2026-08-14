@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getTranslations } from "next-intl/server"
 import { ArrowRight, Check, X } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,7 +9,7 @@ type ChecklistItem = { label: string; done: boolean; href: string }
 
 // Server component: the items are derived live from the DB by the dashboard
 // page, only the dismissal is persisted (User.onboardingDismissedAt).
-export function GetStartedChecklist({
+export async function GetStartedChecklist({
   hasName,
   hasProject,
   hasBilling,
@@ -17,10 +18,11 @@ export function GetStartedChecklist({
   hasProject: boolean
   hasBilling: boolean
 }) {
+  const t = await getTranslations("dashboard.home")
   const items: ChecklistItem[] = [
-    { label: "Add your name", done: hasName, href: "/dashboard/settings" },
-    { label: "Create your first project", done: hasProject, href: "/dashboard/projects" },
-    { label: "Set up billing", done: hasBilling, href: "/dashboard/billing" },
+    { label: t("checklistName"), done: hasName, href: "/dashboard/settings" },
+    { label: t("checklistProject"), done: hasProject, href: "/dashboard/projects" },
+    { label: t("checklistBilling"), done: hasBilling, href: "/dashboard/billing" },
   ]
   const doneCount = items.filter((i) => i.done).length
   if (doneCount === items.length) return null
@@ -30,9 +32,9 @@ export function GetStartedChecklist({
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="text-base">Get started</CardTitle>
+            <CardTitle className="text-base">{t("checklistTitle")}</CardTitle>
             <CardDescription>
-              {doneCount} of {items.length} complete
+              {t("checklistProgress", { done: doneCount, total: items.length })}
             </CardDescription>
           </div>
           <form action={dismissOnboarding}>
@@ -41,7 +43,7 @@ export function GetStartedChecklist({
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0"
-              aria-label="Dismiss checklist"
+              aria-label={t("checklistDismiss")}
             >
               <X className="h-4 w-4" />
             </Button>

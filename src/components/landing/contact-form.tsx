@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useActionState } from "react"
 import Link from "next/link"
 import { sendContactRequest, type ContactState } from "@/app/actions/contact"
@@ -19,13 +21,14 @@ const initialState: ContactState = { status: "idle" }
  * is stripped in the browser.
  */
 export function ContactForm({ disabled = false }: { disabled?: boolean }) {
+  const t = useTranslations("contactForm")
   const [state, formAction, pending] = useActionState(sendContactRequest, initialState)
 
   if (state.status === "sent") {
     return (
       <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center">
-        <p className="font-medium text-foreground">Thanks, your message is on its way.</p>
-        <p className="mt-1 text-sm text-muted-foreground">We read everything and reply fast.</p>
+        <p className="font-medium text-foreground">{t("sentTitle")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("sentBody")}</p>
       </div>
     )
   }
@@ -43,27 +46,27 @@ export function ContactForm({ disabled = false }: { disabled?: boolean }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="contact-name" className="mb-1.5 block text-sm font-medium text-foreground">
-            Name <span className="text-muted-foreground">(optional)</span>
+            {t.rich("name", { opt: (c) => <span className="text-muted-foreground">{c}</span> })}
           </label>
-          <Input id="contact-name" name="name" placeholder="Ada Lovelace" disabled={disabled || pending} />
+          <Input id="contact-name" name="name" placeholder={t("namePlaceholder")} disabled={disabled || pending} />
         </div>
         <div>
           <label htmlFor="contact-email" className="mb-1.5 block text-sm font-medium text-foreground">
-            Email
+            {t("email")}
           </label>
           <Input
             id="contact-email"
             name="email"
             type="email"
             required
-            placeholder="you@company.com"
+            placeholder={t("emailPlaceholder")}
             disabled={disabled || pending}
           />
         </div>
       </div>
       <div>
         <label htmlFor="contact-message" className="mb-1.5 block text-sm font-medium text-foreground">
-          Message
+          {t("message")}
         </label>
         <textarea
           id="contact-message"
@@ -71,7 +74,7 @@ export function ContactForm({ disabled = false }: { disabled?: boolean }) {
           required
           minLength={10}
           rows={5}
-          placeholder="How can we help?"
+          placeholder={t("messagePlaceholder")}
           disabled={disabled || pending}
           className="flex w-full rounded-[var(--radius)] border border-border bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         />
@@ -90,7 +93,7 @@ export function ContactForm({ disabled = false }: { disabled?: boolean }) {
           .
         </p>
         <Button type="submit" variant="gradient" disabled={disabled || pending}>
-          {pending ? "Sending…" : "Send message"}
+          {pending ? t("sending") : t("submit")}
         </Button>
       </div>
     </form>

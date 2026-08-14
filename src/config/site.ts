@@ -26,11 +26,11 @@ export const siteConfig = {
   seoTitle:
     process.env.NEXT_PUBLIC_SEO_TITLE ||
     (isKitSite ? "Next.js SaaS Starter Kit | Free & Open Source" : null),
-  version: "1.5.0",
+  version: "1.6.0",
   description:
     process.env.NEXT_PUBLIC_BRAND_DESCRIPTION ||
     (isKitSite
-      ? "A production-ready SaaS starter with Next.js, Auth.js, Stripe, Prisma, and Tailwind. No vendor lock-in."
+      ? "A production-ready SaaS starter with Next.js, Auth.js, Stripe, Prisma, and Tailwind. Plain Next.js, with no framework to learn first."
       : "One workspace for your projects, your customers and your billing. Set up in minutes, cancel any time."),
 
   /** Base URL of this deployment — no trailing slash. */

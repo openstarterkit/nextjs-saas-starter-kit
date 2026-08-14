@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -17,6 +19,7 @@ export function UpgradeButton({
   disabled?: boolean
   variant?: "primary" | "outline" | "gradient"
 }) {
+  const t = useTranslations("billing.upgrade")
   const [loading, setLoading] = useState(false)
 
   async function handleClick() {
@@ -29,12 +32,17 @@ export function UpgradeButton({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        toast.error(data.error ?? "Something went wrong. Please try again.")
+        // The API's own message goes to the console, not into the toast: it is
+        // written for whoever is wiring Stripe up ("Billing is not
+        // configured"), it is the last English string that could reach a user
+        // in this flow, and there is nothing a customer can do with it.
+        console.error("[checkout] failed:", data.error ?? res.status)
+        toast.error(t("error"))
         return
       }
       if (data.url) window.location.href = data.url
     } catch {
-      toast.error("Something went wrong. Please try again.")
+      toast.error(t("error"))
     } finally {
       setLoading(false)
     }
@@ -48,7 +56,7 @@ export function UpgradeButton({
       variant={variant}
       className={className}
     >
-      {children ?? "Upgrade"}
+      {children ?? t("upgrade")}
     </Button>
   )
 }

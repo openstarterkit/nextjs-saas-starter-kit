@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import * as React from "react"
 import { LogOut } from "lucide-react"
 import { signOutAction } from "@/app/actions/auth"
@@ -29,6 +31,7 @@ export function SignOutDialog({
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
+  const t = useTranslations("dashboard.signOut")
   const [pending, startTransition] = React.useTransition()
 
   return (
@@ -41,7 +44,7 @@ export function SignOutDialog({
               <LogOut className="h-5 w-5" />
             </span>
           </div>
-          <DialogTitle>Sign out?</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
             You&apos;ll be signed out of your account and returned to the homepage.
           </DialogDescription>
@@ -57,7 +60,7 @@ export function SignOutDialog({
             onClick={() => startTransition(async () => signOutAction())}
             disabled={pending}
           >
-            {pending ? "Signing out…" : "Sign out"}
+            {pending ? t("pending") : t("confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

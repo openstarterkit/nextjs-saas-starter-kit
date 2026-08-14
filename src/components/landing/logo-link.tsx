@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname } from "@/i18n/navigation"
 
 /**
  * Logo link: navigates home, but when already on the home page (where a

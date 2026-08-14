@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -14,9 +16,9 @@ import { Input } from "@/components/ui/input"
 export function WaitlistForm({
   source = "pricing-card",
   disabled = false,
-  cta = "Join the waitlist",
-  note = "One short email when there is something worth telling you. Unsubscribe anytime, one click.",
-  disabledNote = "Forms are disabled in the live demo.",
+  cta,
+  note,
+  disabledNote,
 }: {
   source?: string
   disabled?: boolean
@@ -27,6 +29,7 @@ export function WaitlistForm({
   /** Small print when the form is disabled: say why, honestly. */
   disabledNote?: string
 }) {
+  const t = useTranslations("waitlist")
   const [email, setEmail] = useState("")
   const [website, setWebsite] = useState("") // honeypot: humans never see it
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle")
@@ -50,7 +53,7 @@ export function WaitlistForm({
   if (state === "sent") {
     return (
       <p className="w-full rounded-lg bg-primary/10 px-4 py-3 text-center text-sm font-medium text-primary">
-        Almost there: check your inbox to confirm your spot.
+        {t("sent")}
       </p>
     )
   }
@@ -71,11 +74,11 @@ export function WaitlistForm({
         <Input
           type="email"
           required
-          placeholder="you@company.com"
+          placeholder={t("emailPlaceholder")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={disabled || state === "sending"}
-          aria-label="Email address"
+          aria-label={t("emailLabel")}
         />
         <Button
           type="submit"
@@ -84,22 +87,24 @@ export function WaitlistForm({
           className="w-full"
           disabled={disabled || state === "sending"}
         >
-          {state === "sending" ? "Joining…" : cta}
+          {state === "sending" ? t("sending") : (cta ?? t("cta"))}
         </Button>
       </form>
 
       <p className="text-center text-xs text-muted-foreground">
-        {disabled ? disabledNote : note}
+        {disabled ? (disabledNote ?? t("disabledNote")) : (note ?? t("note"))}
       </p>
       {/* Informed consent at the point of collection: a dedicated single-purpose
           form needs no checkbox (the button is the affirmative act), but it must
           link the privacy policy. */}
       <p className="text-center text-[11px] leading-tight text-muted-foreground">
-        By joining you agree to our{" "}
-        <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
-          Privacy Policy
-        </Link>
-        .
+        {t.rich("consent", {
+          privacy: (chunks) => (
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
     </div>
   )

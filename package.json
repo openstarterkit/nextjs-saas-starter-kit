@@ -1,6 +1,6 @@
 {
   "name": "openstarterkit",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "engines": {
     "node": ">=24"
@@ -16,6 +16,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "smoke": "node scripts/smoke.mjs",
+    "check:translations": "node scripts/check-translations.mjs",
     "db:seed": "dotenv -e .env.local -- ts-node prisma/seed.ts",
     "db:seed:demo": "dotenv -e .env.local -- ts-node prisma/seed-demo.ts"
   },
@@ -44,8 +45,9 @@
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.28.0",
-    "next": "16.2.12",
+    "next": "16.3.0",
     "next-auth": "^5.0.0-beta.32",
+    "next-intl": "^4.13.6",
     "next-mdx-remote": "^6.0.0",
     "pg": "^8.22.0",
     "prisma": "^7.9.1",
@@ -71,7 +73,7 @@
     "dotenv": "^17.4.2",
     "dotenv-cli": "^11.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",

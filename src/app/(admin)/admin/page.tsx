@@ -1,4 +1,5 @@
 import { auth } from "@/auth"
+import { getFormatter, getTranslations } from "next-intl/server"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,8 +9,12 @@ import { PromoteUserButton } from "@/components/admin/promote-user-button"
 
 const ITEMS_PER_PAGE = 20
 
-function formatJoined(date: Date) {
-  return new Date(date).toLocaleDateString("en-US", {
+// Takes the formatter instead of hardcoding "en-US": this runs at module
+// scope, so it cannot reach the request locale on its own.
+type Formatter = Awaited<ReturnType<typeof getFormatter>>
+
+function formatJoined(format: Formatter, date: Date) {
+  return format.dateTime(new Date(date), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -84,6 +89,8 @@ export default async function AdminPage({
 }: {
   searchParams: Promise<{ page?: string; search?: string }>
 }) {
+  const t = await getTranslations("admin")
+  const format = await getFormatter()
   const session = await auth()
   if (!session || session.user.role !== "ADMIN") redirect("/dashboard")
 
@@ -100,15 +107,15 @@ export default async function AdminPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Admin Panel</h1>
-        <p className="mt-1 text-muted-foreground">Manage users and monitor business metrics.</p>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Users</CardDescription>
+            <CardDescription>{t("totalUsers")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{totalUsers}</p>
@@ -116,7 +123,7 @@ export default async function AdminPage({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Active Subscriptions</CardDescription>
+            <CardDescription>{t("activeSubscriptions")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-green-600 dark:text-green-400">{activeUsers}</p>
@@ -124,7 +131,7 @@ export default async function AdminPage({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>MRR (estimated)</CardDescription>
+            <CardDescription>{t("mrr")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-primary">${(mrr / 100).toFixed(0)}</p>
@@ -137,22 +144,22 @@ export default async function AdminPage({
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>Users</CardTitle>
-              <CardDescription>{totalUsers} total users</CardDescription>
+              <CardTitle>{t("usersTitle")}</CardTitle>
+              <CardDescription>{t("usersCount", { count: totalUsers })}</CardDescription>
             </div>
             <form className="flex gap-2">
               <input
                 type="text"
                 name="search"
                 defaultValue={search}
-                placeholder="Search by email..."
+                placeholder={t("searchPlaceholder")}
                 className="h-9 w-full rounded-[var(--radius)] border border-border bg-secondary px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-64"
               />
               <button
                 type="submit"
                 className="h-9 rounded-[var(--radius)] bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"
               >
-                Search
+                {t("search")}
               </button>
             </form>
           </div>
@@ -178,13 +185,13 @@ export default async function AdminPage({
                       {user.subscription.status}
                     </Badge>
                   ) : (
-                    <Badge variant="secondary">Free</Badge>
+                    <Badge variant="secondary">{t("free")}</Badge>
                   )}
                   <span className="text-sm text-muted-foreground">
-                    {user.subscription?.plan.name ?? "Free"}
+                    {user.subscription?.plan.name ?? t("free")}
                   </span>
                   <span className="ml-auto text-xs text-muted-foreground">
-                    Joined {formatJoined(user.createdAt)}
+                    {t("joined", { date: formatJoined(format, user.createdAt) })}
                   </span>
                 </div>
                 {user.role !== "ADMIN" && (
@@ -195,7 +202,7 @@ export default async function AdminPage({
               </div>
             ))}
             {users.length === 0 && (
-              <p className="py-8 text-center text-muted-foreground">No users found.</p>
+              <p className="py-8 text-center text-muted-foreground">{t("noUsers")}</p>
             )}
           </div>
 
@@ -203,11 +210,11 @@ export default async function AdminPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[180px]">User</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="hidden lg:table-cell">Joined</TableHead>
+                  <TableHead className="min-w-[180px]">{t("colUser")}</TableHead>
+                  <TableHead>{t("colPlan")}</TableHead>
+                  <TableHead>{t("colStatus")}</TableHead>
+                  <TableHead>{t("colRole")}</TableHead>
+                  <TableHead className="hidden lg:table-cell">{t("colJoined")}</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -224,7 +231,7 @@ export default async function AdminPage({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm">{user.subscription?.plan.name ?? "Free"}</span>
+                      <span className="text-sm">{user.subscription?.plan.name ?? t("free")}</span>
                     </TableCell>
                     <TableCell>
                       {user.subscription ? (
@@ -234,7 +241,7 @@ export default async function AdminPage({
                           {user.subscription.status}
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">Free</Badge>
+                        <Badge variant="secondary">{t("free")}</Badge>
                       )}
                     </TableCell>
                     <TableCell>
@@ -244,7 +251,7 @@ export default async function AdminPage({
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <span className="text-sm text-muted-foreground whitespace-nowrap">
-                        {formatJoined(user.createdAt)}
+                        {formatJoined(format, user.createdAt)}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -255,7 +262,7 @@ export default async function AdminPage({
                 {users.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                      No users found.
+                      {t("noUsers")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -267,7 +274,7 @@ export default async function AdminPage({
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
+                {t("page", { page, total: totalPages })}
               </p>
               <div className="flex gap-2">
                 {page > 1 && (
@@ -275,7 +282,7 @@ export default async function AdminPage({
                     href={`/admin?page=${page - 1}${search ? `&search=${search}` : ""}`}
                     className="inline-flex h-9 items-center rounded-[var(--radius)] border border-border px-4 text-sm hover:bg-muted"
                   >
-                    Previous
+                    {t("previous")}
                   </a>
                 )}
                 {page < totalPages && (
@@ -283,7 +290,7 @@ export default async function AdminPage({
                     href={`/admin?page=${page + 1}${search ? `&search=${search}` : ""}`}
                     className="inline-flex h-9 items-center rounded-[var(--radius)] border border-border px-4 text-sm hover:bg-muted"
                   >
-                    Next
+                    {t("next")}
                   </a>
                 )}
               </div>
@@ -297,16 +304,20 @@ export default async function AdminPage({
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>Waitlist</CardTitle>
+              <CardTitle>{t("waitlistTitle")}</CardTitle>
               <CardDescription>
                 {waitlistConfirmed} confirmed · {waitlistPending} pending confirmation
               </CardDescription>
             </div>
+            {/* A file download from a route handler, not a page. `next/link`
+                would prefetch it, turning a CSV export into a background
+                request; the rule cannot tell a route handler from a page. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/api/admin/newsletter-export"
               className="inline-flex h-9 items-center rounded-[var(--radius)] border border-border px-4 text-sm hover:bg-muted"
             >
-              Export CSV
+              {t("exportCsv")}
             </a>
           </div>
         </CardHeader>
@@ -318,22 +329,22 @@ export default async function AdminPage({
                 <p className="truncate text-sm font-medium text-foreground">{sub.email}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {sub.unsubscribedAt ? (
-                    <Badge variant="outline">Unsubscribed</Badge>
+                    <Badge variant="outline">{t("unsubscribed")}</Badge>
                   ) : sub.confirmedAt ? (
-                    <Badge variant="success">Confirmed</Badge>
+                    <Badge variant="success">{t("confirmed")}</Badge>
                   ) : (
-                    <Badge variant="secondary">Pending</Badge>
+                    <Badge variant="secondary">{t("pending")}</Badge>
                   )}
                   <span className="text-sm text-muted-foreground">{sub.source}</span>
                   <span className="ml-auto text-xs text-muted-foreground">
-                    {formatJoined(sub.createdAt)}
+                    {formatJoined(format, sub.createdAt)}
                   </span>
                 </div>
               </div>
             ))}
             {waitlistRecent.length === 0 && (
               <p className="py-8 text-center text-muted-foreground">
-                No subscribers yet. The signup form lives on the pricing page.
+                {t("noSubscribers")}
               </p>
             )}
           </div>
@@ -342,10 +353,10 @@ export default async function AdminPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[220px]">Email</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden lg:table-cell">Requested</TableHead>
+                  <TableHead className="min-w-[220px]">{t("colEmail")}</TableHead>
+                  <TableHead>{t("colSource")}</TableHead>
+                  <TableHead>{t("colStatus")}</TableHead>
+                  <TableHead className="hidden lg:table-cell">{t("colRequested")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -359,16 +370,16 @@ export default async function AdminPage({
                     </TableCell>
                     <TableCell>
                       {sub.unsubscribedAt ? (
-                        <Badge variant="outline">Unsubscribed</Badge>
+                        <Badge variant="outline">{t("unsubscribed")}</Badge>
                       ) : sub.confirmedAt ? (
-                        <Badge variant="success">Confirmed</Badge>
+                        <Badge variant="success">{t("confirmed")}</Badge>
                       ) : (
-                        <Badge variant="secondary">Pending</Badge>
+                        <Badge variant="secondary">{t("pending")}</Badge>
                       )}
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <span className="text-sm text-muted-foreground whitespace-nowrap">
-                        {formatJoined(sub.createdAt)}
+                        {formatJoined(format, sub.createdAt)}
                       </span>
                     </TableCell>
                   </TableRow>
@@ -376,7 +387,7 @@ export default async function AdminPage({
                 {waitlistRecent.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
-                      No subscribers yet. The signup form lives on the pricing page.
+                      {t("noSubscribers")}
                     </TableCell>
                   </TableRow>
                 )}

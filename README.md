@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.5.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.6.0-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -376,9 +376,11 @@ OpenStarterKit ships continuously and stays free: pull `main` for updates. A pai
 
 ## 🌍 Languages
 
-The kit ships in English today. **Italian, and the i18n scaffold behind it, arrive with v1.6**: in the free kit, not in Pro, because whatever language you need the plumbing should be yours.
+**From v1.6 every user facing string lives in a message file, not inside a component**, with one exception on purpose: the placeholder privacy, terms and cookies pages, which you replace with text of your own before launch and which should not be assembled from a file that quietly falls back to another language. Everything else means filling one JSON file instead of hunting through a hundred components, and needing two languages at once means the routing, the fallback and the language switch are already there rather than a refactor you pay for later.
 
-Other languages will be **community driven and welcome**: once the scaffold ships, if the one you need is missing, open a pull request with its translation file. They land progressively, on no guaranteed schedule, which is the honest version: a translation ships when someone writes it, and that someone can be you.
+Built on [next-intl](https://next-intl.dev), with **no translation service and no account required**: the files are plain JSON in the standard layout, so running them through Crowdin or anything else is your call. Your Markdown docs translate too, one file at a time: see [docs/i18n.md](./docs/i18n.md).
+
+**On openstarterkit.dev the language switch is real**: every page of the documentation is there in Italian, and each translation records the revision of the English file it was written from, so `npm run check:translations` says which ones went stale instead of leaving you to compare by hand. The blog stays English on purpose. Anything without a translation, page or message key, falls back to English with a line saying so rather than a gap, which is the behaviour you inherit and can see working on us instead of reading a description of it.
 
 ## 🔒 Security
 

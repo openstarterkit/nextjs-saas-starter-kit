@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { FolderKanban, ArrowRight } from "lucide-react"
 import { prisma } from "@/lib/prisma"
@@ -7,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CreateProjectForm } from "@/components/dashboard/create-project-form"
 
 export default async function ProjectsPage() {
+  const t = await getTranslations("dashboard.projects")
   const session = await auth()
   if (!session) redirect("/login")
 
@@ -18,9 +20,9 @@ export default async function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Projects</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="mt-1 text-muted-foreground">
-          The things you&apos;re working on. This is the example resource - copy the pattern to build your own.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -28,8 +30,8 @@ export default async function ProjectsPage() {
         {/* Create */}
         <Card className="h-fit">
           <CardHeader>
-            <CardTitle className="text-base">New project</CardTitle>
-            <CardDescription>Create a project you own.</CardDescription>
+            <CardTitle className="text-base">{t("newTitle")}</CardTitle>
+            <CardDescription>{t("newDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <CreateProjectForm />
@@ -43,9 +45,9 @@ export default async function ProjectsPage() {
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <FolderKanban className="h-6 w-6" />
               </span>
-              <p className="mt-4 font-medium text-foreground">No projects yet</p>
+              <p className="mt-4 font-medium text-foreground">{t("emptyTitle")}</p>
               <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-                Create your first project with the form on the left to get started.
+                {t("emptyBody")}
               </p>
             </Card>
           ) : (
@@ -60,7 +62,7 @@ export default async function ProjectsPage() {
                           {project.description}
                         </p>
                       ) : (
-                        <p className="mt-0.5 text-sm text-muted-foreground/60">No description</p>
+                        <p className="mt-0.5 text-sm text-muted-foreground/60">{t("noDescription")}</p>
                       )}
                     </div>
                     <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
