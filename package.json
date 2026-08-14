@@ -49,7 +49,7 @@
     "next-auth": "^5.0.0-beta.32",
     "next-intl": "^4.13.6",
     "next-mdx-remote": "^6.0.0",
-    "pg": "^8.22.0",
+    "pg": "^8.23.0",
     "prisma": "^7.9.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
