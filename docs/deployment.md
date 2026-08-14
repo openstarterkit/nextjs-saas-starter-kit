@@ -24,6 +24,18 @@ Set the variables from [.env.example](../.env.example) in the Vercel dashboard (
   - `https://yourdomain.com/api/auth/callback/github`
 - `RESEND_API_KEY` + `EMAIL_FROM` if you want magic link, password reset and transactional emails
 
+## Deploying somewhere other than Vercel
+
+The kit is a standard Next.js app, so Docker, a VPS or any Node host works. One variable is needed that Vercel does not ask for:
+
+```bash
+AUTH_TRUST_HOST="true"
+```
+
+Auth.js trusts the host it is served from when it detects Vercel, and refuses it everywhere else, which protects you from a forged `Host` header behind a proxy you do not control. Without it the app builds and starts normally and then sign-in fails with *"There was a problem with the server configuration"*, with `UntrustedHost` in the server log and nothing on the page to point at the cause. Set it once you are behind a proxy or load balancer you trust.
+
+The same applies when you run the production build on your own machine with `npm start`. `npm run dev` does not need it.
+
 ## Database migrations
 
 Builds do not run migrations. Apply them against the production database as a deliberate step:

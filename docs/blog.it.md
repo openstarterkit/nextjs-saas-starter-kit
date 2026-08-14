@@ -2,7 +2,7 @@
 title: Blog e contenuti
 description: Blog MDX su file, con categorie, feed RSS e SEO per ogni articolo.
 translated_from: blog.md
-source_commit: 7e21d8c
+source_checksum: b4491fb3a20b
 ---
 
 # Blog e contenuti
@@ -65,12 +65,12 @@ Il feed è generato dallo stesso frontmatter e servito su `/blog/rss.xml`. È di
 
 ## SEO
 
-Ogni articolo imposta i propri metadati, un indirizzo canonico, i tag Open Graph e un blocco JSON-LD `Article`, e riceve un'immagine Open Graph resa al volo (vedi `src/app/(public)/blog/[slug]/opengraph-image.tsx`). Gli articoli finiscono in `sitemap.xml` automaticamente.
+Ogni articolo imposta i propri metadati, un indirizzo canonico, i tag Open Graph e un blocco JSON-LD `Article`, e riceve un'immagine Open Graph resa al volo (vedi `src/app/[locale]/(public)/blog/[slug]/opengraph-image.tsx`). Gli articoli finiscono in `sitemap.xml` automaticamente.
 
 ## Dove vive il codice
 
 | File | Ruolo |
 |---|---|
 | `src/lib/blog.ts` | Legge e interpreta i file, espone `getAllPosts`, `getPost`, `getCategories` |
-| `src/app/(public)/blog/` | Indice, pagina articolo, pagina categoria e la route del feed RSS |
+| `src/app/[locale]/(public)/blog/` | Indice, pagina articolo, pagina categoria e la route del feed RSS |
 | `content/blog/` | I tuoi articoli |

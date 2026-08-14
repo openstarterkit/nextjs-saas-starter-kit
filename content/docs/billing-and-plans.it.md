@@ -2,7 +2,7 @@
 title: "Fatturazione e piani"
 description: "Cambia piano, trova le fatture, aggiorna la carta e disdici, tutto dal tuo account."
 translated_from: billing-and-plans.md
-source_commit: c33316e
+source_checksum: 66cd53324b8a
 ---
 
 # Fatturazione e piani

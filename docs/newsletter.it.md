@@ -2,7 +2,7 @@
 title: Newsletter e waitlist
 description: Lista con doppio opt-in, registro del consenso, sincronizzazione con Resend ed export dall'amministrazione.
 translated_from: newsletter.md
-source_commit: 7e21d8c
+source_checksum: e88bee27b420
 ---
 
 # Newsletter e waitlist

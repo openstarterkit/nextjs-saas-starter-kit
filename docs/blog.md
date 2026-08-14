@@ -58,12 +58,12 @@ The feed is generated from the same frontmatter and served at `/blog/rss.xml`. I
 
 ## SEO
 
-Each post sets its own metadata, a canonical URL, Open Graph tags and an Article JSON-LD block, and gets a dynamically rendered Open Graph image (see `src/app/(public)/blog/[slug]/opengraph-image.tsx`). Posts are added to `sitemap.xml` automatically.
+Each post sets its own metadata, a canonical URL, Open Graph tags and an Article JSON-LD block, and gets a dynamically rendered Open Graph image (see `src/app/[locale]/(public)/blog/[slug]/opengraph-image.tsx`). Posts are added to `sitemap.xml` automatically.
 
 ## Where the code lives
 
 | File | Role |
 |---|---|
 | `src/lib/blog.ts` | Reads and parses the files, exposes `getAllPosts`, `getPost`, `getCategories` |
-| `src/app/(public)/blog/` | Index, post page, category page and the RSS route |
+| `src/app/[locale]/(public)/blog/` | Index, post page, category page and the RSS route |
 | `content/blog/` | Your posts |

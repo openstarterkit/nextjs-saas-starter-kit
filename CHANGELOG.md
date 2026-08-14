@@ -7,7 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
-## [1.6.0] - 2026-08-13
+## [1.6.1] - 2026-08-14
+
+🔧 **The staleness check now works in your repository, not only in ours.** Same day as 1.6.0, because a check that passes only where it was written is worse than no check at all: it reports success to the one person who does not need it.
+
+### Fixed
+- **`npm run check:translations` failed on every clone of the kit**, all eleven files at once, with `"source_commit: 7fd7e49" is not a commit in this repository`. A git revision only resolves inside the history it was created in, and cloning starts a fresh one. The marker is now `source_checksum`, a short hash of the source file itself: it stays valid in any repository, needs no git, and works on a source archive downloaded from a release. Line endings are normalised before hashing, so one file gives one value on Windows and on Linux. **If you translated a doc under 1.6.0**, the check names the old field and prints the value that replaces it
+- Two documentation paths still pointed at `src/app/(public)/blog/`, which 1.6.0 moved under `[locale]`
+- The coverage figures in the README were measured two releases ago
+- The release links at the bottom of this file stopped at 1.4.1
+
+### Added
+- **`AUTH_TRUST_HOST` in `.env.example`, and a deployment section for hosts other than Vercel.** Auth.js trusts the host it is served from when it detects Vercel and refuses it everywhere else, so a Docker or VPS deployment builds, starts, and then fails sign-in with *"There was a problem with the server configuration"* and nothing on the page to explain it. The kit says it runs anywhere Next.js runs, and did not say this
+
+### Changed
+- `lucide-react` 1.31.0 and `pg` 8.23.0
+
+---
+
+## [1.6.0] - 2026-08-14
 
 🌍 **i18n & docs.** Every string a user can read now lives in a message file instead of inside a component. Shipping your product in a language that is not English becomes one JSON file to fill rather than a hundred components to hunt through, and the routing, the fallback and the language switch are already there rather than a refactor you pay for later. The documentation is bilingual, and the plumbing that makes it bilingual is yours.
 
@@ -219,6 +237,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[1.6.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.1
+[1.6.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.0
+[1.5.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.5.0
 [1.4.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.4.1
 [1.4.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.4.0
 [1.3.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.3.0

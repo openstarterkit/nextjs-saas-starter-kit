@@ -2,7 +2,7 @@
 title: Primi passi
 description: Da git clone all'app che gira, in una decina di minuti.
 translated_from: getting-started.md
-source_commit: 7ec7ed8
+source_checksum: 3954fb6a1cdc
 ---
 
 # Primi passi

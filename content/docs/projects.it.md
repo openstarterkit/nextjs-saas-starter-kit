@@ -2,7 +2,7 @@
 title: "Progetti"
 description: "Come funzionano i progetti, chi può vederli, e cosa succede quando ne archivi uno."
 translated_from: projects.md
-source_commit: c33316e
+source_checksum: 533cc42f7c08
 ---
 
 # Progetti

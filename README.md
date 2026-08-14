@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.6.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.6.1-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -52,6 +52,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 - 🔓 **No vendor lock-in**: plain PostgreSQL, Prisma and Auth.js. Host it anywhere, own your data.
 - 🧩 **A complete SaaS, not a starter demo**: auth, billing, an admin panel with real MRR metrics, transactional emails and a polished landing page.
 - 📖 **MIT licensed**: use it for anything, commercial included. No license keys, no unlock fees.
+- 🌍 **Ships in more than one language**: every user-facing string lives in a message file, with routing, fallback and a language switch already wired. No translation service and no account required, and it is in the free kit instead of a paid add-on.
 - 🕹️ **A publishable demo, built in**: one env var turns a deployment into a safe public demo of *your* product, with one-click explore accounts and writes disabled. Normally that is something you build yourself.
 
 ---
@@ -72,6 +73,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 | 🕹️ | **Demo mode** | Ship a public demo of your product: `DEMO_MODE="true"` gives one-click explore accounts, disabled writes and checkout, and a seeded dataset you can reset |
 | ✍️ | **Blog & content** | File-based MDX blog with categories and an RSS feed: write a Markdown file, commit, publish |
 | 🔎 | **SEO** | Sitemap, robots, dynamic Open Graph images and Article JSON-LD out of the box |
+| 🌍 | **i18n** | next-intl with a prefix only for non-default locales, per-key fallback to English, `hreflang`, and bilingual Markdown docs with a staleness check |
 | 📨 | **Waitlist & contact** | Double opt-in newsletter waitlist (admin export, Resend sync) and a spam-protected contact form |
 | 🤖 | **AI-ready** | Ships agent instructions for Claude Code, Cursor and Copilot (`AGENTS.md`) so your assistant is productive on day one |
 | ✅ | **CI + security** | GitHub Actions pipeline (lint, tests, build), security headers, per-endpoint rate limiting, Dependabot with grouped updates |
@@ -298,9 +300,9 @@ Coverage of `src/lib`, excluding the thin wrappers around Prisma, Stripe and Res
 
 | | |
 |---|---|
-| Lines | **67%** |
+| Lines | **63%** |
 | Statements | **61%** |
-| Functions | **64%** |
+| Functions | **70%** |
 | Branches | **48%** |
 
 Run `npm run test:coverage` to check those numbers yourself: they are printed by the command, not published to a badge service.
@@ -380,7 +382,7 @@ OpenStarterKit ships continuously and stays free: pull `main` for updates. A pai
 
 Built on [next-intl](https://next-intl.dev), with **no translation service and no account required**: the files are plain JSON in the standard layout, so running them through Crowdin or anything else is your call. Your Markdown docs translate too, one file at a time: see [docs/i18n.md](./docs/i18n.md).
 
-**On openstarterkit.dev the language switch is real**: every page of the documentation is there in Italian, and each translation records the revision of the English file it was written from, so `npm run check:translations` says which ones went stale instead of leaving you to compare by hand. The blog stays English on purpose. Anything without a translation, page or message key, falls back to English with a line saying so rather than a gap, which is the behaviour you inherit and can see working on us instead of reading a description of it.
+**On openstarterkit.dev the language switch is real**: every page of the documentation is there in Italian, and each translation records a checksum of the English file it was written from, so `npm run check:translations` says which ones went stale instead of leaving you to compare by hand, in your repository exactly as in ours. The blog stays English on purpose. Anything without a translation, page or message key, falls back to English with a line saying so rather than a gap, which is the behaviour you inherit and can see working on us instead of reading a description of it.
 
 ## 🔒 Security
 

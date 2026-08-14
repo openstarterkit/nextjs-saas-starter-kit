@@ -12,16 +12,28 @@
  *
  * The convention that makes this checkable: a translated file is named after
  * its source with the locale in the middle (`getting-started.it.md`), and its
- * frontmatter records which revision of that source it was written from.
+ * frontmatter records a checksum of the source it was written from.
  *
  *   ---
  *   translated_from: getting-started.md
- *   source_commit: 1ed5f58
+ *   source_checksum: 3f9a1c04b7e2
  *   ---
  *
- * After updating a translation, move `source_commit` to the current revision
- * of the English file. `git log -1 --format=%h -- docs/getting-started.md`
- * prints it.
+ * When the source changes, its checksum changes, and this reports the file as
+ * stale until you update the translation and the marker. The failure message
+ * prints the value to paste, so there is no command to remember.
+ *
+ * Why a checksum of the content and not a git revision: a commit hash is only
+ * meaningful inside the history it was created in. Clone this kit and your
+ * history starts fresh, so every recorded hash points at a commit your
+ * repository has never seen and the check fails on all of them at once. The
+ * content is the same everywhere, which is what makes the marker portable.
+ * As a side effect this needs no git at all, so it also works on a source
+ * archive downloaded from a release.
+ *
+ * Line endings are normalised before hashing: the same file checked out on
+ * Windows and on Linux differs by a carriage return per line, which would
+ * otherwise produce two different checksums for one unchanged file.
  *
  * Exits non-zero when a translation is stale or unmarked, so the release
  * checklist can gate on it.
@@ -29,7 +41,7 @@
 
 import fs from "node:fs"
 import path from "node:path"
-import { execFileSync } from "node:child_process"
+import crypto from "node:crypto"
 
 const DIRS = ["docs", path.join("content", "docs")]
 const TRANSLATION = /^(.+)\.([a-z]{2})\.md$/
@@ -47,22 +59,10 @@ function frontmatter(file) {
   return fields
 }
 
-/** Commits touching `file` since `commit`, newest first. Empty means current. */
-function commitsSince(commit, file) {
-  return execFileSync("git", ["log", "--oneline", `${commit}..HEAD`, "--", file], {
-    encoding: "utf8",
-  })
-    .split("\n")
-    .filter(Boolean)
-}
-
-function isKnownCommit(commit) {
-  try {
-    execFileSync("git", ["cat-file", "-e", `${commit}^{commit}`], { stdio: "ignore" })
-    return true
-  } catch {
-    return false
-  }
+/** Short content hash of a file, stable across platforms and repositories. */
+function checksum(file) {
+  const text = fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n")
+  return crypto.createHash("sha256").update(text).digest("hex").slice(0, 12)
 }
 
 const problems = []
@@ -83,26 +83,30 @@ for (const dir of DIRS) {
       continue
     }
 
-    const { source_commit: commit, translated_from: from } = frontmatter(path.join(dir, name))
+    const fields = frontmatter(path.join(dir, name))
+    const recorded = fields.source_checksum
+    const from = fields.translated_from
+    const current = checksum(source)
 
-    if (!commit) {
-      problems.push(`${file}: no "source_commit" in frontmatter, so staleness cannot be checked`)
+    if (!recorded) {
+      // Kits translated before this marker changed shape record a git revision
+      // instead. Say so by name, or the message reads as a missing field on a
+      // file that clearly has one.
+      const hint = fields.source_commit
+        ? `has "source_commit: ${fields.source_commit}", which this version replaced`
+        : 'has no "source_checksum"'
+      problems.push(`${file}: ${hint}. Set "source_checksum: ${current}"`)
       continue
     }
     if (from && from !== path.basename(source)) {
       problems.push(`${file}: "translated_from: ${from}" does not match ${source}`)
       continue
     }
-    if (!isKnownCommit(commit)) {
-      problems.push(`${file}: "source_commit: ${commit}" is not a commit in this repository`)
-      continue
-    }
 
-    const behind = commitsSince(commit, source)
-    if (behind.length > 0) {
+    if (recorded !== current) {
       problems.push(
-        `${file}: ${source} changed ${behind.length} time(s) since ${commit}\n` +
-          behind.map((line) => `      ${line}`).join("\n")
+        `${file}: ${source} has changed since this was translated\n` +
+          `      recorded ${recorded}, current ${current}`
       )
     }
   }
@@ -124,7 +128,6 @@ if (problems.length === 0) {
 console.error(`${problems.length} of ${checked} translated doc(s) need attention:\n`)
 for (const problem of problems) console.error(`  - ${problem}`)
 console.error(
-  "\nUpdate the translation, then set source_commit to the source's current revision:" +
-    "\n  git log -1 --format=%h -- <source file>"
+  "\nUpdate the translation, then set source_checksum to the value printed above."
 )
 process.exit(1)

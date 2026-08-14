@@ -80,7 +80,7 @@ describe("the frontmatter of every translation", () => {
       data = matter(raw).data
     }, `${label}: frontmatter YAML non valido (una descrizione con i due punti va tra virgolette)`).not.toThrow()
 
-    for (const field of ["title", "description", "translated_from", "source_commit"]) {
+    for (const field of ["title", "description", "translated_from", "source_checksum"]) {
       expect(data[field], `${label}: manca "${field}" nel frontmatter`).toBeTruthy()
     }
     // Without this, check:translations silently skips a file whose

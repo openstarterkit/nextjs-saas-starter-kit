@@ -2,7 +2,7 @@
 title: "Primi passi"
 description: "Crea il tuo account, imposta il primo progetto e invita le persone con cui lavori."
 translated_from: getting-started.md
-source_commit: c33316e
+source_checksum: d6f251ca3370
 ---
 
 # Primi passi

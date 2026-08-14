@@ -2,7 +2,7 @@
 title: Deployment
 description: "In produzione su Vercel: variabili, migrazioni, webhook, e come diventare amministratore."
 translated_from: deployment.md
-source_commit: a76df3e
+source_checksum: 757640c3ac2c
 ---
 
 # Deployment
@@ -30,6 +30,18 @@ Imposta le variabili di [.env.example](../.env.example) nel pannello Vercel (Pro
   - `https://iltuodominio.com/api/auth/callback/google`
   - `https://iltuodominio.com/api/auth/callback/github`
 - `RESEND_API_KEY` e `EMAIL_FROM` se vuoi magic link, reset della password ed email transazionali
+
+## Deploy fuori da Vercel
+
+Il kit è una normale app Next.js, quindi Docker, un VPS o qualsiasi host Node vanno bene. Serve una variabile che su Vercel non è richiesta:
+
+```bash
+AUTH_TRUST_HOST="true"
+```
+
+Auth.js si fida dell'host da cui viene servito quando rileva Vercel, e lo rifiuta ovunque altro: è la protezione contro un header `Host` falsificato dietro un proxy che non controlli. Senza, l'app compila e parte normalmente, poi l'accesso fallisce con *«There was a problem with the server configuration»*, con `UntrustedHost` nel log del server e niente sulla pagina che indichi la causa. Impostala quando sei dietro un proxy o un bilanciatore di cui ti fidi.
+
+Vale anche quando esegui il build di produzione sulla tua macchina con `npm start`. Con `npm run dev` non serve.
 
 ## Migrazioni del database
 

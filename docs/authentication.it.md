@@ -2,7 +2,7 @@
 title: Autenticazione
 description: OAuth, magic link, email e password, reset e collegamento degli account.
 translated_from: authentication.md
-source_commit: 7fd7e49
+source_checksum: d08db5adcba4
 ---
 
 # Autenticazione

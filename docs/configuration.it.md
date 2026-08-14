@@ -2,7 +2,7 @@
 title: Configurazione
 description: "Ogni variabile d'ambiente spiegata: database, OAuth, Stripe, email, marchio."
 translated_from: configuration.md
-source_commit: 30198d7
+source_checksum: 140429ac03ea
 ---
 
 # Configurazione

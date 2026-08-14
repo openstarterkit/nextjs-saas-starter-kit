@@ -2,7 +2,7 @@
 title: Pagamenti e abbonamenti
 description: Abbonamenti, pagamenti una tantum, consumo a metrica e diritti d'accesso.
 translated_from: billing.md
-source_commit: c33316e
+source_checksum: c899248002a2
 ---
 
 # Pagamenti e abbonamenti
