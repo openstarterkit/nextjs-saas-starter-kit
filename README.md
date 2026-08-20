@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.6.2-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.6.3-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -49,7 +49,7 @@
 Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones demo. **OpenStarterKit is different:**
 
 - 💳 **Payments included in the free tier**: full Stripe Checkout, Customer Portal and webhooks, not paywalled behind a Pro plan.
-- 🔓 **No vendor lock-in**: plain PostgreSQL, Prisma and Auth.js. Host it anywhere, own your data.
+- 🔓 **It is plain Next.js**: no compiler, no config DSL, no proprietary CLI. The App Router, Server Actions and Prisma behave exactly as their own docs say, with plain PostgreSQL underneath: host it anywhere, own your data.
 - 🧩 **A complete SaaS, not a starter demo**: auth, billing, an admin panel with real MRR metrics, transactional emails and a polished landing page.
 - 📖 **MIT licensed**: use it for anything, commercial included. No license keys, no unlock fees.
 - 🌍 **Ships in more than one language**: every user-facing string lives in a message file, with routing, fallback and a language switch already wired. No translation service and no account required, and it is in the free kit instead of a paid add-on.
@@ -84,7 +84,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 
 | Layer | Choice |
 |---|---|
-| **Framework** | Next.js 16.2 (App Router, Turbopack) |
+| **Framework** | Next.js 16.3 (App Router, Turbopack) |
 | **Language** | TypeScript (strict mode) |
 | **Styling** | Tailwind CSS v4 + dark mode |
 | **Auth** | Auth.js v5 (OAuth, magic link, email + password) |

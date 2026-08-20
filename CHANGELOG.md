@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.6.3] - 2026-08-20
+
+🛡️ **Security patch.** A high severity advisory landed in the dependency tree through Prisma, and no stable Prisma release closes it yet. This release pins the fixed version directly, so a fresh clone is clean.
+
+### Security
+- **`deepmerge-ts` forced to 8.0.1 with an npm override.** [GHSA-ggr8-5vv4-36mx](https://github.com/advisories/GHSA-ggr8-5vv4-36mx) is rated high and affects every version below 8.0.0. You do not depend on it directly: it arrives through `@prisma/config`, which both `prisma` and `@prisma/client` pull in, so moving packages between dependencies and devDependencies does not help. Note that `npm audit fix --force` "resolves" it by installing `prisma@6.12.0`, a major version backwards. The override is temporary and goes away when a stable Prisma release depends on version 8 on its own.
+
+### Changed
+- **Dependencies**: Next.js 16.3.1, Stripe 22.5.0, `@stripe/stripe-js` 9.13.0, Resend 6.20.0, Sonner 2.0.8.
+- **README**: the "Why OpenStarterKit" section now leads with what the kit is, plain Next.js with no compiler, no config DSL and no proprietary CLI, instead of what it avoids. Same promise about owning your data, stated in a way you can verify by opening the repository.
+
+---
+
 ## [1.6.2] - 2026-08-14
 
 🔤 **Copy fixes.** Two FAQ answers were printing a template literal instead of the product name, and the test suite reported its failures in Italian.
