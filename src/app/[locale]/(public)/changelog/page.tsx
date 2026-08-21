@@ -28,6 +28,7 @@ const markdownComponents: Components = {
 export const metadata: Metadata = {
   title: `Changelog | ${siteConfig.name}`,
   description: `Every ${siteConfig.name} release: new features, changes and fixes.`,
+  alternates: { canonical: `${siteConfig.url}/changelog` },
 }
 
 function formatDate(iso: string | null) {

@@ -2,7 +2,7 @@
 title: Autenticazione
 description: OAuth, magic link, email e password, reset e collegamento degli account.
 translated_from: authentication.md
-source_checksum: d08db5adcba4
+source_checksum: 2eeb97eded1f
 ---
 
 # Autenticazione
@@ -34,9 +34,15 @@ Se `RESEND_API_KEY` non è impostata, il pulsante si nasconde da solo e il provi
 
 Accesso, registrazione, magic link e richieste di reset passano da un piccolo limitatore a finestra fissa tenuto in memoria (`src/lib/rate-limit.ts`). Sulle piattaforme serverless ogni istanza ha la propria memoria, quindi consideralo un dosso e non un muro: il freno vero contro la forza bruta è il costo di bcrypt. Se ti servono garanzie forti su larga scala, sostituiscilo con un archivio condiviso, per esempio Upstash Redis, dietro la stessa firma di funzione.
 
+Vale la pena sapere quale limite fa cosa, perché l'argomento qui sopra ne copre solo uno. Il limite sull'accesso protegge i tentativi di password, e lì il peso lo regge bcrypt. I limiti su magic link, registrazione e reset proteggono invece **l'invio di email**: ognuno stabilisce quanti messaggi un singolo indirizzo può far partire, e bcrypt non c'entra niente. Se quello che stai proteggendo è la bolletta di Resend o la reputazione del tuo dominio, è questo il limite da spostare per primo su un archivio condiviso.
+
+I form pubblici (contatti, newsletter) sono limitati per IP invece che per indirizzo. Come si comporta questo fuori da Vercel è spiegato in [Deployment](./deployment.it.md#deploy-fuori-da-vercel).
+
 ### Una nota sulle sessioni JWT
 
 Le sessioni sono JWT senza stato, il che di norma le rende impossibili da revocare lato server. Il kit chiude la falla che conta: ogni utente ha un contatore `sessionVersion` che viene scritto nel token e riconfrontato col database al massimo una volta al minuto. Un reset della password incrementa il contatore, quindi ogni altra sessione muore entro una sessantina di secondi; il controllo, se il database dà errore, lascia passare (prima la disponibilità) ed è limitato nella frequenza perché il middleware gira su quasi ogni richiesta. Cambiare la password dalle impostazioni **non** incrementa il contatore, di proposito, così la sessione che sta facendo la modifica resta dentro. Se il tuo modello di rischio richiede la revoca istantanea, passa alle sessioni su database.
+
+Lo stesso controllo rilegge anche il **ruolo** dell'utente, quindi cambiarlo (dal pannello di amministrazione, o a mano nel database) raggiunge una sessione già esistente entro quello stesso minuto, e senza disconnettere nessuno. Prima della v1.6.4 il ruolo veniva scritto una volta sola all'accesso e non veniva più riletto: promuovere qualcuno non produceva alcun effetto visibile finché non usciva e rientrava, e degradarlo gli lasciava i privilegi attivi per tutta la vita del token, che di default è 30 giorni.
 
 ## Collegare più account
 

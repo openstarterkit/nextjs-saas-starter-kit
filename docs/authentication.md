@@ -27,9 +27,15 @@ If `RESEND_API_KEY` is not set, the button hides itself and the provider is not 
 
 Sign-in, signup, magic link and reset requests go through a small fixed-window in-memory limiter (`src/lib/rate-limit.ts`). On serverless platforms each instance has its own memory, so treat it as a speed bump, not a wall: bcrypt's cost is the real brute-force brake. If you need hard guarantees at scale, swap in a shared store (for example Upstash Redis) behind the same function signature.
 
+It is worth knowing which limit does what, because the argument above only covers one of them. The limit on sign-in guards password attempts, and there bcrypt carries most of the weight. The limits on magic link, signup and reset guard **outbound email**: each caps how many messages one address can trigger, and bcrypt has nothing to do with it. If what you are protecting is your Resend bill or your sending reputation, that is the one to move to a shared store first.
+
+Public forms (contact, newsletter) are limited by IP rather than by address. How that behaves away from Vercel is in [Deployment](./deployment.md#deploying-somewhere-other-than-vercel).
+
 ### A note on JWT sessions
 
 Sessions are stateless JWTs, which normally makes them impossible to revoke server-side. The kit closes the gap that matters: every user has a `sessionVersion` counter that is stamped into the token and re-checked against the database at most once a minute. A password reset bumps the counter, so every other session dies within about 60 seconds; the check fails open on database errors (availability first) and is throttled because the middleware runs on nearly every request. Changing the password from Settings deliberately does NOT bump the counter, so the session doing the change stays signed in. If your threat model needs instant revocation, switch to database sessions.
+
+That same check re-reads the user's **role**, so changing it (from the admin panel, or by hand in the database) reaches a session that already exists within the same minute, and without signing anyone out. Before v1.6.4 the role was stamped once at sign-in and never read again: promoting someone did nothing visible until they signed out, and demoting someone left their privileges live for as long as the token did, which is 30 days by default.
 
 ## Account linking
 

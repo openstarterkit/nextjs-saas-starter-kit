@@ -281,6 +281,8 @@
     "confirmed": "Confirmed",
     "pending": "Pending",
     "noSubscribers": "No subscribers yet. The signup form lives on the pricing page.",
+    "makeAdmin": "Make Admin",
+    "rolePromoted": "User promoted to admin. Their session picks it up within a minute.",
     "roleFailed": "Failed to update role"
   },
   "billing": {

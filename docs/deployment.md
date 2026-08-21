@@ -36,6 +36,8 @@ Auth.js trusts the host it is served from when it detects Vercel, and refuses it
 
 The same applies when you run the production build on your own machine with `npm start`. `npm run dev` does not need it.
 
+One more thing changes off Vercel. The public forms (contact, newsletter) are rate-limited by IP, and the IP is read from `x-forwarded-for`. Vercel always sets it; a bare Node host or a proxy that does not add it leaves the kit with no address to key on, and it falls back to a single shared bucket, which means those forms cap at five submissions every fifteen minutes **for everybody at once**. In the other direction, where the header arrives from a proxy you do not control, a client can write it itself and the per-IP limit stops meaning anything. Set the header in your proxy and make sure it is the proxy setting it, not the client.
+
 ## Database migrations
 
 Builds do not run migrations. Apply them against the production database as a deliberate step:
@@ -64,7 +66,9 @@ After your first sign-in on production:
 npx prisma studio
 ```
 
-Find your user in the `User` table and set `role` to `ADMIN`. The Admin Panel shortcut appears in your dashboard sidebar.
+Find your user in the `User` table and set `role` to `ADMIN`. Your session re-reads the role within a minute, so the Admin Panel shortcut appears in your dashboard sidebar without signing out. From there you can promote other people from the panel itself, and the same minute applies to them.
+
+> Upgrading from a version before 1.6.4? The role used to be read only when a session was created, so this step appeared to do nothing until you signed out and back in. Nothing to migrate, the fix is in the code.
 
 ## Optional: a public demo deployment
 

@@ -2,6 +2,7 @@ import { siteConfig } from "@/config/site"
 
 export const metadata = {
   title: `Privacy Policy | ${siteConfig.name}`,
+  alternates: { canonical: `${siteConfig.url}/privacy` },
 }
 
 // ⚠️ Placeholder page: this is a structural template, NOT legal advice.

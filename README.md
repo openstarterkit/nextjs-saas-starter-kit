@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.6.3-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.6.4-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -63,7 +63,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 |---|---|---|
 | 🔐 | **Authentication** | Auth.js v5: Google + GitHub OAuth, magic link, email + password with reset, account linking |
 | 💳 | **Payments** | Stripe Checkout, Customer Portal, signature-verified webhooks, subscriptions + one-time payments, multiple tiers, usage-based example |
-| 🛠️ | **Admin panel** | User management, search + pagination, live MRR metrics, role toggling |
+| 🛠️ | **Admin panel** | User management, search + pagination, live MRR metrics, promote users to admin |
 | 📊 | **User dashboard** | Plan status, billing history, profile & settings |
 | 📁 | **Projects CRUD** | A ready example resource with ownership checks to build on |
 | 📧 | **Transactional email** | Resend-powered welcome, subscription, magic link & password reset emails |
@@ -76,22 +76,28 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 | 🌍 | **i18n** | next-intl with a prefix only for non-default locales, per-key fallback to English, `hreflang`, and bilingual Markdown docs with a staleness check |
 | 📨 | **Waitlist & contact** | Double opt-in newsletter waitlist (admin export, Resend sync) and a spam-protected contact form |
 | 🤖 | **AI-ready** | Ships agent instructions for Claude Code, Cursor and Copilot (`AGENTS.md`) so your assistant is productive on day one |
-| ✅ | **CI + security** | GitHub Actions pipeline (lint, tests, build), security headers, per-endpoint rate limiting, Dependabot with grouped updates |
+| ✅ | **CI + security** | GitHub Actions pipeline (lint, tests, build), security headers, per-endpoint rate limiting (in-memory by default, swap in a shared store for scale), Dependabot with grouped updates |
 
 ---
 
 ## 🧰 Tech stack
 
-| Layer | Choice |
-|---|---|
-| **Framework** | Next.js 16.3 (App Router, Turbopack) |
-| **Language** | TypeScript (strict mode) |
-| **Styling** | Tailwind CSS v4 + dark mode |
-| **Auth** | Auth.js v5 (OAuth, magic link, email + password) |
-| **Database** | Prisma 7 + PostgreSQL (Neon recommended) |
-| **Payments** | Stripe (Checkout + Customer Portal + Webhooks) |
-| **Emails** | Resend (welcome + subscription emails) |
-| **UI** | Custom design system (Button, Card, Badge, Input, Table) |
+- **Framework**: [Next.js 16](https://nextjs.org) with the App Router and Turbopack, on [React 19](https://react.dev) with Server Components rendering on the server by default. No compiler layer and no config DSL on top, so routing and Server Actions behave exactly as their own docs say.
+- **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, across the app, the tests and the environment schema.
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com) with dark mode wired through CSS variables, so changing the theme is one file instead of a sweep through components.
+- **UI**: [Radix UI](https://www.radix-ui.com) primitives under a design system written for this kit (Button, Card, Badge, Input, Table and the rest). Radix handles the accessible behavior, you own the look, and both live in your codebase with no component library to upgrade around.
+- **Icons**: [Lucide](https://lucide.dev), an open source set shipped as React components, so an icon is something you import and not an asset you manage.
+- **Notifications**: [Sonner](https://sonner.emilkowal.ski) for toasts, wired to every success and failure the interface reports back, Server Actions included.
+- **Auth**: [Auth.js v5](https://authjs.dev) with Google and GitHub OAuth, magic link, and email and password. Sessions live in your own database, so there is no auth vendor and no per-user pricing as you grow.
+- **Database**: [Prisma 7](https://www.prisma.io) on [PostgreSQL](https://www.postgresql.org). Plain Postgres underneath keeps your data portable, and [Neon](https://neon.tech) has a free managed tier if you would rather not run one yourself.
+- **Payments**: [Stripe](https://stripe.com) with Checkout, the Customer Portal and signature-verified webhooks, in the free kit instead of behind a Pro plan.
+- **Emails**: [Resend](https://resend.com) for welcome, subscription, magic link and password reset messages, with the templates in your repository rather than in a dashboard you do not own.
+- **Internationalization**: [next-intl](https://next-intl.dev) with plain JSON message files, plus routing, fallback and a language switch already wired.
+- **Validation**: [Zod](https://zod.dev) on forms, Server Actions and the environment schema, with the same definitions shared by client and server.
+- **Content**: the blog and docs are Markdown files with frontmatter, rendered through [MDX](https://mdxjs.com) with GitHub Flavored Markdown, so publishing a post means adding a file to the repository.
+- **Analytics**: [Vercel Analytics](https://vercel.com/analytics), mounted in the root layout and active on Vercel deployments. Delete the component if you would rather collect nothing.
+- **Tests**: [Vitest](https://vitest.dev) on the pure logic, the health endpoint and the Stripe webhook, and [Playwright](https://playwright.dev) end to end on signup and checkout.
+- **CI**: [GitHub Actions](https://github.com/features/actions) running lint, tests, build and `npm audit` on every push, so a broken or vulnerable commit fails before it reaches you.
 
 ### Routes
 
@@ -281,7 +287,7 @@ npm run test:watch    # re-run on change
 npm run test:coverage # with a coverage report
 ```
 
-Vitest, on the pure logic in `src/lib`: the rate limiter, the password policy, the Markdown parsers behind the blog, docs and changelog, and the environment schema. Plus the two routes worth guarding: the health endpoint, and the Stripe webhook, tested with **real signatures** generated by Stripe's own SDK, so a forged or replayed request is proven never to reach the database writes behind it.
+Vitest, on the pure logic in `src/lib`: the rate limiter, the password policy, the session rules behind role changes and revocation, the Markdown parsers behind the blog, docs and changelog, and the environment schema. Plus the two routes worth guarding: the health endpoint, and the Stripe webhook, tested with **real signatures** generated by Stripe's own SDK, so a forged or replayed request is proven never to reach the database writes behind it.
 
 ### End-to-end
 
@@ -302,8 +308,8 @@ Coverage of `src/lib`, excluding the thin wrappers around Prisma, Stripe and Res
 |---|---|
 | Lines | **63%** |
 | Statements | **61%** |
-| Functions | **70%** |
-| Branches | **48%** |
+| Functions | **71%** |
+| Branches | **50%** |
 
 Run `npm run test:coverage` to check those numbers yourself: they are printed by the command, not published to a badge service.
 

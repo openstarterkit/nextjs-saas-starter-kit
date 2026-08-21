@@ -22,6 +22,7 @@ export async function generateMetadata({
   return {
     title: `${match.name} | ${t("title")} | ${siteConfig.name}`,
     description: t("categoryMeta", { site: siteConfig.name, category: match.name }),
+    alternates: { canonical: `${siteConfig.url}/blog/category/${category}` },
   }
 }
 
@@ -35,7 +36,7 @@ export default async function BlogCategoryPage({ params }: { params: Promise<{ c
   return (
     <section className="py-24">
       <div className="mx-auto max-w-5xl px-6">
-        <Link href="/blog/" className="text-sm text-muted-foreground hover:text-primary">
+        <Link href="/blog" className="text-sm text-muted-foreground hover:text-primary">
           {t("back")}
         </Link>
         <h1 className="mt-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{match.name}</h1>

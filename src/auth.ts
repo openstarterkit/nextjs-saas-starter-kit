@@ -7,6 +7,7 @@ import Resend from "next-auth/providers/resend"
 import { prisma } from "@/lib/prisma"
 import { verifyPassword } from "@/lib/password"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { isSessionCheckDue, verifySession } from "@/lib/session"
 import type { Role } from "@prisma/client"
 
 // Magic link sign-in. Auth.js stores the verification token via the Prisma
@@ -76,8 +77,8 @@ const demoProvider = Credentials({
     const user = await prisma.user.upsert({
       where: { email },
       // Re-assert the role on every sign-in: a previous visitor may have
-      // demoted the shared account from the admin panel. Reset the checklist
-      // dismissal too, so every demo visitor sees the "Get started" card.
+      // promoted the shared user account from the admin panel. Reset the
+      // checklist dismissal too, so every demo visitor sees "Get started".
       update: { role: asAdmin ? "ADMIN" : "USER", onboardingDismissedAt: null },
       create: {
         email,
@@ -139,23 +140,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token
       }
 
-      // Re-verify the session version at most once a minute: resetting the
+      // Re-read role and session version at most once a minute. Resetting the
       // password bumps User.sessionVersion, so tokens issued before it die
-      // here (within ~60s). The throttle matters because proxy.ts runs auth()
-      // on nearly every request; and the check fails OPEN on DB errors, since
-      // for this threat model availability beats strictness.
-      if (token.sub && now - (token.svAt ?? 0) > 60_000) {
+      // here (within ~60s), and a role changed in the database reaches the
+      // token in the same window instead of waiting for the next sign-in.
+      // The throttle matters because proxy.ts runs auth() on nearly every
+      // request; the check fails OPEN on DB errors, since for this threat
+      // model availability beats strictness.
+      if (token.sub && isSessionCheckDue(token, now)) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.sub },
-            select: { sessionVersion: true },
+            select: { role: true, sessionVersion: true },
           })
+          const verdict = verifySession(token, dbUser, now)
           // Also kills sessions of deleted users. Returning null makes
           // Auth.js clear the session cookie.
-          if (!dbUser || dbUser.sessionVersion !== token.sv) return null
-          token.svAt = now
+          if (!verdict.keep) return null
+          token.role = verdict.role
+          token.svAt = verdict.checkedAt
         } catch (error) {
-          console.error("sessionVersion check failed, keeping session:", error)
+          console.error("session check failed, keeping session:", error)
         }
       }
 

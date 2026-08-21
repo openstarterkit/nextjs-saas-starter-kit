@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.6.4] - 2026-08-21
+
+🔐 **Role changes reach sessions that already exist.** Changing someone's role did nothing until they signed out, which by default is 30 days away. That included the documented way to create the first admin of a deployment, so the step in the deployment guide looked like it did nothing at all.
+
+### Fixed
+- **A role change now reaches a live session**, within about a minute. The role was stamped into the token at sign-in and never read again: the check that runs every minute selected `sessionVersion` alone. Promoting someone therefore had no visible effect until they signed out, and demoting someone left their privileges working for as long as the token lived. Both directions are covered now. **Present since v1.0.0**, so this is not a regression from the security patch in 1.6.3: if you followed *"Make yourself admin"* in the deployment guide and nothing happened, this is why. It is a re-read on a throttle, not instant revocation, and the doc says so
+- **The admin panel promotes instead of toggling.** The action behind "Make Admin" read the current role and flipped it, so a page loaded before someone else promoted the same user would **demote** them on click, announcing *"User promoted to USER"* while doing it. The role to set now travels with the request, and the write is refused when the row no longer holds the role the admin was looking at
+- **Canonical URLs on `/changelog`, `/privacy` and the blog category pages.** Each of those also exists under a locale prefix serving the same English text, which without a canonical is a duplicate with no declared original
+- **Two internal links pointed at `/blog/`**, which answers 308 to `/blog`, so every post and every category page linked internally through a redirect
+- The release links at the bottom of this file stopped at 1.6.2
+
+### Added
+- **A test that fails when the declared version disagrees with itself.** `package.json`, the app config and `package-lock.json` each carry the version, and npm does not update the lockfile copy when you edit `package.json`: it said 1.6.0 at the 1.6.2 release and 1.6.2 at the 1.6.3 one, in a file anyone who opens the repository can read
+- The session rules moved into `src/lib/session.ts` with tests of their own, instead of sitting inline in the Auth.js callback
+
+### Changed
+- **`toggleUserRole` is now `setUserRole(userId, nextRole, seenRole)`.** If you called it from your own code, it takes the role to set and the role you last saw, and it no longer inverts whatever it finds
+- **The tech stack section of the README is a list rather than a table**, where every service links to its own site and carries a line on why it is there instead of a vendor tagline. It also names two things the kit uses and never mentioned: **Radix UI** under the design system, and **Vercel Analytics**, which is mounted in the root layout and active on Vercel deployments, with a note on how to remove it
+- **The documentation says what the rate limiter actually protects.** The limits on magic link, signup and reset guard **outbound email** rather than password attempts, where the argument about bcrypt does not apply. And the per-IP limit on public forms behaves differently away from Vercel: with no `x-forwarded-for` header everyone shares a single bucket
+- **Dependencies**: next-intl 4.13.7, `@stripe/stripe-js` 9.14.0, Resend 6.21.0, Lucide 1.33.0, Vitest 4.1.11, `@types/pg` 8.23.1
+
+---
+
 ## [1.6.3] - 2026-08-20
 
 🛡️ **Security patch.** A high severity advisory landed in the dependency tree through Prisma, and no stable Prisma release closes it yet. This release pins the fixed version directly, so a fresh clone is clean.
@@ -263,6 +286,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[1.6.4]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.4
+[1.6.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.3
 [1.6.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.2
 [1.6.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.1
 [1.6.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.0

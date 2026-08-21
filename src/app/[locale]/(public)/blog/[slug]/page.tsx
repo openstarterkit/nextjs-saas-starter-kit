@@ -104,7 +104,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <div className="mx-auto max-w-3xl px-6">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-        <Link href="/blog/" className="text-sm text-muted-foreground hover:text-primary">
+        <Link href="/blog" className="text-sm text-muted-foreground hover:text-primary">
           {t("back")}
         </Link>
 

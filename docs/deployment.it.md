@@ -2,7 +2,7 @@
 title: Deployment
 description: "In produzione su Vercel: variabili, migrazioni, webhook, e come diventare amministratore."
 translated_from: deployment.md
-source_checksum: 757640c3ac2c
+source_checksum: 5bf6eeac6b2d
 ---
 
 # Deployment
@@ -43,6 +43,8 @@ Auth.js si fida dell'host da cui viene servito quando rileva Vercel, e lo rifiut
 
 Vale anche quando esegui il build di produzione sulla tua macchina con `npm start`. Con `npm run dev` non serve.
 
+Fuori da Vercel cambia anche un'altra cosa. I form pubblici (contatti, newsletter) sono limitati per IP, e l'IP viene letto da `x-forwarded-for`. Vercel lo imposta sempre; un host Node nudo, o un proxy che non lo aggiunge, lascia il kit senza un indirizzo su cui contare, e si ripiega su un unico secchio condiviso: quei form si fermano a cinque invii ogni quindici minuti **per tutti insieme**. Nella direzione opposta, dove l'header arriva da un proxy che non controlli, un client se lo scrive da solo e il limite per IP smette di significare qualcosa. Imposta l'header nel tuo proxy, e assicurati che sia il proxy a scriverlo e non il client.
+
 ## Migrazioni del database
 
 I build non eseguono le migrazioni. Applicale al database di produzione come passo deliberato:
@@ -71,7 +73,9 @@ Dopo il tuo primo accesso in produzione:
 npx prisma studio
 ```
 
-Trova il tuo utente nella tabella `User` e imposta `role` su `ADMIN`. La scorciatoia al pannello di amministrazione compare nella sidebar della dashboard.
+Trova il tuo utente nella tabella `User` e imposta `role` su `ADMIN`. La tua sessione rilegge il ruolo entro un minuto, quindi la scorciatoia al pannello di amministrazione compare nella sidebar della dashboard senza bisogno di uscire e rientrare. Da lì puoi promuovere altre persone dal pannello stesso, e per loro vale lo stesso minuto.
+
+> Stai aggiornando da una versione precedente alla 1.6.4? Il ruolo veniva letto solo alla creazione della sessione, quindi questo passaggio sembrava non fare niente finché non uscivi e rientravi. Non c'è nulla da migrare: la correzione è nel codice.
 
 ## Facoltativo: un deploy dimostrativo pubblico
 

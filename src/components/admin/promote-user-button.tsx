@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl"
 
 import { useState } from "react"
-import { toggleUserRole } from "@/app/actions/admin"
+import { setUserRole } from "@/app/actions/admin"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/sonner"
 
@@ -19,8 +19,10 @@ export function PromoteUserButton({ userId, currentRole }: PromoteUserButtonProp
   async function handleClick() {
     setLoading(true)
     try {
-      const result = await toggleUserRole(userId)
-      toast.success(`User promoted to ${result.role}`)
+      // The role on screen travels with the request: if someone else promoted
+      // this user meanwhile, the action refuses instead of demoting them.
+      await setUserRole(userId, "ADMIN", currentRole)
+      toast.success(t("rolePromoted"))
     } catch {
       toast.error(t("roleFailed"))
     } finally {
@@ -32,7 +34,7 @@ export function PromoteUserButton({ userId, currentRole }: PromoteUserButtonProp
 
   return (
     <Button variant="outline" size="sm" onClick={handleClick} loading={loading}>
-      Make Admin
+      {t("makeAdmin")}
     </Button>
   )
 }

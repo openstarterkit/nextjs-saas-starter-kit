@@ -63,6 +63,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - The form primitives the kit still leaves to plain HTML: select, checkbox, radio group, textarea
 - Overlays and navigation: popover, sheet, alert and alert dialog, breadcrumb, pagination, skeleton
 - Dashboard chart components
+- An environment variable to turn Vercel Analytics off, which today ships mounted in the root layout
 - Form library with validation patterns, sharing the Zod schemas already used on the server
 - **Mobile audit across the whole kit**: every page and every flow opened on a phone, not the marketing pages alone. Dashboard tables, settings tabs, billing cards, docs navigation and the admin panel are where a desktop first build breaks, and most of what an audit like that turns up is a primitive, which is why it belongs in the release that adds them
 
@@ -74,6 +75,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 ## 🔜 v1.9 - Auth depth & accessibility
 - Self-hosted two-factor authentication (TOTP), no third-party auth vendor required
 - Active session management in Settings
+- Rate limiting on a shared store, so the limits hold across serverless instances instead of one bucket per instance
 - **Accessibility audit** against WCAG 2.1 AA: keyboard navigation, visible focus, contrast, labelled forms and heading order, checked across the kit rather than on the marketing pages alone
 
 ## 🎯 v2.0 Pro - Teams & scale *(paid, coming)*

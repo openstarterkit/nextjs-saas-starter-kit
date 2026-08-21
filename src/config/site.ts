@@ -26,7 +26,7 @@ export const siteConfig = {
   seoTitle:
     process.env.NEXT_PUBLIC_SEO_TITLE ||
     (isKitSite ? "Next.js SaaS Starter Kit | Free & Open Source" : null),
-  version: "1.6.3",
+  version: "1.6.4",
   description:
     process.env.NEXT_PUBLIC_BRAND_DESCRIPTION ||
     (isKitSite
