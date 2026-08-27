@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { getFormatter, getTranslations } from "next-intl/server"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PromoteUserButton } from "@/components/admin/promote-user-button"
+import { RevenueChart } from "@/components/admin/revenue-chart"
+import { mrrHistory, monthlyEquivalent } from "@/lib/metrics"
 
 const ITEMS_PER_PAGE = 20
 
@@ -45,11 +47,14 @@ async function getAdminData(page: number, search: string) {
     ? { email: { contains: search, mode: "insensitive" as const } }
     : {}
 
-  const [totalUsers, activeSubscriptions, users, waitlistConfirmed, waitlistPending, waitlistRecent] =
+  const [totalUsers, allSubscriptions, users, waitlistConfirmed, waitlistPending, waitlistRecent] =
     await Promise.all([
       prisma.user.count(),
+      // Every subscription, not just the active ones: the chart needs the rows
+      // that have since churned to show the revenue they produced while they
+      // were running. The active-only figures below are derived from the same
+      // result, so the page still makes a single query for all of them.
       prisma.subscription.findMany({
-        where: { status: "ACTIVE" },
         include: { plan: true },
       }),
       prisma.user.findMany({
@@ -66,16 +71,15 @@ async function getAdminData(page: number, search: string) {
 
   const totalFiltered = search ? users.length : totalUsers
 
-  const mrr = activeSubscriptions.reduce((sum, sub) => {
-    if (sub.plan.interval === "MONTH") return sum + sub.plan.price
-    if (sub.plan.interval === "YEAR") return sum + Math.round(sub.plan.price / 12)
-    return sum
-  }, 0)
+  const activeSubscriptions = allSubscriptions.filter((sub) => sub.status === "ACTIVE")
+  const mrr = activeSubscriptions.reduce((sum, sub) => sum + monthlyEquivalent(sub.plan), 0)
+  const revenue = mrrHistory(allSubscriptions)
 
   return {
     totalUsers,
     activeUsers: activeSubscriptions.length,
     mrr,
+    revenue,
     users,
     totalPages: Math.ceil(totalFiltered / ITEMS_PER_PAGE),
     waitlistConfirmed,
@@ -91,8 +95,8 @@ export default async function AdminPage({
 }) {
   const t = await getTranslations("admin")
   const format = await getFormatter()
-  const session = await auth()
-  if (!session || session.user.role !== "ADMIN") redirect("/dashboard")
+  const user = await getCurrentUser()
+  if (!user || user.role !== "ADMIN") redirect("/dashboard")
 
   const params = await searchParams
   // Guard against non-numeric ?page (e.g. ?page=abc → NaN), which would flow into
@@ -101,7 +105,7 @@ export default async function AdminPage({
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
   const search = params.search ?? ""
 
-  const { totalUsers, activeUsers, mrr, users, totalPages, waitlistConfirmed, waitlistPending, waitlistRecent } =
+  const { totalUsers, activeUsers, mrr, revenue, users, totalPages, waitlistConfirmed, waitlistPending, waitlistRecent } =
     await getAdminData(page, search)
 
   return (
@@ -138,6 +142,17 @@ export default async function AdminPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Recurring revenue over time */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("revenueTitle")}</CardTitle>
+          <CardDescription>{t("revenueSubtitle")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RevenueChart data={revenue} label={t("revenueTooltip")} />
+        </CardContent>
+      </Card>
 
       {/* Users Table */}
       <Card>

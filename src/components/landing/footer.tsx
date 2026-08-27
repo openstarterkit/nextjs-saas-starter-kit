@@ -21,7 +21,7 @@ export function Footer() {
   const orgUrl = siteConfig.links.githubOrg ?? siteConfig.links.github
   return (
     <footer className="border-t border-border bg-muted/30 py-12">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-6 lg:px-12">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between md:gap-8">
           <div>
             <LogoLink className="flex items-center gap-2">

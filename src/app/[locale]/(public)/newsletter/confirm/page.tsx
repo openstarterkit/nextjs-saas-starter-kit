@@ -66,7 +66,7 @@ export default async function NewsletterConfirmPage({
 
   return (
     <section className="flex min-h-[60vh] items-center py-24">
-      <div className="mx-auto max-w-xl px-6 text-center">
+      <div className="mx-auto max-w-xl px-6 lg:px-12 text-center">
         {state === "confirmed" && (
           <>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">

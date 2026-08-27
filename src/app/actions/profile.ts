@@ -1,6 +1,6 @@
 "use server"
 
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getTranslations } from "next-intl/server"
@@ -22,8 +22,8 @@ export async function updateProfile(
   formData: FormData
 ): Promise<ProfileState> {
   const t = await getTranslations("errors")
-  const session = await auth()
-  if (!session?.user) return { error: t("unauthorized") }
+  const user = await getCurrentUser()
+  if (!user) return { error: t("unauthorized") }
 
   const result = (await profileSchema()).safeParse({ name: formData.get("name") })
   if (!result.success) {
@@ -31,7 +31,7 @@ export async function updateProfile(
   }
 
   await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: user.id },
     data: { name: result.data.name },
   })
 

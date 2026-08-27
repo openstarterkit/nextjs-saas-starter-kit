@@ -40,6 +40,16 @@
   font-weight: 500;
 }
 
+/* Inline code is usually a file path, an env var or a URL: one long token with
+   nowhere to break. Left alone it decides the width of whatever contains it,
+   which on a phone is a box wider than the screen, and the reader gets either a
+   sideways scroll or text cut off at the edge. Fenced blocks are excluded on
+   purpose: those keep their lines intact and scroll inside their own box, which
+   is what you want when the line is a command you may need to copy. */
+:not(pre) > code {
+  overflow-wrap: break-word;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 /* Active while the dashboard sidebar is collapsed to icons (class set on <html>
    by SidebarCollapseToggle, persisted in localStorage). */

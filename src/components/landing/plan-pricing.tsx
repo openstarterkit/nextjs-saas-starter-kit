@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server"
 import { prisma } from "@/lib/prisma"
+import { jsonLdScript } from "@/lib/json-ld"
+import { softwareApplicationJsonLd } from "@/lib/pricing-jsonld"
 import { PlanCards, type PlanCardData } from "@/components/billing/plan-cards"
 import { exampleEnterpriseCard } from "@/components/billing/enterprise-card"
 import { Reveal } from "@/components/landing/reveal"
@@ -14,7 +16,13 @@ import { Reveal } from "@/components/landing/reveal"
  * `pricing.tsx` is a hand-written alternative (free tier plus a waitlist for
  * a paid one), enabled with KIT_SITE="true".
  */
-export async function PlanPricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
+export async function PlanPricing({
+  heading = "h2",
+  withJsonLd = false,
+}: {
+  heading?: "h1" | "h2"
+  withJsonLd?: boolean
+}) {
   const t = await getTranslations("planPricing")
   const isDemo = process.env.DEMO_MODE === "true"
   // See `Pricing`: h2 under the hero on the landing, h1 when it is the
@@ -42,7 +50,26 @@ export async function PlanPricing({ heading = "h2" }: { heading?: "h1" | "h2" })
 
   return (
     <section id="pricing" className="bg-muted/30 py-24">
-      <div className="mx-auto max-w-6xl px-6">
+      {/* The figures on this page, in a form something other than a person can
+          read. Built from the same rows the cards render, so the price in a
+          search result cannot disagree with the price on screen. */}
+      {withJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdScript(
+              softwareApplicationJsonLd(
+                plans.map((plan) => ({
+                  name: plan.name,
+                  price: plan.price,
+                  interval: plan.interval,
+                }))
+              )
+            ),
+          }}
+        />
+      )}
+      <div className="mx-auto max-w-6xl px-6 lg:px-12">
         <Reveal className="mb-16 text-center">
           <Heading className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             {t("title")}

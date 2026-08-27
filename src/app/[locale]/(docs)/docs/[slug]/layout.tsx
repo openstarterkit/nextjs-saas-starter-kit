@@ -11,7 +11,7 @@ export default async function DocsSlugLayout({ children }: { children: React.Rea
   const t = await getTranslations("docs")
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pt-10 pb-10 md:px-6 md:pt-14">
+    <div className="mx-auto w-full max-w-7xl px-4 pt-10 pb-10 md:px-6 lg:px-12 md:pt-14">
       <div className="flex flex-col gap-8 md:flex-row md:gap-12">
         <DocsSidebar />
         <div className="min-w-0 flex-1">{children}</div>

@@ -1,57 +1,117 @@
 "use client"
 
 import { useTranslations } from "next-intl"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 
-import { useActionState, useEffect, useRef } from "react"
-import { createProject, type ProjectState } from "@/app/actions/projects"
+import { createProject } from "@/app/actions/projects"
+import {
+  projectSchema,
+  PROJECT_DESCRIPTION_MAX,
+  PROJECT_NAME_MAX,
+  type ProjectInput,
+} from "@/lib/schemas/project"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/sonner"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 
-export function CreateProjectForm() {
+/**
+ * Create project, validated in the browser against the same schema the server
+ * action re-checks before writing (src/lib/schemas/project.ts).
+ *
+ * The action stays the authority: nothing arriving from a browser is trusted,
+ * and it parses the payload again. What the client-side pass buys is the round
+ * trip a user does not have to wait for to be told the name is missing, and an
+ * error that lands under the field it belongs to instead of in a toast.
+ */
+export function CreateProjectForm({ onSuccess }: { onSuccess?: () => void } = {}) {
   const t = useTranslations("dashboard.createProject")
-  const [state, action, isPending] = useActionState<ProjectState, FormData>(createProject, {})
-  const formRef = useRef<HTMLFormElement>(null)
+  const tError = useTranslations("errors")
 
-  useEffect(() => {
+  const form = useForm<ProjectInput>({
+    resolver: zodResolver(
+      projectSchema({
+        nameRequired: tError("nameRequired"),
+        nameTooLong: tError("nameTooLong"),
+        descriptionTooLong: tError("descriptionTooLong"),
+      })
+    ),
+    defaultValues: { name: "", description: "" },
+  })
+
+  async function onSubmit(values: ProjectInput) {
+    const payload = new FormData()
+    payload.set("name", values.name)
+    if (values.description) payload.set("description", values.description)
+
+    const state = await createProject({}, payload)
+
     if (state.success) {
       toast.success(t("created"))
-      formRef.current?.reset()
+      form.reset()
+      onSuccess?.()
     } else if (state.error) {
       toast.error(state.error)
     }
-  }, [state, t])
+  }
 
   return (
-    <form ref={formRef} action={action} className="space-y-4">
-      <div className="space-y-1.5">
-        <Label htmlFor="name">{t("name")}</Label>
-        <Input
-          id="name"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
           name="name"
-          placeholder="My new project"
-          error={state.error}
-          maxLength={60}
-          required
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("name")}</FormLabel>
+              <FormControl>
+                <Input placeholder="My new project" maxLength={PROJECT_NAME_MAX} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="description">{t("description")}</Label>
-        <textarea
-          id="description"
+        <FormField
+          control={form.control}
           name="description"
-          placeholder={t("descriptionPlaceholder")}
-          maxLength={280}
-          rows={3}
-          className="flex w-full rounded-[var(--radius)] border border-border bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("description")}</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder={t("descriptionPlaceholder")}
+                  maxLength={PROJECT_DESCRIPTION_MAX}
+                  rows={3}
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                {t("descriptionHint", { max: PROJECT_DESCRIPTION_MAX })}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <Button type="submit" loading={isPending} className="w-full sm:w-auto">
-        Create project
-      </Button>
-    </form>
+        <Button
+          type="submit"
+          loading={form.formState.isSubmitting}
+          className="w-full sm:w-auto"
+        >
+          {t("submit")}
+        </Button>
+      </form>
+    </Form>
   )
 }

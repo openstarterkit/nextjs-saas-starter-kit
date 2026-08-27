@@ -65,6 +65,14 @@ updates:
         update-types: [version-update:semver-major]
       - dependency-name: react-dom
         update-types: [version-update:semver-major]
+      # The lint rules are not ours: eslint.config.mjs only spreads
+      # eslint-config-next, so the ESLint major follows that config rather than
+      # the other way round. An automated pull request here reopens a decision
+      # that is already settled, and the moment it stops being settled arrives
+      # on its own: eslint-config-next requiring ESLint 10 shows up as a peer
+      # conflict on install, which is impossible to miss.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /

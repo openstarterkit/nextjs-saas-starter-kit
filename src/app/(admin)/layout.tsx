@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { getTranslations } from "next-intl/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
@@ -10,10 +10,10 @@ import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { SidebarCollapseToggle } from "@/components/dashboard/sidebar-collapse-toggle"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth()
+  const user = await getCurrentUser()
   const t = await getTranslations("admin")
-  if (!session) redirect("/login")
-  if (session.user.role !== "ADMIN") redirect("/dashboard")
+  if (!user) redirect("/login")
+  if (user.role !== "ADMIN") redirect("/dashboard")
 
   return (
     <div className="flex min-h-screen bg-muted/20">
@@ -27,9 +27,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <SidebarNav variant="admin" />
         <div className="border-t border-border p-3">
           <UserMenu
-            name={session.user.name}
-            email={session.user.email}
-            image={session.user.image}
+            name={user.name}
+            email={user.email}
+            image={user.image}
           />
         </div>
       </aside>
@@ -49,9 +49,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <ThemeToggle />
             <div className="md:hidden">
               <UserMenu
-                name={session.user.name}
-                email={session.user.email}
-                image={session.user.image}
+                name={user.name}
+                email={user.email}
+                image={user.image}
                 side="bottom"
                 hideDetails
               />
@@ -59,6 +59,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
         </header>
         {/* Same container as the public pages and the dashboard, so the two consoles match. */}
+        {/* Wider than the dashboard on purpose, and it is not an oversight that
+            the two differ: this panel is built around a five column table with
+            pagination, which gains from the room, while the dashboard shows
+            cards, which gain from the air. Same sidebar, different content,
+            different measure. */}
         <main className="mx-auto w-full max-w-6xl flex-1 p-6">{children}</main>
       </div>
     </div>

@@ -12,6 +12,7 @@ Everything you need to go from `git clone` to production.
 | [Newsletter & waitlist](./newsletter.md) | Double opt-in mailing list, consent record, Resend sync and admin export |
 | [Languages](./i18n.md) | Adding a language, translating the docs, and keeping translations current |
 | [Deployment](./deployment.md) | Shipping to Vercel, production env, webhooks, going admin |
+| [Upgrading](./upgrading.md) | Taking a newer version without losing your work, and the cost in advance |
 
 Quick pointers:
 

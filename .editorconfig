@@ -1,0 +1,19 @@
+# Editor settings every editor understands, with nothing to install.
+#
+# This is not a formatter and does not reformat anything: it states the few
+# mechanical facts a file has, so an editor opening this project matches what
+# is already here instead of applying its own defaults. Layout, line breaks and
+# quoting stay a matter of how the code is written.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Markdown gives trailing spaces a meaning: two of them are a line break.
+[*.md]
+trim_trailing_whitespace = false

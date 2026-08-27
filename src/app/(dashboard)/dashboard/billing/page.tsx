@@ -1,5 +1,4 @@
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
+import { requireUser } from "@/lib/auth"
 import { getFormatter, getTranslations } from "next-intl/server"
 import { prisma } from "@/lib/prisma"
 import { getEntitlement } from "@/lib/billing"
@@ -38,15 +37,14 @@ async function getInvoices(customerId: string | null) {
 export default async function BillingPage() {
   const t = await getTranslations("dashboard.billing")
   const format = await getFormatter()
-  const session = await auth()
-  if (!session) redirect("/login")
+  const currentUser = await requireUser()
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: currentUser.id },
     select: { stripeCustomerId: true },
   })
 
-  const entitlement = await getEntitlement(session.user.id)
+  const entitlement = await getEntitlement(currentUser.id)
   const purchase = entitlement.kind === "lifetime" ? entitlement.purchase : null
   const subscription =
     entitlement.kind === "subscription"

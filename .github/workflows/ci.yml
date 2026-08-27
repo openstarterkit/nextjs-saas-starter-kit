@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [main]
 
+# Least privilege for the token this workflow runs with. Nothing below writes to
+# the repository: it installs, lints, tests and builds. Declaring the scope here
+# means a step added later has to ask for more on purpose, instead of inheriting
+# whatever the repository default happens to be, which matters most on a public
+# repository where pull requests arrive from forks.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Lint & Build

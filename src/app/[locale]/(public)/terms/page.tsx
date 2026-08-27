@@ -1,8 +1,11 @@
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: `Terms of Service | ${siteConfig.name}`,
-}
+  description: `The terms that govern use of ${siteConfig.name}.`,
+  path: "/terms",
+})
 
 // ⚠️ Placeholder page: this is a structural template, NOT legal advice.
 // Replace it with terms that match your product and have them reviewed
@@ -10,7 +13,7 @@ export const metadata = {
 export default function TermsPage() {
   return (
     <section className="py-24">
-      <div className="mx-auto max-w-3xl px-6">
+      <div className="mx-auto max-w-3xl px-6 lg:px-12">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Terms of Service
         </h1>

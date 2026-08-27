@@ -1,9 +1,12 @@
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 import { isKitSite } from "@/config/kit"
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: `Cookie Policy | ${siteConfig.name}`,
-}
+  description: `Which cookies ${siteConfig.name} sets, and why.`,
+  path: "/cookies",
+})
 
 // ⚠️ Placeholder page: this is a structural template, NOT legal advice.
 // It reflects what the kit does out of the box (technical cookies only) —
@@ -12,7 +15,7 @@ export const metadata = {
 export default function CookiesPage() {
   return (
     <section className="py-24">
-      <div className="mx-auto max-w-3xl px-6">
+      <div className="mx-auto max-w-3xl px-6 lg:px-12">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Cookie Policy
         </h1>

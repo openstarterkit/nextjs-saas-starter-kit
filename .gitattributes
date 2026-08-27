@@ -1,0 +1,22 @@
+# Line endings are normalised to LF in the repository, and checked out as LF
+# everywhere including Windows.
+#
+# Without this, a clone on Windows with core.autocrlf enabled rewrites every
+# file to CRLF on checkout. Nothing breaks, but every commit prints a warning
+# and any tool that compares bytes rather than lines sees a difference that is
+# not there. Declaring it once removes the question from the project.
+* text=auto eol=lf
+
+# Files that are bytes, not text: never touched, never diffed as lines.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+
+# Generated: keep it out of diffs and reviews, it is not read by people.
+package-lock.json linguist-generated=true

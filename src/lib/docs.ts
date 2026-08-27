@@ -4,6 +4,10 @@ import matter from "gray-matter"
 import { isKitSite } from "@/config/kit"
 import { routing } from "@/i18n/routing"
 
+// Slug e outline vivono in @/lib/toc perche li usa anche il blog. Ri-esportati
+// qui perche le pagine dei docs li importano da questo modulo.
+export { slugify, extractToc, type TocItem } from "@/lib/toc"
+
 /**
  * The documentation rendered at /docs, from one of two sources.
  *
@@ -103,6 +107,12 @@ const KIT_DOCS: DocEntry[] = [
     title: "Deployment",
     description: "Ship to Vercel: production env, migrations, webhooks, going admin.",
     file: "deployment.md",
+  },
+  {
+    slug: "upgrading",
+    title: "Upgrading",
+    description: "Take a newer version without losing your work, and know the cost in advance.",
+    file: "upgrading.md",
   },
 ].map((d) => {
   const file = path.join(KIT_DOCS_DIR, d.file)
@@ -223,46 +233,3 @@ export function getDocContent(doc: DocEntry): string {
   return matter(fs.readFileSync(doc.file, "utf8")).content
 }
 
-/**
- * Removes the inline Markdown markers from a heading's text.
- *
- * Underscores follow the CommonMark rule: they mark emphasis only at a word
- * boundary (`_emphasis_`), never inside one. Stripping them unconditionally
- * turned "DATABASE_URL" into "DATABASEURL" in the outline, which matters here
- * because the docs are full of env var names.
- */
-function stripInlineMarkdown(text: string): string {
-  return text.replace(/[`*~]/g, "").replace(/(?<!\w)_+|_+(?!\w)/g, "")
-}
-
-/** GitHub-style heading slug. Kept in sync with the heading ids the page renders. */
-export function slugify(text: string): string {
-  return stripInlineMarkdown(text.toLowerCase().trim())
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-}
-
-export type TocItem = { depth: number; text: string; slug: string }
-
-/**
- * Pulls the h2/h3 headings out of a Markdown doc for the "On this page"
- * outline. Skips fenced code blocks so a `#` comment inside one isn't
- * mistaken for a heading.
- */
-export function extractToc(markdown: string): TocItem[] {
-  const toc: TocItem[] = []
-  let inFence = false
-  for (const line of markdown.split("\n")) {
-    if (line.startsWith("```")) {
-      inFence = !inFence
-      continue
-    }
-    if (inFence) continue
-    const match = /^(#{2,3})\s+(.+?)\s*#*$/.exec(line)
-    if (match) {
-      const text = stripInlineMarkdown(match[2]).trim()
-      toc.push({ depth: match[1].length, text, slug: slugify(text) })
-    }
-  }
-  return toc
-}

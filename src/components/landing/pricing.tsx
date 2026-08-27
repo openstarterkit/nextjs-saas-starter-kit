@@ -1,4 +1,6 @@
 import { Check } from "lucide-react"
+import { jsonLdScript } from "@/lib/json-ld"
+import { softwareApplicationJsonLd } from "@/lib/pricing-jsonld"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,7 +24,13 @@ function CheckIcon() {
  * page this block sits under the hero and stays an h2, on /pricing it is the
  * page's own heading and must be the h1. Same styling either way.
  */
-export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
+export function Pricing({
+  heading = "h2",
+  withJsonLd = false,
+}: {
+  heading?: "h1" | "h2"
+  withJsonLd?: boolean
+}) {
   const t = useTranslations("pricing")
   const Heading = heading
   const freeFeatures = t.raw("freeFeatures") as string[]
@@ -35,7 +43,20 @@ export function Pricing({ heading = "h2" }: { heading?: "h1" | "h2" }) {
   const waitlistOn = process.env.WAITLIST_ENABLED === "true"
   return (
     <section id="pricing" className="bg-muted/30 py-24">
-      <div className="mx-auto max-w-6xl px-6">
+      {/* Only the tier that has a price. The paid one is still a waitlist with
+          no figure attached, and an Offer without an amount states nothing
+          while looking like a claim. */}
+      {withJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdScript(
+              softwareApplicationJsonLd([{ name: t("freeTitle"), price: 0 }])
+            ),
+          }}
+        />
+      )}
+      <div className="mx-auto max-w-6xl px-6 lg:px-12">
         <Reveal className="mb-16 text-center">
           <Heading className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             {t("title")}

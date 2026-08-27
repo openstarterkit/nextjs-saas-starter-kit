@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation"
 import { routing } from "@/i18n/routing"
 import { localeAlternates } from "@/i18n/alternates"
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 
 export async function generateMetadata({
   params,
@@ -14,11 +15,15 @@ export async function generateMetadata({
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: "docs" })
   return {
-    title: `${t("title")} | ${siteConfig.name}`,
-    description: t("metaDescription", { site: siteConfig.name }),
+    ...pageMetadata({
+      title: `${t("title")} | ${siteConfig.name}`,
+      description: t("metaDescription", { site: siteConfig.name }),
+      path: "/docs",
+    }),
     // This page's own copy lives in the message files, so it is translated
     // wherever a message file exists: the index is the one docs page that is
-    // never a fallback.
+    // never a fallback. localeAlternates carries those language variants
+    // alongside the canonical.
     alternates: localeAlternates("/docs", locale, routing.locales),
   }
 }

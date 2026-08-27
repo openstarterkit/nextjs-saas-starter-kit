@@ -26,7 +26,22 @@ export const siteConfig = {
   seoTitle:
     process.env.NEXT_PUBLIC_SEO_TITLE ||
     (isKitSite ? "Next.js SaaS Starter Kit | Free & Open Source" : null),
-  version: "1.6.4",
+  /**
+   * One sentence for the machines that summarise you, served in `/llms.txt`.
+   *
+   * Sibling of `seoTitle` and the same idea taken one step further: that one
+   * decides the words a search engine indexes, this one decides the sentence an
+   * assistant repeats when someone asks what you are. Say what you do and who
+   * for, in the words a person would use asking for it.
+   *
+   * Deliberately not shipped with a value. A positioning line is the one piece
+   * of copy that cannot have a sensible default: unset, `/llms.txt` still
+   * describes the site from its name, description and content, it simply does
+   * not put words in your mouth.
+   */
+  llmsSummary: process.env.NEXT_PUBLIC_LLMS_SUMMARY || null,
+
+  version: "1.7.0",
   description:
     process.env.NEXT_PUBLIC_BRAND_DESCRIPTION ||
     (isKitSite

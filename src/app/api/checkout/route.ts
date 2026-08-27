@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import { CHECKOUT_BLOCKING_STATUSES } from "@/lib/billing"
 import type Stripe from "stripe"
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user) {
+  const currentUser = await getCurrentUser()
+  if (!currentUser) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: currentUser.id },
     select: {
       stripeCustomerId: true,
       email: true,
@@ -70,11 +70,11 @@ export async function POST(req: NextRequest) {
     const customer = await stripe.customers.create({
       email: user.email,
       name: user.name ?? undefined,
-      metadata: { userId: session.user.id },
+      metadata: { userId: currentUser.id },
     })
     customerId = customer.id
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: currentUser.id },
       data: { stripeCustomerId: customerId },
     })
   }
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
 
   // planId in metadata saves the webhook a listLineItems call: the session
   // event doesn't include line items, and the plan was validated above.
-  const metadata = { userId: session.user.id, planId: plan.id }
+  const metadata = { userId: currentUser.id, planId: plan.id }
 
   const params: Stripe.Checkout.SessionCreateParams = {
     customer: customerId,

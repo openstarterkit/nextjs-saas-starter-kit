@@ -2,18 +2,20 @@ import { useTranslations } from "next-intl"
 import type { Metadata } from "next"
 import { ContactForm } from "@/components/landing/contact-form"
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 import { isKitSite } from "@/config/kit"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `Contact | ${siteConfig.name}`,
   description: `Questions, feedback or ideas? Get in touch with the ${siteConfig.name} team.`,
-}
+  path: "/contact",
+})
 
 export default function ContactPage() {
   const t = useTranslations("contact")
   return (
     <section className="py-24">
-      <div className="mx-auto max-w-2xl px-6">
+      <div className="mx-auto max-w-2xl px-6 lg:px-12">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{t("title")}</h1>
         <p className="mt-4 text-muted-foreground">
           {t("intro")}{" "}

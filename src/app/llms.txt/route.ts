@@ -26,10 +26,17 @@ export function GET(): Response {
     .map((p) => `- [${p.title}](${base}/blog/${p.slug}): ${p.description}`)
     .join("\n")
 
+  // The positioning line first, when there is one: an assistant reading this
+  // file summarises from the top, and a sentence written for that purpose beats
+  // one assembled out of a tagline.
+  const summary = siteConfig.llmsSummary ? `
+${siteConfig.llmsSummary}
+` : ""
+
   const body = `# ${siteConfig.name}
 
 > ${siteConfig.description} ${siteConfig.tagline}.
-
+${summary}
 ${
     isKitSite
       ? `${siteConfig.name} is an open-source, production-ready SaaS starter kit. It ships with authentication, Stripe billing, a Postgres database via Prisma, a file-based blog and docs, transactional email and a full dashboard, so you can launch a real product without wiring the plumbing yourself.`

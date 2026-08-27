@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 
 export async function POST() {
-  const session = await auth()
-  if (!session?.user) {
+  const currentUser = await getCurrentUser()
+  if (!currentUser) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: currentUser.id },
     select: { stripeCustomerId: true },
   })
 

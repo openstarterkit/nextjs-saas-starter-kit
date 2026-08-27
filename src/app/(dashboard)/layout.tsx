@@ -1,5 +1,4 @@
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
+import { requireUser } from "@/lib/auth"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/dashboard/user-menu"
@@ -11,8 +10,7 @@ import { SidebarCollapseToggle } from "@/components/dashboard/sidebar-collapse-t
 import { SignOutDialog } from "@/components/dashboard/sign-out-dialog"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth()
-  if (!session) redirect("/login")
+  const user = await requireUser()
 
   return (
     <div className="flex min-h-screen bg-muted/20">
@@ -22,12 +20,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Logo wordmarkClassName="sidebar-collapsed:hidden" />
           </Link>
         </div>
-        <SidebarNav variant="dashboard" showAdminLink={session.user.role === "ADMIN"} />
+        <SidebarNav variant="dashboard" showAdminLink={user.role === "ADMIN"} />
         <div className="border-t border-border p-3">
           <UserMenu
-            name={session.user.name}
-            email={session.user.email}
-            image={session.user.image}
+            name={user.name}
+            email={user.email}
+            image={user.image}
           />
         </div>
       </aside>
@@ -39,7 +37,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:px-6">
           <SidebarCollapseToggle />
           <div className="flex items-center gap-1 md:hidden">
-            <MobileNav variant="dashboard" showAdminLink={session.user.role === "ADMIN"} />
+            <MobileNav variant="dashboard" showAdminLink={user.role === "ADMIN"} />
             <Logo wordmarkClassName="text-base font-bold text-foreground" />
           </div>
           <div className="flex items-center gap-3 ml-auto">
@@ -53,19 +51,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
             />
             <div className="md:hidden">
               <UserMenu
-                name={session.user.name}
-                email={session.user.email}
-                image={session.user.image}
+                name={user.name}
+                email={user.email}
+                image={user.image}
                 side="bottom"
                 hideDetails
               />
             </div>
           </div>
         </header>
-        {/* Same container as the public pages (mx-auto max-w-6xl px-6). Without the cap the
-            content stretched to the full viewport, so on a wide screen the three stat cards
-            were over 400px each to hold one word. */}
-        <main className="mx-auto w-full max-w-6xl flex-1 p-6">{children}</main>
+        {/* Narrower than the public pages on purpose. Here the sidebar already
+            takes 240px, so at 1440 the content area is 1200: capping at
+            max-w-5xl leaves 88px of automatic margin on each side, and with the
+            48px of padding the gap between the sidebar rule and the first card
+            comes to ~136px instead of 72. Without any cap the content stretched
+            to the full viewport and the three stat cards were over 400px each
+            to hold one word. */}
+        <main className="mx-auto w-full max-w-5xl flex-1 p-6 lg:px-14">{children}</main>
         <footer className="flex items-center justify-center border-t border-border px-6 py-4">
           <PoweredBy />
         </footer>

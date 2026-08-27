@@ -1,9 +1,11 @@
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: `Privacy Policy | ${siteConfig.name}`,
-  alternates: { canonical: `${siteConfig.url}/privacy` },
-}
+  description: `How ${siteConfig.name} handles personal data.`,
+  path: "/privacy",
+})
 
 // ⚠️ Placeholder page: this is a structural template, NOT legal advice.
 // Before going to production, replace it with a policy that reflects what
@@ -11,7 +13,7 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <section className="py-24">
-      <div className="mx-auto max-w-3xl px-6">
+      <div className="mx-auto max-w-3xl px-6 lg:px-12">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Privacy Policy
         </h1>

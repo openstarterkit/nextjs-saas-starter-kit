@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server"
 import Link from "next/link"
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Logo } from "@/components/logo"
@@ -14,7 +14,7 @@ import { NavbarWrapper } from "@/components/landing/navbar-wrapper"
 
 export async function Navbar() {
   const [t, tCommon] = await Promise.all([getTranslations("nav"), getTranslations("common")])
-  const session = await auth()
+  const user = await getCurrentUser()
 
   /**
    * On the kit's own site the primary button asks for a star instead of
@@ -42,7 +42,7 @@ export async function Navbar() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          {session ? (
+          {user ? (
             <Button asChild size="sm" className="hidden md:inline-flex">
               <Link href="/dashboard">Dashboard</Link>
             </Button>
@@ -69,7 +69,7 @@ export async function Navbar() {
           <MobileMenu
             signInHref={siteConfig.links.demo ?? "/login"}
             starHref={starHref}
-            isAuthenticated={!!session}
+            isAuthenticated={!!user}
           />
         </div>
       </div>

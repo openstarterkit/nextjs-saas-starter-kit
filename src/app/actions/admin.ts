@@ -2,7 +2,7 @@
 
 import type { Role } from "@prisma/client"
 
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
@@ -20,8 +20,8 @@ import { revalidatePath } from "next/cache"
  * reaches the other person without them signing out.
  */
 export async function setUserRole(userId: string, nextRole: Role, seenRole: Role) {
-  const session = await auth()
-  if (!session?.user || session.user.role !== "ADMIN") {
+  const user = await getCurrentUser()
+  if (!user || user.role !== "ADMIN") {
     throw new Error("Unauthorized")
   }
   if (nextRole === seenRole) {

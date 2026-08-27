@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
-import type { TocItem } from "@/lib/docs"
+import type { TocItem } from "@/lib/toc"
 
 /**
- * "On this page" outline for the current doc, with scroll-spy: the heading
- * currently near the top of the viewport is highlighted. Hidden on narrow
- * screens (it's the third column, shown from xl up).
+ * Outline of the current page, with scroll-spy: the heading nearest the top of
+ * the viewport is highlighted.
  */
 export function OnThisPage({ items }: { items: TocItem[] }) {
   const t = useTranslations("docs")
@@ -34,9 +33,9 @@ export function OnThisPage({ items }: { items: TocItem[] }) {
   if (items.length === 0) return null
 
   return (
-    <nav aria-label={t("onThisPage")}>
+    <nav aria-label={t("contents")}>
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {t("onThisPage")}
+        {t("contents")}
       </p>
       <ul className="space-y-1 text-sm">
         {items.map((item) => (

@@ -6,10 +6,15 @@ import { getTranslations } from "next-intl/server"
 import { MDXRemote } from "next-mdx-remote/rsc"
 import remarkGfm from "remark-gfm"
 import { getAllPosts, getPost, categorySlug, formatPostDate } from "@/lib/blog"
+import { extractToc, slugify, nodeText } from "@/lib/toc"
+import { breadcrumbJsonLd, type Crumb } from "@/lib/breadcrumb"
+import { BreadcrumbTrail } from "@/components/ui/breadcrumb"
+import { OnThisPage } from "@/components/docs/on-this-page"
 import { Figure } from "@/components/blog/figure"
 import { NewsletterSignup } from "@/components/blog/newsletter-signup"
 import { Badge } from "@/components/ui/badge"
 import { siteConfig } from "@/config/site"
+import { jsonLdScript } from "@/lib/json-ld"
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }))
@@ -62,6 +67,27 @@ const mdxComponents = {
       </a>
     )
   },
+  // The id comes from the same slugify() that extractToc() used on the source,
+  // so every outline link lands on a heading that exists. scroll-mt keeps the
+  // heading clear of the top edge when the browser jumps to it.
+  h2: ({ children }: { children?: React.ReactNode }) => (
+    <h2 id={slugify(nodeText(children))} className="scroll-mt-24">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }: { children?: React.ReactNode }) => (
+    <h3 id={slugify(nodeText(children))} className="scroll-mt-24">
+      {children}
+    </h3>
+  ),
+  // Same treatment the docs get: a wide table scrolls inside its own box
+  // instead of dragging the whole article sideways. Seven of the posts carry
+  // one, up to four columns, and a phone has room for two.
+  table: ({ children }: { children?: React.ReactNode }) => (
+    <div className="overflow-x-auto">
+      <table>{children}</table>
+    </div>
+  ),
   NewsletterSignup,
 }
 
@@ -69,6 +95,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const { slug } = await params
   const t = await getTranslations("blog")
   const post = getPost(slug)
+  const toc = post ? extractToc(post.content) : []
   if (!post) notFound()
 
   // Structured data: the post as an Article, plus a FAQPage when it declares
@@ -87,6 +114,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     },
   ]
 
+  // Home, section, current page: the trail the reader sees is the trail the
+  // structured data declares, because both read this array.
+  const trail: Crumb[] = [
+    { name: t("breadcrumbHome"), href: "/" },
+    { name: t("breadcrumbBlog"), href: "/blog" },
+    { name: post.title, href: `/blog/${post.slug}` },
+  ]
+  jsonLd.push(breadcrumbJsonLd(trail))
+
   if (post.faq?.length) {
     jsonLd.push({
       "@context": "https://schema.org",
@@ -101,12 +137,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <section className="py-24">
-      <div className="mx-auto max-w-3xl px-6">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {/* Three columns from xl, and the middle one is the same 48rem the page
+          has always used: the article does not move a pixel, the outline simply
+          takes margin that was empty. Centring article and outline together as
+          one group would have shifted the text left, which is the version that
+          got rejected. Below xl the side columns collapse and this is the plain
+          reading column again. */}
+      <div className="mx-auto max-w-3xl px-6 lg:px-12 xl:grid xl:max-w-7xl xl:grid-cols-[1fr_48rem_1fr] xl:gap-8">
+        <div className="hidden xl:block" />
+        <div className="min-w-0">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />
 
-        <Link href="/blog" className="text-sm text-muted-foreground hover:text-primary">
-          {t("back")}
-        </Link>
+        <BreadcrumbTrail trail={trail} />
 
         <header className="mt-6">
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -129,13 +171,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           />
         )}
 
-        <article className="prose mt-10 max-w-none prose-headings:tracking-tight prose-code:before:content-none prose-code:after:content-none">
+        <article className="prose mt-10 min-w-0 max-w-none prose-headings:scroll-mt-24 prose-headings:tracking-tight prose-code:before:content-none prose-code:after:content-none">
           <MDXRemote
             source={post.content}
             components={mdxComponents}
             options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
           />
         </article>
+        </div>
+
+        {/* Sticky the way the docs do it, down to the same expression: pinned
+            under the header rather than at a guessed offset, because
+            `--header-h` is measured by StickyHeader at runtime and a fixed
+            top-24 slid under it. The max height lets a long outline scroll on
+            its own instead of running past the bottom of the screen. */}
+        <aside className="hidden xl:block">
+          <div className="sticky top-[calc(var(--header-h,4.5rem)+2rem)] max-h-[calc(100dvh-var(--header-h,4.5rem)-4rem)] overflow-y-auto">
+            <OnThisPage items={toc} />
+          </div>
+        </aside>
       </div>
     </section>
   )

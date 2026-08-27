@@ -60,7 +60,7 @@ export function Hero() {
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-grid" />
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-glow" />
 
-      <div className="mx-auto max-w-5xl px-6 text-center">
+      <div className="mx-auto max-w-5xl px-6 lg:px-12 text-center">
         {/* Announcement pill: the current version, then what is new in it.
             The badge reads `version` from src/config/site.ts, so it moves with
             your releases; swap the sentence for whatever you are shipping. */}

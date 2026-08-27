@@ -1,10 +1,9 @@
-import { auth } from "@/auth"
-import { redirect, notFound } from "next/navigation"
+import { requireUser } from "@/lib/auth"
+import { notFound } from "next/navigation"
 import { getFormatter, getTranslations } from "next-intl/server"
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { BreadcrumbTrail } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { ProjectEditForm } from "@/components/dashboard/project-edit-form"
 import { deleteProject } from "@/app/actions/projects"
@@ -15,29 +14,31 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>
 }) {
   const t = await getTranslations("dashboard.projectDetail")
+  const tNav = await getTranslations("dashboard.nav")
   const format = await getFormatter()
-  const session = await auth()
-  if (!session) redirect("/login")
+  const user = await requireUser()
 
   const { id } = await params
 
   const project = await prisma.project.findUnique({ where: { id } })
 
   // Ownership check — a project not owned by the current user is "not found".
-  if (!project || project.userId !== session.user.id) notFound()
+  if (!project || project.userId !== user.id) notFound()
 
   const dateFmt = (d: Date) =>
     format.dateTime(new Date(d), { year: "numeric", month: "long", day: "numeric" })
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <Link
-        href="/dashboard/projects"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        {t("back")}
-      </Link>
+      {/* Visible trail only: /dashboard is disallowed in robots.ts, so a
+          BreadcrumbList here would be structured data emitted for nobody. */}
+      <BreadcrumbTrail
+        trail={[
+          { name: tNav("dashboard"), href: "/dashboard" },
+          { name: tNav("projects"), href: "/dashboard/projects" },
+          { name: project.name, href: `/dashboard/projects/${project.id}` },
+        ]}
+      />
 
       <div>
         <h1 className="text-2xl font-bold">{project.name}</h1>

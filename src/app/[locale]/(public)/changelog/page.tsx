@@ -6,6 +6,7 @@ import { getChangelog, CHANGELOG_BASE_DIR } from "@/lib/changelog"
 import { mapRepoHref } from "@/lib/markdown-links"
 import { Badge } from "@/components/ui/badge"
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 
 // The entries are written for the repository, where `./docs/blog.md` is the
 // right link. Here the same string would ask the browser for a page that does
@@ -25,11 +26,11 @@ const markdownComponents: Components = {
   },
 }
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `Changelog | ${siteConfig.name}`,
   description: `Every ${siteConfig.name} release: new features, changes and fixes.`,
-  alternates: { canonical: `${siteConfig.url}/changelog` },
-}
+  path: "/changelog",
+})
 
 function formatDate(iso: string | null) {
 
@@ -50,7 +51,7 @@ export default function ChangelogPage() {
 
   return (
     <section className="py-24">
-      <div className="mx-auto max-w-5xl px-6">
+      <div className="mx-auto max-w-5xl px-6 lg:px-12">
         <div className="max-w-2xl">
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             {t("title")}

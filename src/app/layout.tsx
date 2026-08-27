@@ -13,6 +13,11 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
 
 export const metadata: Metadata = {
+  // Absolute base for every relative URL in the metadata: without it the
+  // generated Open Graph image and canonical resolve against the request host,
+  // which on a preview deployment means a share preview advertising a
+  // throwaway domain.
+  metadataBase: new URL(siteConfig.url),
   // `seoTitle` wins when set, so the words people search can lead the title
   // without touching the tagline that reads on the page. Unset, nothing
   // changes: the title stays "name | tagline".
@@ -59,7 +64,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <SessionProvider>{children}</SessionProvider>
         </NextIntlClientProvider>
         <Toaster />
-        <Analytics />
+        {/* Vercel Analytics, unless this deployment says otherwise. It ships
+            mounted because that is the useful default on Vercel, and it can be
+            turned off without editing the layout: a kit that sends data from
+            someone else's product should at least let them decline. */}
+        {process.env.NEXT_PUBLIC_DISABLE_ANALYTICS !== "true" && <Analytics />}
       </body>
     </html>
   )

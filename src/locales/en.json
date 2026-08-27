@@ -88,12 +88,17 @@
   "dashboard": {
     "projects": {
       "title": "Projects",
-      "subtitle": "The things you're working on. This is the example resource - copy the pattern to build your own.",
+      "subtitle": "The things you're working on. This is the example resource.",
       "newTitle": "New project",
       "newDescription": "Create a project you own.",
       "emptyTitle": "No projects yet",
-      "emptyBody": "Create your first project with the form on the left to get started.",
-      "noDescription": "No description"
+      "emptyBody": "Create your first project to get started.",
+      "noDescription": "No description",
+      "updated": "Updated {date}",
+      "searchPlaceholder": "Search projects...",
+      "noResultsTitle": "Nothing matched",
+      "noResultsBody": "No project matches “{query}”. Try a shorter word, or clear the search.",
+      "clearSearch": "Clear search"
     },
     "home": {
       "greeting": "Welcome back, {name} 👋",
@@ -148,7 +153,6 @@
       "passwordHint": "With a password set you can sign in even without your OAuth providers.",
       "accountTitle": "Account",
       "accountDescription": "Account information and metadata.",
-      "email": "Email",
       "memberSince": "Member since",
       "messages": {
         "unlinked": "Account disconnected.",
@@ -156,7 +160,25 @@
         "last-method": "You can't disconnect your only sign-in method. Set a password first.",
         "unlink": "That account could not be disconnected.",
         "policy": "Passwords must be 8 to 72 characters.",
-        "current": "The current password you entered is wrong."
+        "current": "The current password you entered is wrong.",
+        "demo": "Account deletion is disabled on the demo.",
+        "confirm": "The address did not match, so nothing was deleted.",
+        "subscription": "Your subscription could not be cancelled, so nothing was deleted. Cancel it in the billing portal and try again.",
+        "last-admin": "You are the only administrator. Promote someone else before deleting this account."
+      },
+      "deleteAccount": {
+        "heading": "Delete this account",
+        "blurb": "Removes your account, your projects and your sign-in methods, and cancels any active subscription immediately. This cannot be undone.",
+        "trigger": "Delete account",
+        "title": "Delete your account?",
+        "description": "Your profile, projects, sessions and linked sign-in methods are removed permanently, and any active subscription is cancelled at once. There is no undo.",
+        "confirmLabel": "Type {email} to confirm",
+        "cancel": "Keep my account",
+        "confirm": "Delete permanently"
+      },
+      "dangerZone": {
+        "title": "Danger zone",
+        "blurb": "Some actions cannot be undone. Proceed with care."
       }
     },
     "billing": {
@@ -197,7 +219,6 @@
       }
     },
     "projectDetail": {
-      "back": "Back to projects",
       "subtitle": "Edit the details or delete this project.",
       "detailsTitle": "Details",
       "detailsDescription": "Update the project name and description.",
@@ -212,7 +233,9 @@
       "created": "Project created",
       "name": "Project name",
       "description": "Description (optional)",
-      "descriptionPlaceholder": "What is this project about?"
+      "descriptionPlaceholder": "What is this project about?",
+      "descriptionHint": "Optional. Up to {max} characters.",
+      "submit": "Create project"
     },
     "projectEdit": {
       "updated": "Project updated",
@@ -223,7 +246,13 @@
       "updated": "Profile updated",
       "avatarAlt": "Avatar",
       "displayName": "Display name",
-      "namePlaceholder": "Your name"
+      "namePlaceholder": "Your name",
+      "avatarFrom": "Photo from {provider}",
+      "avatarCurrent": "Current profile photo",
+      "avatarNone": "No profile photo yet",
+      "email": "Email",
+      "emailHint": "This address identifies your account and is one of the ways you sign in. It cannot be changed here.",
+      "save": "Save changes"
     },
     "signOut": {
       "title": "Sign out?",
@@ -257,6 +286,9 @@
     "totalUsers": "Total Users",
     "activeSubscriptions": "Active Subscriptions",
     "mrr": "MRR (estimated)",
+    "revenueTitle": "Recurring revenue",
+    "revenueSubtitle": "Monthly recurring revenue over the last 12 weeks.",
+    "revenueTooltip": "MRR",
     "usersTitle": "Users",
     "usersCount": "{count, plural, one {# total user} other {# total users}}",
     "searchPlaceholder": "Search by email...",
@@ -691,7 +723,6 @@
     "title": "Blog",
     "intro": "Guides, product updates and build notes. Follow along via",
     "empty": "No posts yet. Add an <code>.mdx</code> file to <code>content/blog/</code> to publish the first one.",
-    "back": "← Blog",
     "figureOpen": "Enlarge the diagram",
     "figureTitle": "Diagram",
     "signup": {
@@ -711,13 +742,19 @@
     },
     "readingTime": "{minutes} min read",
     "inCategory": "{count, plural, =0 {No posts} one {# post} other {# posts}} in this category.",
-    "categoryMeta": "All {site} blog posts in the {category} category."
+    "categoryMeta": "All {site} blog posts in the {category} category.",
+    "breadcrumbHome": "Home",
+    "breadcrumbBlog": "Blog",
+    "previous": "Previous",
+    "next": "Next",
+    "pagination": "Blog pages",
+    "page": "Page"
   },
   "docs": {
     "title": "Documentation",
     "sectionLabel": "Documentation",
     "overview": "Overview",
-    "onThisPage": "On this page",
+    "contents": "Contents",
     "needHelp": "Need help?",
     "contactSupport": "Contact Support",
     "starNote": "Bookmark it with a <star></star>",

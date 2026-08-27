@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 /**
@@ -8,8 +8,8 @@ import { prisma } from "@/lib/prisma"
  * opt-in for each address.
  */
 export async function GET() {
-  const session = await auth()
-  if (!session || session.user.role !== "ADMIN") {
+  const user = await getCurrentUser()
+  if (!user || user.role !== "ADMIN") {
     return new Response("Forbidden", { status: 403 })
   }
 

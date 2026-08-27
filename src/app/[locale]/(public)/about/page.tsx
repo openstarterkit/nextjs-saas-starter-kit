@@ -1,12 +1,14 @@
 import type { Metadata } from "next"
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 import { useTranslations } from "next-intl"
 import { isKitSite } from "@/config/kit"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `About | ${siteConfig.name}`,
   description: `What ${siteConfig.name} is, who it is for, and the principles behind it.`,
-}
+  path: "/about",
+})
 
 /**
  * On the kit's own site this is the real page. In your clone it is a
@@ -19,7 +21,7 @@ export default function AboutPage() {
   const t = useTranslations("about")
   return (
     <section className="py-24">
-      <div className="mx-auto max-w-3xl px-6">
+      <div className="mx-auto max-w-3xl px-6 lg:px-12">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           {t("title", { site: siteConfig.name })}
         </h1>

@@ -5,24 +5,18 @@ import { getTranslations } from "next-intl/server"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Languages } from "lucide-react"
-import { getDocs, getDoc, getDocContent, extractToc, slugify, translatedLocales } from "@/lib/docs"
+import { getDocs, getDoc, getDocContent, translatedLocales } from "@/lib/docs"
+import { extractToc, slugify, nodeText } from "@/lib/toc"
 import { OnThisPage } from "@/components/docs/on-this-page"
 import { mapRepoHref } from "@/lib/markdown-links"
 import { Link } from "@/i18n/navigation"
 import { localeAlternates } from "@/i18n/alternates"
 import { languageName } from "@/i18n/language-name"
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 
 // Flatten a heading's React children to plain text, so its anchor id matches
 // the slug the "On this page" outline links to.
-function nodeText(node: React.ReactNode): string {
-  if (typeof node === "string" || typeof node === "number") return String(node)
-  if (Array.isArray(node)) return node.map(nodeText).join("")
-  if (node && typeof node === "object" && "props" in node) {
-    return nodeText((node as { props: { children?: React.ReactNode } }).props.children)
-  }
-  return ""
-}
 
 // Renders a guide from the repo's docs/ folder. The Markdown is the single
 // source of truth: GitHub renders the files as-is, this page renders the
@@ -45,8 +39,12 @@ export async function generateMetadata({
   const doc = getDoc(slug, locale)
   const t = await getTranslations({ locale, namespace: "docs" })
   return {
-    title: `${doc?.title ?? t("title")} | ${siteConfig.name} ${t("title")}`,
-    description: doc?.description,
+    ...pageMetadata({
+      title: `${doc?.title ?? t("title")} | ${siteConfig.name} ${t("title")}`,
+      description: doc?.description,
+      path: `/docs/${slug}`,
+    }),
+    // localeAlternates carries the language variants as well as the canonical.
     alternates: localeAlternates(`/docs/${slug}`, locale, translatedLocales(slug)),
   }
 }
@@ -93,6 +91,16 @@ export default async function DocPage({
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
+            // A table wide enough to overflow scrolls inside its own box
+            // instead of widening the page: on a phone the second is a
+            // document you have to drag sideways to read a single line of.
+            // Only the wrapper is added, so the table keeps the typography
+            // styles it already had.
+            table: ({ children }) => (
+              <div className="overflow-x-auto">
+                <table>{children}</table>
+              </div>
+            ),
             h2: ({ children }) => (
               <h2 id={slugify(nodeText(children))} className="scroll-mt-10">
                 {children}

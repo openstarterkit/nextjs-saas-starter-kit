@@ -1,5 +1,4 @@
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
+import { requireUser } from "@/lib/auth"
 import { getFormatter, getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
@@ -14,17 +13,16 @@ import { isKitSite } from "@/config/kit"
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard.home")
   const format = await getFormatter()
-  const session = await auth()
-  if (!session) redirect("/login")
+  const user = await requireUser()
 
-  const entitlement = await getEntitlement(session.user.id)
+  const entitlement = await getEntitlement(user.id)
   const subscription = entitlement.kind === "subscription" ? entitlement.subscription : null
   const lifetime = entitlement.kind === "lifetime" ? entitlement.purchase : null
 
   const [projectCount, userRow] = await Promise.all([
-    prisma.project.count({ where: { userId: session.user.id } }),
+    prisma.project.count({ where: { userId: user.id } }),
     prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: user.id },
       select: { name: true, onboardingDismissedAt: true, stripeCustomerId: true },
     }),
   ])
@@ -45,7 +43,7 @@ export default async function DashboardPage() {
       <CheckoutStatusToast />
       <div>
         <h1 className="text-2xl font-bold">
-          {t("greeting", { name: session.user.name?.split(" ")[0] ?? t("greetingFallback") })}
+          {t("greeting", { name: user.name?.split(" ")[0] ?? t("greetingFallback") })}
         </h1>
         <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
       </div>

@@ -7,6 +7,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [1.7.0] - 2026-08-27
+
+🎨 **UI kit expansion.** The form and overlay primitives the kit had left to plain HTML, and the features that put them to work instead of a gallery page nobody opens: the blog splits into real paginated routes, the admin panel gets a revenue chart, settings opens as a modal whose URL is still a page, and an account can finally be deleted. Plus a pass over every page on a phone, per-page social previews, and the boundary that makes the next major a one file change.
+
+### Added
+- **The form primitives the kit was missing**: select, checkbox, radio group and textarea, with [react-hook-form](https://react-hook-form.com) as the form layer. A form validates against the same Zod schema the server action already checks, so the rules exist once instead of as a browser copy that drifts out of step
+- **Overlays and navigation**: popover, sheet, alert, alert dialog, breadcrumb, pagination and skeleton, each documenting when *not* to use it. A popover does not trap focus, so it is right for something optional beside its control and wrong for a decision that blocks; an alert is a message that stays, while what follows a click is a toast; a skeleton has to carry the shape of what it replaces, or the page jumps when the data lands and it is worse than the spinner it improved on
+- **Blog pagination as real routes.** `/blog` and each category page split every twelve posts into prerendered routes rather than a query string, so every page has an address of its own that can be linked and returned in a result. Page one keeps the bare address, a number past the end is a 404 rather than an empty page that still looks valid to a crawler, and the RSS feed ignores paging and stays whole. `POSTS_PER_PAGE` lives in `src/lib/blog.ts`, and leaving it at zero lists every post on one page, the way the kit already treats a value you leave out
+- **A recurring revenue chart on the admin panel**, drawn from the subscriptions already in your database
+- **Deleting an account**, which the kit had never actually implemented: the only delete it shipped unlinked an OAuth provider. One `delete` carries away sessions, linked accounts, projects, tokens and the subscription row, because every relation to `User` already cascaded. The work is in the four refusals: demo mode, a confirmation that does not match (checked on the server too, because the browser is not to be trusted), the last remaining admin, and an active subscription, which is now cancelled on Stripe first rather than sending the user off to do it. If Stripe refuses, nothing is deleted: the unforgivable failure is the account disappearing here while the card keeps being charged
+- **Settings opens as a modal, and its URL is still a page.** An intercepting route, because the account actions redirect back to `/dashboard/settings` and linking a provider leaves the application for the OAuth round trip: a client only modal no longer exists by the time the user comes back. One component renders both forms, so they cannot diverge
+- **Projects**: a card grid, creation in a modal, and search
+- **Breadcrumbs**, emitted on posts as `BreadcrumbList` structured data built from the same array the visible row renders, and in the dashboard without it, where there is nothing for a search engine to read
+- **An outline and heading anchors on posts**, reusing the one the documentation already had
+- **Per-page Open Graph**, so a link to your pricing page stops previewing like your home page
+- **Your prices as structured data**, `SoftwareApplication` offers built from the same rows the pricing table renders, so an answer engine can state the figure instead of pointing at a page somebody has to open
+- **An optional line in `/llms.txt`** for the sentence you want repeated about you. Shipped unset on purpose: a positioning line is the one piece of copy that cannot have a sensible default
+- **`AGENTS.md`**, this project's rules for coding agents, nine of them and each with the reason it exists
+- **[docs/upgrading.md](./docs/upgrading.md)**, written before it is needed rather than after: what a version number means here, and what a major asks of a clone
+- **`@/lib/auth`, the boundary between this kit and whichever library handles authentication.** Everything outside the sign in flow reads the session through it, and it returns five fields and nothing a specific library adds on top. It is here now, working on the current library, so that v2.0 edits one file instead of twenty pages
+- **The modules this release adds are covered before their figures are published**: the auth boundary, the builders behind structured data and page metadata, the project schema and the guards around usage reporting. The suite goes from 160 tests to 202, and all four coverage figures in the README move up rather than down
+
+### Changed
+- **Vercel Analytics can be declined**, with `NEXT_PUBLIC_DISABLE_ANALYTICS`. It shipped mounted unconditionally, which meant every deployment of the kit sent data from somebody else's product without its author being asked. Left unset it stays on, which is the useful default on Vercel
+- **More room across the dashboard**: side margins doubled from `lg` up on every container, and the admin table takes back the width it was giving away
+- **The roadmap is renumbered.** v2.0 is the authentication migration and nothing else, because a major that also adds things is a major people postpone. What was 1.9 becomes 2.1, what was 1.8 becomes 2.2, and Pro loses its version number, since it is not a release of the free kit
+- **ESLint majors leave Dependabot**, alongside `next`, `react` and `react-dom` and for the same reason: `eslint.config.mjs` holds no rule of ours, so the ESLint version is governed by `eslint-config-next` rather than by us. Their peer range is a permission, not a statement that they tested the next major. The decision reopens on its own, the day a peer conflict shows up at install
+
+### Fixed
+- **Inline code wraps everywhere, from a single rule.** A forty character path with nowhere to break was running off the side of a phone, on the about page, the sign up and password recovery pages, and the empty state of the blog. `:not(pre) > code` in `globals.css` covers all of them instead of five patches. Fenced blocks stay excluded on purpose: those keep their lines whole and scroll in their own box, which is what you want when the line is a command to copy
+- **Tables scroll in a box of their own**, in the documentation and in posts, rather than widening the page around them
+- **Search and its button stack on a phone** instead of being squeezed side by side
+- **Settings told a user who never used OAuth that their avatar came from their provider**, which was simply untrue. It also showed their email address twice on the same page, and selected their name when the modal opened. The email is now a read only field that says why it cannot be changed there
+
+### Security
+- **JSON-LD no longer closes the script element.** `JSON.stringify` does not escape `<`, so a string reaching the graph that contains `</script>` ends the element early and everything after it is parsed as markup. CodeQL reported it as stored XSS on the post page, but the sink was in four places, not one: posts, the break-even calculator, the home page and the FAQ block. A single `jsonLdScript()` in `src/lib/json-ld.ts` replaces `<` with `\u003c`, which also neutralises `<!--`, and the output stays valid JSON. Here the graph comes from post frontmatter and `siteConfig`, both written by whoever develops the site, but a blog fed by a contributor, a CMS or a generator is the normal case downstream, and that is where this bites
+- **The CI workflow declares `contents: read`.** It declared no permissions at all, so `GITHUB_TOKEN` inherited the repository default. Nothing in it writes: it installs, lints, tests, builds and audits. A step added later now has to ask for more on purpose rather than finding it already in hand. It matters most on a public repository, where pull requests arrive from forks
+- **`next` and `eslint-config-next` moved to 16.3.3**, a patch branch carrying backported fixes only, among them a catch-all route being served for every other slug
+
+---
+
 ## [1.6.4] - 2026-08-21
 
 🔐 **Role changes reach sessions that already exist.** Changing someone's role did nothing until they signed out, which by default is 30 days away. That included the documented way to create the first admin of a deployment, so the step in the deployment guide looked like it did nothing at all.
@@ -286,6 +327,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[1.7.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.7.0
 [1.6.4]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.4
 [1.6.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.3
 [1.6.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.2

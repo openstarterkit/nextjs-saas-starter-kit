@@ -5,11 +5,15 @@ import { Pricing } from "@/components/landing/pricing"
 import { PlanPricing } from "@/components/landing/plan-pricing"
 import { FAQ } from "@/components/landing/faq"
 import { siteConfig } from "@/config/site"
+import { pageMetadata } from "@/lib/metadata"
 import { isKitSite } from "@/config/kit"
+import { jsonLdScript } from "@/lib/json-ld"
 
-export const metadata: Metadata = {
-  alternates: { canonical: siteConfig.url },
-}
+export const metadata: Metadata = pageMetadata({
+  title: siteConfig.seoTitle ?? `${siteConfig.name} | ${siteConfig.tagline}`,
+  description: siteConfig.description,
+  path: "/",
+})
 
 /**
  * Identifies the site itself to search engines: the name to show, the logo to
@@ -34,7 +38,7 @@ export default function LandingPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(organizationJsonLd) }}
       />
       <Hero />
       <Features />

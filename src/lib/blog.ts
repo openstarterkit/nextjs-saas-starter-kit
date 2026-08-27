@@ -124,3 +124,31 @@ export function getCategories(): Category[] {
 export function getPostsByCategory(slug: string): Post[] {
   return getAllPosts().filter((p) => categorySlug(p.category) === slug)
 }
+
+/**
+ * Posts per page on the index and the category listings.
+ *
+ * Leave it unset to list every post on one page, the way the kit treats other
+ * values you do not fill in. When it is set, the extra pages are real routes
+ * (`/blog/page/2`) rather than a query string: each one has an address of its
+ * own that can be linked, crawled and shown in a result, which a `?page=`
+ * cannot claim as reliably.
+ *
+ * The RSS feed ignores this and stays whole: a feed reader wants the posts, not
+ * the pagination.
+ */
+export const POSTS_PER_PAGE = 12
+
+export type Paginated = { posts: Post[]; page: number; totalPages: number }
+
+/**
+ * Slices a list into a page, clamping to what exists. `totalPages` is at least
+ * 1 so an empty blog still renders page 1 instead of "page 1 of 0".
+ */
+export function paginate(posts: Post[], page: number): Paginated {
+  const perPage = POSTS_PER_PAGE > 0 ? POSTS_PER_PAGE : posts.length || 1
+  const totalPages = Math.max(1, Math.ceil(posts.length / perPage))
+  const current = Math.min(Math.max(1, page), totalPages)
+  const start = (current - 1) * perPage
+  return { posts: posts.slice(start, start + perPage), page: current, totalPages }
+}
