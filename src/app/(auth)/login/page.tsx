@@ -2,7 +2,8 @@ import Link from "next/link"
 import { GithubIcon } from "@/components/icons/github"
 import { redirect } from "next/navigation"
 import { getTranslations } from "next-intl/server"
-import { signIn } from "@/auth"
+import { headers } from "next/headers"
+import { auth } from "@/auth"
 import { signInWithPassword, signInWithMagicLink } from "@/app/actions/auth"
 import { LogoMark } from "@/components/logo"
 import { PendingButton } from "@/components/auth/pending-button"
@@ -52,7 +53,11 @@ export default async function LoginPage({
           <form
             action={async () => {
               "use server"
-              await signIn("google", { redirectTo: "/dashboard" })
+              const { url } = await auth.api.signInSocial({
+                body: { provider: "google", callbackURL: "/dashboard" },
+                headers: await headers(),
+              })
+              if (url) redirect(url)
             }}
           >
             <PendingButton
@@ -72,7 +77,11 @@ export default async function LoginPage({
           <form
             action={async () => {
               "use server"
-              await signIn("github", { redirectTo: "/dashboard" })
+              const { url } = await auth.api.signInSocial({
+                body: { provider: "github", callbackURL: "/dashboard" },
+                headers: await headers(),
+              })
+              if (url) redirect(url)
             }}
           >
             <PendingButton
@@ -172,7 +181,11 @@ export default async function LoginPage({
               <form
                 action={async (formData: FormData) => {
                   "use server"
-                  await signIn("demo", formData, { redirectTo: "/dashboard" })
+                  await auth.api.demoSignIn({
+                    body: { role: String(formData.get("role") ?? "user") },
+                    headers: await headers(),
+                  })
+                  redirect("/dashboard")
                 }}
               >
                 <input type="hidden" name="role" value="user" />
@@ -184,7 +197,11 @@ export default async function LoginPage({
               <form
                 action={async (formData: FormData) => {
                   "use server"
-                  await signIn("demo", formData, { redirectTo: "/admin" })
+                  await auth.api.demoSignIn({
+                    body: { role: String(formData.get("role") ?? "admin") },
+                    headers: await headers(),
+                  })
+                  redirect("/admin")
                 }}
               >
                 <input type="hidden" name="role" value="admin" />
@@ -220,7 +237,11 @@ export default async function LoginPage({
             <form
               action={async (formData: FormData) => {
                 "use server"
-                await signIn("dev", formData, { redirectTo: "/dashboard" })
+                await auth.api.devSignIn({
+                  body: { password: String(formData.get("password") ?? "") },
+                  headers: await headers(),
+                })
+                redirect("/dashboard")
               }}
             >
               <input type="hidden" name="password" value="dev" />

@@ -1,10 +1,11 @@
 "use server"
 
+import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { signIn, signOut } from "@/auth"
+import { auth } from "@/auth"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { hashPassword, verifyPassword, passwordSchema } from "@/lib/password"
+import { passwordSchema } from "@/lib/password"
 import { stripe } from "@/lib/stripe"
 
 // Account-management actions behind a session: link/unlink OAuth providers
@@ -22,9 +23,14 @@ const BILLING_STATUSES = ["ACTIVE", "PAST_DUE", "TRIALING"]
 export async function linkProvider(formData: FormData) {
   const provider = String(formData.get("provider") ?? "")
   if (!LINKABLE_PROVIDERS.includes(provider)) redirect(SETTINGS)
-  // Starting an OAuth flow while signed in makes the adapter link the new
-  // account to the current user instead of creating a fresh one.
-  await signIn(provider, { redirectTo: SETTINGS })
+  // Linking is its own call now, not a sign-in that happens to attach: the
+  // library returns the provider URL and this hands the browser over to it.
+  const { url } = await auth.api.linkSocialAccount({
+    body: { provider, callbackURL: SETTINGS },
+    headers: await headers(),
+  })
+  if (url) redirect(url)
+  redirect(`${SETTINGS}?error=unlink`)
 }
 
 export async function unlinkProvider(formData: FormData) {
@@ -33,18 +39,25 @@ export async function unlinkProvider(formData: FormData) {
 
   const user = await prisma.user.findUnique({
     where: { id: currentUser.id },
-    select: { passwordHash: true, accounts: { select: { id: true } } },
+    select: { accounts: { select: { id: true, providerId: true } } },
   })
   if (!user) redirect("/login")
 
   const accountId = String(formData.get("accountId") ?? "")
-  // Ownership check: only the user's own Account rows can be deleted.
-  if (!user.accounts.some((a) => a.id === accountId)) redirect(`${SETTINGS}?error=unlink`)
+  // The password now lives in Account too, as a row with providerId
+  // "credential". So the OAuth accounts are everything except that one, and
+  // the password is that one existing: both counts come from the same list.
+  const oauthAccounts = user.accounts.filter((a) => a.providerId !== "credential")
+  const hasPassword = user.accounts.some((a) => a.providerId === "credential")
+
+  // Ownership check: only the user's own OAuth rows can be unlinked, and the
+  // credential row is not something this form may delete.
+  if (!oauthAccounts.some((a) => a.id === accountId)) redirect(`${SETTINGS}?error=unlink`)
 
   // Lock-out guard: after unlinking there must still be a way in — another
   // provider, a password, or the magic link (which needs Resend configured).
   const remainingMethods =
-    user.accounts.length - 1 + (user.passwordHash ? 1 : 0) + (process.env.RESEND_API_KEY ? 1 : 0)
+    oauthAccounts.length - 1 + (hasPassword ? 1 : 0) + (process.env.RESEND_API_KEY ? 1 : 0)
   if (remainingMethods < 1) redirect(`${SETTINGS}?error=last-method`)
 
   await prisma.account.delete({ where: { id: accountId } })
@@ -58,25 +71,34 @@ export async function updatePassword(formData: FormData) {
   const parsed = passwordSchema.safeParse(String(formData.get("password") ?? ""))
   if (!parsed.success) redirect(`${SETTINGS}?error=policy`)
 
-  const user = await prisma.user.findUnique({
-    where: { id: currentUser.id },
-    select: { passwordHash: true },
+  const credential = await prisma.account.findFirst({
+    where: { userId: currentUser.id, providerId: "credential" },
+    select: { id: true },
   })
-  if (!user) redirect("/login")
 
   // Changing an existing password requires proving you know the current one;
-  // setting the first password doesn't (the live session is the proof).
-  if (user.passwordHash) {
-    const current = String(formData.get("currentPassword") ?? "")
-    if (!(await verifyPassword(current, user.passwordHash))) {
-      redirect(`${SETTINGS}?error=current`)
+  // setting the first password doesn't (the live session is the proof). The
+  // library draws the same line with two different calls, so the branch that
+  // used to compare hashes here is now the choice of which one to make.
+  try {
+    if (credential) {
+      await auth.api.changePassword({
+        body: {
+          newPassword: parsed.data,
+          currentPassword: String(formData.get("currentPassword") ?? ""),
+          revokeOtherSessions: true,
+        },
+        headers: await headers(),
+      })
+    } else {
+      await auth.api.setPassword({
+        body: { newPassword: parsed.data },
+        headers: await headers(),
+      })
     }
+  } catch {
+    redirect(`${SETTINGS}?error=current`)
   }
-
-  await prisma.user.update({
-    where: { id: currentUser.id },
-    data: { passwordHash: await hashPassword(parsed.data) },
-  })
   redirect(`${SETTINGS}?ok=password`)
 }
 
@@ -144,5 +166,8 @@ export async function deleteAccount(formData: FormData) {
   }
 
   await prisma.user.delete({ where: { id: currentUser.id } })
-  await signOut({ redirectTo: "/" })
+  // The session rows go with the user (onDelete: Cascade), so this only clears
+  // the cookie that now points at nothing.
+  await auth.api.signOut({ headers: await headers() })
+  redirect("/")
 }

@@ -3,7 +3,11 @@ import { describe, expect, it, vi, beforeEach } from "vitest"
 const session = vi.fn()
 const updateMany = vi.fn()
 
-vi.mock("@/auth", () => ({ auth: () => session() }))
+// The library moved: what used to be `auth()` is `auth.api.getSession()`.
+// Only the shape of the mock changes. Every assertion below is the one the
+// 1.7 suite made, because the boundary still returns the same five fields.
+vi.mock("@/auth", () => ({ auth: { api: { getSession: () => session() } } }))
+vi.mock("next/headers", () => ({ headers: async () => new Headers() }))
 vi.mock("@/lib/prisma", () => ({
   prisma: { user: { updateMany: (...args: unknown[]) => updateMany(...args) } },
 }))

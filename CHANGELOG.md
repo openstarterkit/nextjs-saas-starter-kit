@@ -7,6 +7,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.0.0] - 2026-08-28
+
+🔐 **Authentication moves from Auth.js to Better Auth.** That is the whole release: no new features, nothing else to review, so the upgrade is as easy to adopt as a library change can be. Auth.js is now part of Better Auth and its own README points new projects at it, and a starter kit is a new project every time someone clones it. Version 1.7 built the boundary that makes this cheap, and it held: changing library touched seven files, and they are exactly the seven that 1.7 named in advance.
+
+### Breaking
+
+- **Everyone is signed out when you deploy.** Session tokens belong to the library that issued them. Your users are not locked out, they are logged out
+- **There is a database migration, and it moves data.** Password hashes leave `User.passwordHash` for a row in `Account`. If that move does not happen the database stays valid, nothing errors, and every user with a password silently cannot sign in. Count before and after, and stop if the numbers disagree: `docs/upgrading.md` has the two queries
+- **`emailVerified` becomes a boolean** and `name` becomes required. Users without a name get the local part of their email, empty strings included, because an empty string satisfies the constraint while still showing a blank name
+- **`PasswordResetToken`, `User.sessionVersion` and `src/lib/session.ts` are gone.** Reset tokens live in `Verification`, and sessions are rows that can be deleted, which is what `sessionVersion` was imitating
+- **`SessionProvider` is gone from the root layout.** The client reads the session without one
+- **`next-auth` and `@auth/prisma-adapter` are uninstalled.** Code written against the boundary needs no changes. Code that imported `auth()` from `@/auth` directly is what you have to rewrite
+
+### Added
+
+- **Sessions live in the database.** Revoking one is deleting a row, immediately and everywhere, instead of waiting out a token that cannot be recalled. `session.cookieCache` keeps the cost to one signed cookie read for most requests
+- **Rate limiting out of the box**: three attempts every ten seconds on password sign-in, stricter than the hand rolled check it replaces
+- **An end to end test for signing in.** The suite tested signing up, which issues its own session, so the credentials path was never actually walked. It is now, against a migrated database
+
+### Changed
+
+- **bcrypt hashes keep working.** Better Auth hashes with scrypt by default; the kit passes its own hash and verify functions, so existing passwords still verify and **nobody has to reset anything**
+- **No environment variable is renamed.** `AUTH_SECRET` keeps its name and `NEXT_PUBLIC_APP_URL` is reused as the base URL, because the upgrade already signs everyone out and a rename on top of that buys nothing
+- **Signing up sends a verification email** instead of a magic link that doubled as one. Same destination, one fewer trick in the middle
+- **The route handler moved** from `src/app/api/auth/[...nextauth]` to `src/app/api/auth/[...all]`. If the build then fails on a module you deleted, remove `.next`: it is the old route name cached
+
+### Fixed
+
+- **`npx prisma db seed` did nothing.** Prisma 7 stopped reading the `prisma` key in `package.json` and wants `migrations.seed` in `prisma.config.ts`. It printed instructions and exited, so a fresh clone ended up with no plans, which means no pricing page and no checkout, with nothing that looked like an error
+- **`npm run db:seed` and `db:seed:demo` failed to compile** under TypeScript 6, which reports the `moduleResolution` value the ts-node block was using as deprecated
+
 ## [1.7.0] - 2026-08-27
 
 🎨 **UI kit expansion.** The form and overlay primitives the kit had left to plain HTML, and the features that put them to work instead of a gallery page nobody opens: the blog splits into real paginated routes, the admin panel gets a revenue chart, settings opens as a modal whose URL is still a page, and an account can finally be deleted. Plus a pass over every page on a phone, per-page social previews, and the boundary that makes the next major a one file change.
@@ -327,6 +358,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.0.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.0
 [1.7.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.7.0
 [1.6.4]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.4
 [1.6.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.3

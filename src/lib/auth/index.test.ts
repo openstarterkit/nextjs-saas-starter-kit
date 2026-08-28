@@ -6,7 +6,11 @@ const redirect = vi.fn((path: string) => {
   throw new Error(`REDIRECT:${path}`)
 })
 
-vi.mock("@/auth", () => ({ auth: () => session() }))
+// The library moved: what used to be `auth()` is `auth.api.getSession()`.
+// Only the shape of the mock changes. Every assertion below is the one the
+// 1.7 suite made, because the boundary still returns the same five fields.
+vi.mock("@/auth", () => ({ auth: { api: { getSession: () => session() } } }))
+vi.mock("next/headers", () => ({ headers: async () => new Headers() }))
 vi.mock("next/navigation", () => ({ redirect: (path: string) => redirect(path) }))
 
 const { getCurrentUser, requireUser, isSignedIn } = await import("./index")

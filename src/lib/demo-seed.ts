@@ -116,6 +116,23 @@ const fakeUsers: {
   { name: "Aisha Bello", email: "aisha@example.com", signedUpDaysAgo: 7, plan: "starter-monthly", subStatus: "ACTIVE", projects: ["Launch checklist"] },
   { name: "Jonas Weber", email: "jonas@example.com", signedUpDaysAgo: 3, projects: ["Weekend MVP"] },
   { name: "Lucia Fernandez", email: "lucia@example.com", signedUpDaysAgo: 1, projects: [] },
+  // A wider paying population, spread across the twelve weeks the chart covers,
+  // so the line climbs instead of sitting on the axis. Dates are what make it a
+  // curve; the plan mix is what gives it steps of different heights.
+  { name: "Noah Lindqvist", email: "noah@example.com", signedUpDaysAgo: 84, plan: "pro-monthly", subStatus: "ACTIVE", projects: ["Fleet tracker"] },
+  { name: "Amara Okafor", email: "amara@example.com", signedUpDaysAgo: 77, plan: "pro-yearly", subStatus: "ACTIVE", projects: ["Grant tracker", "Field notes"] },
+  { name: "Ines Moreau", email: "ines@example.com", signedUpDaysAgo: 71, plan: "pro-monthly", subStatus: "ACTIVE", projects: ["Menu planner"] },
+  { name: "Kwame Mensah", email: "kwame@example.com", signedUpDaysAgo: 64, plan: "pro-monthly", subStatus: "ACTIVE", projects: ["Route optimiser"] },
+  { name: "Hana Kobayashi", email: "hana@example.com", signedUpDaysAgo: 57, plan: "starter-monthly", subStatus: "ACTIVE", projects: ["Recipe box"] },
+  { name: "Diego Ramirez", email: "diego@example.com", signedUpDaysAgo: 49, plan: "pro-monthly", subStatus: "ACTIVE", projects: ["Match stats", "Team wiki"] },
+  { name: "Freya Nilsen", email: "freya@example.com", signedUpDaysAgo: 43, plan: "pro-yearly", subStatus: "ACTIVE", projects: ["Trail atlas"] },
+  { name: "Samir Farouk", email: "samir@example.com", signedUpDaysAgo: 36, plan: "pro-monthly", subStatus: "ACTIVE", projects: ["Invoice inbox"] },
+  { name: "Clara Bianchi", email: "clara@example.com", signedUpDaysAgo: 29, plan: "pro-monthly", subStatus: "ACTIVE", projects: ["Studio bookings"] },
+  { name: "Ravi Menon", email: "ravi@example.com", signedUpDaysAgo: 22, plan: "starter-monthly", subStatus: "ACTIVE", projects: ["Habit log"] },
+  { name: "Mia Sorensen", email: "mia@example.com", signedUpDaysAgo: 16, plan: "pro-monthly", subStatus: "ACTIVE", projects: ["Client portal"] },
+  { name: "Theo Vasquez", email: "theo@example.com", signedUpDaysAgo: 11, plan: "pro-monthly", subStatus: "ACTIVE", projects: ["Deploy board"] },
+  { name: "Zara Haddadi", email: "zara@example.com", signedUpDaysAgo: 6, plan: "pro-yearly", subStatus: "ACTIVE", projects: ["Podcast notes"] },
+  { name: "Felix Braun", email: "felix@example.com", signedUpDaysAgo: 2, plan: "pro-monthly", subStatus: "TRIALING", projects: [] },
 ]
 
 export type DemoSeedResult = {
@@ -144,15 +161,37 @@ export async function seedDemoData(prisma: PrismaClient): Promise<DemoSeedResult
   }
 
   // Full reset: wipe users (cascades to subscriptions, purchases, projects,
-  // accounts, sessions)
+  // accounts, sessions). Since 2.0 sessions are rows rather than cookies, so
+  // this is also what signs out every visitor currently poking at the demo:
+  // the cascade takes their session with the user it belonged to.
   await prisma.user.deleteMany()
+
+  // Now that no subscription points at a plan any more, anything else that
+  // ended up in the plan table goes too. A demo database is a showcase: a stray
+  // plan left behind by a script or an experiment shows up on the pricing page
+  // next to the real ones, and nobody looking at it can tell which is which.
+  await prisma.plan.deleteMany({ where: { slug: { notIn: [...planBySlug.keys()] } } })
 
   // The two shared demo accounts (the login buttons upsert these too)
   await prisma.user.create({
-    data: { email: "demo-user@example.com", name: "Demo User", role: "USER", createdAt: daysAgo(10) },
+    data: {
+      email: "demo-user@example.com",
+      name: "Demo User",
+      // Required since 2.0. It defaults to false, so leaving it out would work
+      // and would quietly show every seeded account as unverified.
+      emailVerified: true,
+      role: "USER",
+      createdAt: daysAgo(10),
+    },
   })
   await prisma.user.create({
-    data: { email: "demo-admin@example.com", name: "Demo Admin", role: "ADMIN", createdAt: daysAgo(90) },
+    data: {
+      email: "demo-admin@example.com",
+      name: "Demo Admin",
+      emailVerified: true,
+      role: "ADMIN",
+      createdAt: daysAgo(90),
+    },
   })
 
   // Fake population
@@ -164,6 +203,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<DemoSeedResult
       data: {
         email: fake.email,
         name: fake.name,
+        emailVerified: true,
         role: "USER",
         createdAt,
         stripeCustomerId: hasBilling ? `cus_demo_${String(++customerCounter).padStart(3, "0")}` : null,
@@ -186,6 +226,10 @@ export async function seedDemoData(prisma: PrismaClient): Promise<DemoSeedResult
           planId: plan.id,
           stripeSubscriptionId: `sub_demo_${String(customerCounter).padStart(3, "0")}`,
           status: fake.subStatus,
+          // Without this every subscription looks created today, and the MRR
+          // chart on the admin panel is a flat zero with a single spike at the
+          // right edge: the history it is meant to show does not exist.
+          createdAt,
           currentPeriodStart: daysAgo(Math.min(fake.signedUpDaysAgo, periodDays / 2)),
           currentPeriodEnd: daysFromNow(periodDays / 2),
           cancelAtPeriodEnd: fake.subStatus === "CANCELED",

@@ -61,7 +61,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - **Blog**: a figure component with real zoom for diagrams, and a newsletter signup block usable inside posts. Both ship in the kit, so your own posts get them too
 - `FAQPage` structured data generated from post frontmatter
 
-## ✅ v1.7 - UI kit expansion *(current)*
+## ✅ v1.7 - UI kit expansion
 - The form primitives the kit left to plain HTML: select, checkbox, radio group, textarea, and a form layer that shares the Zod schema the server action already validates against, so the rules are not written twice
 - Overlays and navigation: popover, sheet, alert and alert dialog, breadcrumb, pagination, skeleton
 - **The blog is where that pagination primitive earns its keep**: `/blog` and the category pages split every 12 posts, as real prerendered routes rather than a query string, so every page has an address of its own and the feed stays whole. The page size is a single value in `src/lib/blog.ts`, and leaving it unset lists every post on one page, the way the kit already treats a value you leave out
@@ -71,16 +71,20 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - **Mobile audit across the whole kit**: every page and every flow opened on a phone, not the marketing pages alone
 - **Groundwork for 2.0**: everything that reads the signed-in user now goes through `@/lib/auth`, so the release that changes the authentication library changes one file. See [Upgrading](./docs/upgrading.md)
 
-## 🔜 v2.0 - Better Auth *(next, major)*
+## ✅ v2.0 - Better Auth *(current, major)*
 One thing, and nothing else. The authentication layer moves to [Better Auth](https://better-auth.com), and no feature rides along: a major that only migrates is a major you can adopt in an afternoon, and one that also adds things is a major people postpone.
 
-- Sessions, OAuth, magic link and email plus password, on the new library
-- The `@/lib/auth` boundary keeps the same shape, so code you wrote against it does not change
+- All six ways in, on the new library: Google, GitHub, magic link, email plus password, and the dev and demo sign-ins
+- **The `@/lib/auth` boundary keeps the same shape.** Changing library touched seven files, and they are the seven the 1.7 upgrade guide named in advance. Code written against the boundary does not change
+- **Existing passwords keep working.** Better Auth hashes with scrypt by default; the kit keeps bcrypt through its own hash and verify functions, so nobody has to reset anything
+- **Sessions become database rows**, so revoking one is deleting it rather than waiting out a token that cannot be recalled
+- A migration that moves the data, with the counts to check before and after, because the one failure that matters here leaves a valid database and no error
 - An upgrade guide written before the release, not after
 
-## 🔜 v2.1 - Auth depth & accessibility
+## 🔜 v2.1 - Auth depth & accessibility *(next)*
 - Self-hosted two-factor authentication (TOTP), no third-party auth vendor required
-- Active session management in Settings
+- Active session management in Settings, which 2.0 made cheap: the rows are already there, with their IP address and user agent
+- Syntax highlighting and a copy button on the code blocks in the docs and the blog
 - Rate limiting on a shared store, so the limits hold across serverless instances instead of one bucket per instance
 - **Accessibility audit** against WCAG 2.1 AA: keyboard navigation, visible focus, contrast, labelled forms and heading order, checked across the kit rather than on the marketing pages alone
 - Account depth: change your email address, upload a profile photo

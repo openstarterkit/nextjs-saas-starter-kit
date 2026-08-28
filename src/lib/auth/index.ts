@@ -1,3 +1,4 @@
+import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import type { Role } from "@prisma/client"
 
@@ -32,11 +33,11 @@ export type CurrentUser = {
 
 /** The signed-in user, or null. Never throws and never redirects. */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  const session = await auth()
+  const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user?.id) return null
 
   const { id, role, email, name, image } = session.user
-  return { id, role, email, name, image }
+  return { id, role: (role ?? "USER") as Role, email, name, image }
 }
 
 /**

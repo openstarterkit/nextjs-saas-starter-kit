@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
-import { SessionProvider } from "@/components/auth/session-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { siteConfig } from "@/config/site"
 import { brandOverrideCss } from "@/config/brand"
@@ -61,7 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             always render in the default locale, but their strings still live
             in the message files rather than in the components. */}
         <NextIntlClientProvider>
-          <SessionProvider>{children}</SessionProvider>
+          {children}
         </NextIntlClientProvider>
         <Toaster />
         {/* Vercel Analytics, unless this deployment says otherwise. It ships

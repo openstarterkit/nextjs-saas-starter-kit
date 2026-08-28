@@ -62,19 +62,25 @@ export async function SettingsView({
       email: true,
       image: true,
       createdAt: true,
-      passwordHash: true,
-      accounts: { select: { id: true, provider: true } },
+      accounts: { select: { id: true, providerId: true } },
     },
   })
 
   if (!user) redirect("/login")
 
-  const hasPassword = !!user.passwordHash
-  const linked = new Map(user.accounts.map((a) => [a.provider, a.id]))
+  // Since 2.0 the password is a row in Account, not a column on User, so
+  // "has a password" and "which providers are linked" are both read from the
+  // same list instead of from two different places.
+  const hasPassword = user.accounts.some((a) => a.providerId === "credential")
+  const linked = new Map(user.accounts.map((a) => [a.providerId, a.id]))
   // The photo, when there is one, came from the provider the account was
   // created with. First linked one is the best guess the schema allows: the
   // adapter does not record which account supplied the image.
-  const avatarProvider = user.accounts[0] ? PROVIDER_LABELS[user.accounts[0].provider] : undefined
+  // Skipping the credential row matters here: since 2.0 the password is an
+  // Account too, and it would otherwise be picked as the source of a photo it
+  // cannot have supplied.
+  const firstOAuth = user.accounts.find((a) => a.providerId !== "credential")
+  const avatarProvider = firstOAuth ? PROVIDER_LABELS[firstOAuth.providerId] : undefined
 
   return (
     <div className="space-y-6">

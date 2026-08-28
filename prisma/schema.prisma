@@ -38,78 +38,91 @@ enum PurchaseStatus {
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
-  id                  String               @id @default(cuid())
-  name                String?
-  email               String               @unique
-  emailVerified       DateTime?
-  image               String?
-  // Set only for email+password accounts (bcrypt). OAuth/magic-link users
-  // have null here until they add a password from Settings.
-  passwordHash        String?
-  role                Role                 @default(USER)
-  stripeCustomerId    String?              @unique
-  // Bumped on password reset; JWTs carrying an older version are rejected,
-  // so a reset revokes every other session (JWTs are otherwise unrevocable).
-  sessionVersion      Int                  @default(1)
+  id                    String        @id @default(cuid())
+  // Required by Better Auth, where Auth.js left it optional. The 2.0 migration
+  // backfills the users that had none: OAuth fills it from the provider profile
+  // afterwards, but the column cannot be null in the meantime.
+  name                  String
+  email                 String        @unique
+  // A boolean here, a timestamp in Auth.js. The 2.0 migration turns "has a
+  // date" into true and null into false, and the exact moment is not
+  // recoverable afterwards. Nothing in the kit read it as a date.
+  emailVerified         Boolean       @default(false)
+  image                 String?
+  role                  Role          @default(USER)
+  stripeCustomerId      String?       @unique
   // When the user dismissed the "Get started" checklist; the checklist items
   // themselves are derived live (name, projects, billing), only this persists.
   onboardingDismissedAt DateTime?
-  accounts            Account[]
-  sessions            Session[]
-  subscription        Subscription?
-  purchases           Purchase[]
-  projects            Project[]
-  passwordResetTokens PasswordResetToken[]
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  accounts              Account[]
+  sessions              Session[]
+  subscription          Subscription?
+  purchases             Purchase[]
+  projects              Project[]
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 }
 
+// One row per way of signing in. OAuth accounts and the email+password
+// credential both live here, and the password hash is a column on THIS table,
+// not on User: it is the single most consequential difference from Auth.js, and
+// the one a migration can get wrong without any error appearing.
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String    @id @default(cuid())
+  userId                String
+  // The authority that issued the identifier, and the identifier itself. For a
+  // password account the pair is "local:credential" and the user's own id.
+  issuer                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  // Was `expires_at`, an integer of unix seconds. This is a timestamp: the 2.0
+  // migration CONVERTS it, it does not rename it. Renaming it would leave every
+  // OAuth token in the table looking like it expired in 1970.
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  // The bcrypt hash that used to live in User.passwordHash.
+  password              String?
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  @@unique([provider, providerAccountId])
+  @@unique([issuer, accountId])
+  @@index([userId])
 }
 
+// Sessions are rows now, not signed cookies. That is what makes revoking one
+// possible: deleting the row ends it everywhere, immediately, which is what the
+// sessionVersion column on User used to fake.
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-// Single-use tokens for the "forgot password" flow. The raw token only ever
-// travels in the emailed link; the DB stores its SHA-256 hash.
-model PasswordResetToken {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
-  tokenHash String    @unique
-  expires   DateTime
-  usedAt    DateTime?
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+// Every short-lived token Better Auth issues: magic links, email verification
+// and password resets all land here. It replaces both VerificationToken and the
+// hand-rolled PasswordResetToken table, so two things become one.
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
 }
 
 model Plan {

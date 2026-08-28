@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-1.7.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.0.0-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -306,10 +306,10 @@ Coverage of `src/lib`, excluding the thin wrappers around Prisma, Stripe and Res
 
 | | |
 |---|---|
-| Lines | **72%** |
-| Statements | **69%** |
-| Functions | **77%** |
-| Branches | **57%** |
+| Lines | **71%** |
+| Statements | **68%** |
+| Functions | **76%** |
+| Branches | **55%** |
 
 Run `npm run test:coverage` to check those numbers yourself: they are printed by the command, not published to a badge service.
 

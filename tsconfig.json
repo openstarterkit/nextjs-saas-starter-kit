@@ -2,8 +2,9 @@
   "ts-node": {
     "transpileOnly": true,
     "compilerOptions": {
-      "module": "CommonJS",
-      "moduleResolution": "node"
+      "module": "node16",
+      "moduleResolution": "node16",
+      "rootDir": "."
     }
   },
   "compilerOptions": {

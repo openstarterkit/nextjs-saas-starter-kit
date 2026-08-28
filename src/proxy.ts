@@ -1,5 +1,5 @@
 import { auth } from "@/auth"
-import { NextResponse } from "next/server"
+import { NextResponse, type NextRequest } from "next/server"
 import createIntlMiddleware from "next-intl/middleware"
 import { routing } from "@/i18n/routing"
 
@@ -62,10 +62,19 @@ const PROTECTED_ROUTES = ["/dashboard", "/api/checkout", "/api/billing"]
 const ADMIN_ROUTES = ["/admin", "/api/admin"]
 const AUTH_ROUTES = ["/login", "/signup"]
 
-export default auth((req) => {
+// Reading the session here means one database round trip per request, where
+// the old JWT was verified in memory. `session.cookieCache` in src/auth.ts is
+// what buys most of them back. Next.js 16 is what makes this possible at all:
+// on older versions the proxy could only look at the cookie without validating
+// it, which the Better Auth docs are blunt about ("THIS IS NOT SECURE").
+//
+// Either way this is a redirect layer, not the authorization: the real check
+// lives in requireUser() and requireAdmin(), on the page.
+export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
-  const isLoggedIn = !!req.auth
-  const isAdmin = req.auth?.user?.role === "ADMIN"
+  const session = await auth.api.getSession({ headers: req.headers })
+  const isLoggedIn = !!session
+  const isAdmin = session?.user?.role === "ADMIN"
 
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r))
   const isAdminRoute = ADMIN_ROUTES.some((r) => pathname.startsWith(r))
@@ -95,7 +104,7 @@ export default auth((req) => {
   }
 
   return intlMiddleware(req)
-})
+}
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
