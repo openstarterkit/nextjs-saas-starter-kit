@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.0.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.0.1-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -19,7 +19,7 @@
   <img alt="Next.js" src="https://img.shields.io/badge/Next.js_16-000000?logo=next.js&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" />
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_v4-06B6D4?logo=tailwindcss&logoColor=white" />
-  <img alt="Auth.js" src="https://img.shields.io/badge/Auth.js_v5-000000?logo=auth0&logoColor=white" />
+  <img alt="Better Auth" src="https://img.shields.io/badge/Better_Auth-000000" />
   <img alt="Prisma" src="https://img.shields.io/badge/Prisma_7-2D3748?logo=prisma&logoColor=white" />
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white" />
   <img alt="Stripe" src="https://img.shields.io/badge/Stripe-635BFF?logo=stripe&logoColor=white" />
@@ -61,7 +61,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 
 | | Feature | What you get |
 |---|---|---|
-| 🔐 | **Authentication** | Auth.js v5: Google + GitHub OAuth, magic link, email + password with reset, account linking |
+| 🔐 | **Authentication** | Better Auth: Google + GitHub OAuth, magic link, email + password with reset, account linking |
 | 💳 | **Payments** | Stripe Checkout, Customer Portal, signature-verified webhooks, subscriptions + one-time payments, multiple tiers, usage-based example |
 | 🛠️ | **Admin panel** | User management, search + pagination, live MRR metrics, promote users to admin |
 | 📊 | **User dashboard** | Plan status, billing history, profile & settings |
@@ -88,7 +88,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 - **UI**: [Radix UI](https://www.radix-ui.com) primitives under a design system written for this kit (Button, Card, Badge, Input, Table and the rest). Radix handles the accessible behavior, you own the look, and both live in your codebase with no component library to upgrade around.
 - **Icons**: [Lucide](https://lucide.dev), an open source set shipped as React components, so an icon is something you import and not an asset you manage.
 - **Notifications**: [Sonner](https://sonner.emilkowal.ski) for toasts, wired to every success and failure the interface reports back, Server Actions included.
-- **Auth**: [Auth.js v5](https://authjs.dev) with Google and GitHub OAuth, magic link, and email and password. Sessions live in your own database, so there is no auth vendor and no per-user pricing as you grow.
+- **Auth**: [Better Auth](https://better-auth.com) with Google and GitHub OAuth, magic link, and email and password. Sessions live in your own database, so there is no auth vendor and no per-user pricing as you grow.
 - **Database**: [Prisma 7](https://www.prisma.io) on [PostgreSQL](https://www.postgresql.org). Plain Postgres underneath keeps your data portable, and [Neon](https://neon.tech) has a free managed tier if you would rather not run one yourself.
 - **Payments**: [Stripe](https://stripe.com) with Checkout, the Customer Portal and signature-verified webhooks, in the free kit instead of behind a Pro plan.
 - **Emails**: [Resend](https://resend.com) for welcome, subscription, magic link and password reset messages, with the templates in your repository rather than in a dashboard you do not own.
@@ -271,7 +271,7 @@ src/
 │   ├── email.ts           # Resend email helpers
 │   └── utils.ts           # cn() utility
 ├── app/actions/           # Server actions (profile, admin)
-└── auth.ts                # Auth.js configuration
+└── auth.ts                # Better Auth configuration
 prisma/
 ├── schema.prisma          # User, Account, Session, Plan, Subscription
 └── seed.ts                # Seeds example plans (replace with your own)
@@ -352,7 +352,7 @@ CI runs lint, unit tests and the build on every push and pull request to `main`.
 
 **Why Stripe lazy proxy?** `new Stripe("")` throws at module load time. The proxy defers instantiation to first request. See `src/lib/stripe.ts`.
 
-**Why Auth.js v5?** Stable API, first-class Next.js App Router support, PrismaAdapter included.
+**Why Better Auth?** Auth.js is now part of Better Auth, and its own README points new projects at it. Sessions are rows in your database, so revoking one is deleting it, and the plugin system covers what a starter needs without a vendor.
 
 **Why Tailwind v4?** Native CSS variables, no config file needed, `@custom-variant` for dark mode.
 

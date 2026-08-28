@@ -51,7 +51,7 @@ export const envSchema = z
       }),
     DIRECT_URL: optional,
 
-    // Auth.js generates a development secret on the fly, but refuses to run
+    // Better Auth generates a development secret on the fly, but refuses to run
     // without one in production.
     AUTH_SECRET: optional,
 
@@ -110,7 +110,7 @@ export const envSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["AUTH_SECRET"],
-        message: "AUTH_SECRET is required in production: Auth.js refuses to sign sessions without it",
+        message: "AUTH_SECRET is required in production: Better Auth refuses to sign sessions without it",
       })
     }
   })

@@ -26,15 +26,13 @@ Set the variables from [.env.example](../.env.example) in the Vercel dashboard (
 
 ## Deploying somewhere other than Vercel
 
-The kit is a standard Next.js app, so Docker, a VPS or any Node host works. One variable is needed that Vercel does not ask for:
+The kit is a standard Next.js app, so Docker, a VPS or any Node host works, and since 2.0 there is no extra variable to set for it.
 
-```bash
-AUTH_TRUST_HOST="true"
-```
+The reason is `NEXT_PUBLIC_APP_URL`, which you already set: the kit passes it to Better Auth as the base URL, so the origin never has to be guessed from an incoming `Host` header. Set it to the address people actually visit, with no trailing slash, and OAuth callbacks and redirects land where you expect wherever the app runs.
 
-Auth.js trusts the host it is served from when it detects Vercel, and refuses it everywhere else, which protects you from a forged `Host` header behind a proxy you do not control. Without it the app builds and starts normally and then sign-in fails with *"There was a problem with the server configuration"*, with `UntrustedHost` in the server log and nothing on the page to point at the cause. Set it once you are behind a proxy or load balancer you trust.
+If you serve the same deployment on more than one origin, add the extra ones to `trustedOrigins` in `src/auth.ts`.
 
-The same applies when you run the production build on your own machine with `npm start`. `npm run dev` does not need it.
+*Upgrading from 1.x: `AUTH_TRUST_HOST` is no longer read and can be deleted from your environment.*
 
 One more thing changes off Vercel. The public forms (contact, newsletter) are rate-limited by IP, and the IP is read from `x-forwarded-for`. Vercel always sets it; a bare Node host or a proxy that does not add it leaves the kit with no address to key on, and it falls back to a single shared bucket, which means those forms cap at five submissions every fifteen minutes **for everybody at once**. In the other direction, where the header arrives from a proxy you do not control, a client can write it itself and the per-IP limit stops meaning anything. Set the header in your proxy and make sure it is the proxy setting it, not the client.
 

@@ -1,6 +1,6 @@
 # Authentication
 
-The kit ships four ways to sign in, all wired to the same `User` row so any combination works on one account. Auth.js v5 with JWT sessions and the Prisma adapter (`src/auth.ts`).
+The kit ships four ways to sign in, all wired to the same `User` row so any combination works on one account. Better Auth with database sessions and the Prisma adapter (`src/auth.ts`). Sessions are rows, so revoking one is deleting it.
 
 | Method | Requires | Notes |
 |---|---|---|
@@ -13,7 +13,7 @@ A public demo deployment (`DEMO_MODE="true"`) replaces all of the above with one
 
 ## Magic link
 
-The login page sends a one-time sign-in link ("Email me a sign-in link"). Under the hood it is the Auth.js Resend provider with a custom `sendVerificationRequest`, so the email uses the same branded template as the transactional ones (`src/lib/email.ts`). Links are valid for 15 minutes and burn on first use. Clicking the link also sets `emailVerified` on the user.
+The login page sends a one-time sign-in link ("Email me a sign-in link"). Under the hood it is the Better Auth magic link plugin with a custom `sendMagicLink`, so the email uses the same branded template as the transactional ones (`src/lib/email.ts`). Links are valid for 15 minutes and are single use.
 
 If `RESEND_API_KEY` is not set, the button hides itself and the provider is not registered.
 
@@ -47,7 +47,7 @@ One user, several ways in:
 
 ## Adding another OAuth provider
 
-1. Add the provider in `src/auth.ts` (Auth.js ships dozens: `next-auth/providers/*`). If the provider verifies emails, you can add `allowDangerousEmailAccountLinking: true` for the same linking behavior.
+1. Add the provider under `socialProviders` in `src/auth.ts`. Linking to an account that already has the same verified email is the default behaviour, so there is no flag to set: `account.accountLinking` is where you change it if you want the opposite.
 2. Add its credentials to `.env.example` and your env files.
 3. Add a button on `src/app/(auth)/login/page.tsx` (copy one of the existing OAuth forms).
 4. Optionally list it in `PROVIDER_LABELS` in `src/app/(dashboard)/dashboard/settings/page.tsx` so it appears under Sign-in methods.

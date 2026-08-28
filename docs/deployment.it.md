@@ -2,7 +2,7 @@
 title: Deployment
 description: "In produzione su Vercel: variabili, migrazioni, webhook, e come diventare amministratore."
 translated_from: deployment.md
-source_checksum: 5bf6eeac6b2d
+source_checksum: ef8e7734f8c4
 ---
 
 # Deployment
@@ -33,15 +33,13 @@ Imposta le variabili di [.env.example](../.env.example) nel pannello Vercel (Pro
 
 ## Deploy fuori da Vercel
 
-Il kit è una normale app Next.js, quindi Docker, un VPS o qualsiasi host Node vanno bene. Serve una variabile che su Vercel non è richiesta:
+Il kit è una normale app Next.js, quindi Docker, un VPS o qualsiasi host Node vanno bene, e dalla 2.0 non serve nessuna variabile in più per farlo.
 
-```bash
-AUTH_TRUST_HOST="true"
-```
+Il motivo è `NEXT_PUBLIC_APP_URL`, che imposti comunque: il kit la passa a Better Auth come URL di base, quindi l'origine non deve essere indovinata da un header `Host` in arrivo. Mettici l'indirizzo che le persone visitano davvero, senza barra finale, e callback OAuth e redirect finiscono dove ti aspetti ovunque giri l'app.
 
-Auth.js si fida dell'host da cui viene servito quando rileva Vercel, e lo rifiuta ovunque altro: è la protezione contro un header `Host` falsificato dietro un proxy che non controlli. Senza, l'app compila e parte normalmente, poi l'accesso fallisce con *«There was a problem with the server configuration»*, con `UntrustedHost` nel log del server e niente sulla pagina che indichi la causa. Impostala quando sei dietro un proxy o un bilanciatore di cui ti fidi.
+Se servi lo stesso deploy su più origini, aggiungi le altre a `trustedOrigins` in `src/auth.ts`.
 
-Vale anche quando esegui il build di produzione sulla tua macchina con `npm start`. Con `npm run dev` non serve.
+*Se aggiorni dalla 1.x: `AUTH_TRUST_HOST` non viene più letta e puoi toglierla dall'ambiente.*
 
 Fuori da Vercel cambia anche un'altra cosa. I form pubblici (contatti, newsletter) sono limitati per IP, e l'IP viene letto da `x-forwarded-for`. Vercel lo imposta sempre; un host Node nudo, o un proxy che non lo aggiunge, lascia il kit senza un indirizzo su cui contare, e si ripiega su un unico secchio condiviso: quei form si fermano a cinque invii ogni quindici minuti **per tutti insieme**. Nella direzione opposta, dove l'header arriva da un proxy che non controlli, un client se lo scrive da solo e il limite per IP smette di significare qualcosa. Imposta l'header nel tuo proxy, e assicurati che sia il proxy a scriverlo e non il client.
 

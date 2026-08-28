@@ -121,7 +121,7 @@ describe("production-only rules", () => {
     expect(() => parseEnv(base({ NODE_ENV: "production" }))).toThrow(/AUTH_SECRET is required/)
   })
 
-  it("does not require it in development, where Auth.js generates one", () => {
+  it("does not require it in development, where Better Auth generates one", () => {
     expect(() => parseEnv(base({ NODE_ENV: "development" }))).not.toThrow()
   })
 })

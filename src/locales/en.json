@@ -479,7 +479,7 @@
       "subtitle": "Stop reinventing auth and payments. Start building your product.",
       "c1": {
         "title": "Auth out of the box",
-        "description": "Google and GitHub OAuth with Auth.js v5. Sessions stored in your own database. No third-party auth service required."
+        "description": "Google and GitHub OAuth with Better Auth. Sessions stored in your own database. No third-party auth service required."
       },
       "c2": {
         "title": "Stripe payments",
@@ -611,7 +611,7 @@
       "items": [
         {
           "question": "What exactly do I get?",
-          "answer": "You get a production-ready Next.js 16 codebase with Auth.js, Stripe, Prisma, and Tailwind pre-configured. Clone the repo, set your env variables, and deploy. Everything works out of the box."
+          "answer": "You get a production-ready Next.js 16 codebase with Better Auth, Stripe, Prisma, and Tailwind pre-configured. Clone the repo, set your env variables, and deploy. Everything works out of the box."
         },
         {
           "question": "Why not ShipFast or Makerkit?",
@@ -654,7 +654,7 @@
       "formsDisabled": "Forms are disabled in the live demo.",
       "freeFeatures": [
         "Next.js 16 + TypeScript + Tailwind 4",
-        "Auth.js v5: Google & GitHub OAuth",
+        "Better Auth: Google & GitHub OAuth",
         "Prisma 7 + PostgreSQL schema",
         "Stripe Checkout + webhooks + Customer Portal",
         "Admin panel (users, metrics, roles)",

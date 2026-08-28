@@ -51,21 +51,49 @@ function selfLinkedImage(href: string | undefined, children: React.ReactNode) {
 
 // External links leave the post: open them in a new tab (same rule as the
 // changelog page). Everything else keeps default navigation.
-const mdxComponents = {
-  a: ({ href, title, children }: { href?: string; title?: string; children?: React.ReactNode }) => {
-    // An image linked to itself is a diagram the reader is meant to enlarge,
-    // written that way so the post still works on GitHub and in a feed reader.
-    // Here it becomes a figure that opens in place. A link pointing anywhere
-    // else stays a link, which is why the match is on the exact same URL.
-    const image = selfLinkedImage(href, children)
-    if (image?.src) return <Figure src={image.src} alt={image.alt} />
+function MarkdownAnchor({
+  href,
+  title,
+  children,
+}: {
+  href?: string
+  title?: string
+  children?: React.ReactNode
+}) {
+  // An image linked to itself is a diagram the reader is meant to enlarge,
+  // written that way so the post still works on GitHub and in a feed reader.
+  // Here it becomes a figure that opens in place. A link pointing anywhere
+  // else stays a link, which is why the match is on the exact same URL.
+  const image = selfLinkedImage(href, children)
+  if (image?.src) return <Figure src={image.src} alt={image.alt} />
 
-    const isExternal = typeof href === "string" && /^https?:\/\//.test(href)
-    return (
-      <a href={href} title={title} {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-        {children}
-      </a>
-    )
+  const isExternal = typeof href === "string" && /^https?:\/\//.test(href)
+  return (
+    <a href={href} title={title} {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+      {children}
+    </a>
+  )
+}
+
+const mdxComponents = {
+  a: MarkdownAnchor,
+  // Markdown puts every block on its own line inside a paragraph, and the
+  // figure above is a `<figure>`: a `<figure>` inside a `<p>` is invalid HTML,
+  // so the browser closes the paragraph before it and builds a tree that does
+  // not match the one rendered on the server. React then reports a hydration
+  // error on every post that has a diagram.
+  //
+  // When a paragraph holds nothing but that image, the paragraph goes away.
+  // Anything else keeps it, because a paragraph is what it should be.
+  p: ({ children }: { children?: React.ReactNode }) => {
+    const only = Children.toArray(children)
+    if (only.length === 1 && isValidElement(only[0])) {
+      const child = only[0] as React.ReactElement<{ href?: string; children?: React.ReactNode }>
+      if (child.type === MarkdownAnchor && selfLinkedImage(child.props.href, child.props.children)) {
+        return <>{children}</>
+      }
+    }
+    return <p>{children}</p>
   },
   // The id comes from the same slugify() that extractToc() used on the source,
   // so every outline link lands on a heading that exists. scroll-mt keeps the
@@ -186,7 +214,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             top-24 slid under it. The max height lets a long outline scroll on
             its own instead of running past the bottom of the screen. */}
         <aside className="hidden xl:block">
-          <div className="sticky top-[calc(var(--header-h,4.5rem)+2rem)] max-h-[calc(100dvh-var(--header-h,4.5rem)-4rem)] overflow-y-auto">
+          <div className="sticky top-[calc(var(--header-h,4.5rem)+2rem)]">
             <OnThisPage items={toc} />
           </div>
         </aside>

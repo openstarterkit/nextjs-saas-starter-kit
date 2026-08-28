@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog"
 
 /**
- * Branded sign-out confirmation — replaces the unstyled Auth.js page.
+ * Branded sign-out confirmation — replaces the unstyled sign-out page the old library showed.
  * Pass a `trigger` for the uncontrolled case, or drive it with
  * `open`/`onOpenChange` (e.g. from a dropdown menu item).
  */

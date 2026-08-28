@@ -2,12 +2,12 @@
 title: Autenticazione
 description: OAuth, magic link, email e password, reset e collegamento degli account.
 translated_from: authentication.md
-source_checksum: 2eeb97eded1f
+source_checksum: 56097d84a23a
 ---
 
 # Autenticazione
 
-Il kit offre quattro modi per accedere, tutti collegati alla stessa riga `User`, così qualsiasi combinazione funziona su un solo account. Auth.js v5 con sessioni JWT e l'adapter Prisma (`src/auth.ts`).
+Il kit offre quattro modi per accedere, tutti collegati alla stessa riga `User`, così qualsiasi combinazione funziona su un solo account. Better Auth con sessioni su database e l'adapter Prisma (`src/auth.ts`). Le sessioni sono righe, quindi revocarne una significa cancellarla.
 
 | Metodo | Richiede | Note |
 |---|---|---|
@@ -20,7 +20,7 @@ Un deploy dimostrativo pubblico (`DEMO_MODE="true"`) sostituisce tutto questo co
 
 ## Magic link
 
-La pagina di accesso manda un link monouso («Email me a sign-in link»). Sotto c'è il provider Resend di Auth.js con un `sendVerificationRequest` personalizzato, così l'email usa lo stesso modello con il tuo marchio delle transazionali (`src/lib/email.ts`). I link valgono 15 minuti e si consumano al primo uso. Cliccare il link imposta anche `emailVerified` sull'utente.
+La pagina di accesso manda un link monouso («Email me a sign-in link»). Sotto c'è il plugin magic link di Better Auth con un `sendMagicLink` personalizzato, così l'email usa lo stesso modello con il tuo marchio delle transazionali (`src/lib/email.ts`). I link valgono 15 minuti e si consumano al primo uso. Cliccare il link imposta anche `emailVerified` sull'utente.
 
 Se `RESEND_API_KEY` non è impostata, il pulsante si nasconde da solo e il provider non viene registrato.
 
@@ -54,7 +54,7 @@ Un utente, più modi per entrare:
 
 ## Aggiungere un altro provider OAuth
 
-1. Aggiungi il provider in `src/auth.ts` (Auth.js ne offre decine: `next-auth/providers/*`). Se il provider verifica gli indirizzi, puoi mettere `allowDangerousEmailAccountLinking: true` per avere lo stesso collegamento automatico.
+1. Aggiungi il provider sotto `socialProviders` in `src/auth.ts`. Il collegamento a un account che ha già lo stesso indirizzo verificato è il comportamento predefinito, quindi non c'è nessun flag da mettere: `account.accountLinking` è dove lo cambi se vuoi il contrario.
 2. Aggiungi le sue credenziali a `.env.example` e ai tuoi file di ambiente.
 3. Aggiungi un pulsante in `src/app/(auth)/login/page.tsx`, copiando uno dei moduli OAuth già presenti.
 4. Se vuoi, elencalo in `PROVIDER_LABELS` dentro `src/app/(dashboard)/dashboard/settings/page.tsx`, così compare sotto Sign-in methods.

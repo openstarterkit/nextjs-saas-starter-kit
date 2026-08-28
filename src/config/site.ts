@@ -41,11 +41,11 @@ export const siteConfig = {
    */
   llmsSummary: process.env.NEXT_PUBLIC_LLMS_SUMMARY || null,
 
-  version: "2.0.0",
+  version: "2.0.1",
   description:
     process.env.NEXT_PUBLIC_BRAND_DESCRIPTION ||
     (isKitSite
-      ? "A production-ready SaaS starter with Next.js, Auth.js, Stripe, Prisma, and Tailwind. Plain Next.js, with no framework to learn first."
+      ? "A production-ready SaaS starter with Next.js, Better Auth, Stripe, Prisma, and Tailwind. Plain Next.js, with no framework to learn first."
       : "One workspace for your projects, your customers and your billing. Set up in minutes, cancel any time."),
 
   /** Base URL of this deployment — no trailing slash. */

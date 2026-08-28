@@ -18,7 +18,7 @@ export default async function LoginPage({
   const { error, reset } = await searchParams
   const t = await getTranslations("auth.login")
   // `errors` covers our own action redirects (credentials, email, rate) plus
-  // the Auth.js built-ins such as Verification for an expired magic link. The
+  // the library built-ins such as an expired magic link. The
   // code arrives in the query string, so an unknown one must fall back rather
   // than throw.
   const errorMessage = error

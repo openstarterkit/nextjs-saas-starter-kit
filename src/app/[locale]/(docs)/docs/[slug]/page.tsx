@@ -139,7 +139,7 @@ export default async function DocPage({
       <aside className="hidden w-52 shrink-0 xl:block">
         {/* Same treatment as the guide list on the other side: pinned under
             the header, scrolling on its own when the outline is long. */}
-        <div className="sticky top-[calc(var(--header-h,4.5rem)+2rem)] max-h-[calc(100dvh-var(--header-h,4.5rem)-4rem)] overflow-y-auto">
+        <div className="sticky top-[calc(var(--header-h,4.5rem)+2rem)]">
           <OnThisPage items={toc} />
         </div>
       </aside>

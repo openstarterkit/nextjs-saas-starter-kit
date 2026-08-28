@@ -8,7 +8,7 @@ import { routing } from "@/i18n/routing"
  * Subjects for the transactional emails.
  *
  * Resolved against an **explicit** locale, not the request one. These are sent
- * from a Stripe webhook and from Auth.js callbacks: those requests come from a
+ * from a Stripe webhook and from Better Auth callbacks: those requests come from a
  * server, not from the recipient's browser, so there is no locale to inherit
  * and asking for one would silently give you the default anyway.
  *

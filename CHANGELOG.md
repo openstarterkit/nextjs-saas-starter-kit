@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.0.1] - 2026-08-28
+
+📝 **The kit said Auth.js in the places people read first.** 2.0 changed the library and left its name behind on the README badge, the feature table, the landing page copy and the site description, so the shop window advertised the library the release had just removed. No code behaviour changes.
+
+### Fixed
+- **README, landing page and site description now say Better Auth**, including the badge, which also carried an Auth0 logo that was never right
+- **`docs/authentication.md`**: the magic link is a plugin with `sendMagicLink`, not a Resend provider; adding a social provider goes under `socialProviders`; and linking an account that already has the same verified email is the default now, so the flag that used to be needed is gone
+- **`docs/deployment.md`**: `AUTH_TRUST_HOST` no longer exists. Deploying outside Vercel needs no extra variable, because `NEXT_PUBLIC_APP_URL` is passed to Better Auth as the base URL and the origin is never guessed from a `Host` header. Extra origins go in `trustedOrigins`
+- **`.env.example`**: the commented `AUTH_TRUST_HOST` block removed, so nobody copies a variable nothing reads
+- Code comments that still described the old library
+- **The outline on posts and docs pages scrolled badly when it was long.** Its scrollbar sat against the text with nothing between them, and the list never moved: reading to the bottom of a long article highlighted an entry that had scrolled out of sight. The list now scrolls on its own with the heading kept in place above it, the bar has room of its own reserved whether it is needed or not, and the highlighted entry is kept in view as you read. The scrolling is done by hand rather than with `scrollIntoView`, which cannot be told to leave the page alone and would move the article under the reader
+
 ## [2.0.0] - 2026-08-28
 
 🔐 **Authentication moves from Auth.js to Better Auth.** That is the whole release: no new features, nothing else to review, so the upgrade is as easy to adopt as a library change can be. Auth.js is now part of Better Auth and its own README points new projects at it, and a starter kit is a new project every time someone clones it. Version 1.7 built the boundary that makes this cheap, and it held: changing library touched seven files, and they are exactly the seven that 1.7 named in advance.
@@ -358,6 +370,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.0.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.1
 [2.0.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.0
 [1.7.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.7.0
 [1.6.4]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.6.4
