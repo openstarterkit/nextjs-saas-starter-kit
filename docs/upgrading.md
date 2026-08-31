@@ -38,6 +38,106 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.0.2: repairing the OAuth issuer
+
+**Read this if you migrated to 2.0 and your users sign in with Google, Apple,
+Facebook or LINE.** If you only use GitHub, a password or a magic link, nothing
+here affects you and the migration in this release finds nothing to do.
+
+### What was wrong
+
+The 2.0 migration gave every OAuth account an issuer of `local:oauth:<provider>`.
+That is the value Better Auth builds for a provider that declares no issuer of
+its own. OpenID Connect providers do declare one, so the correct value for a
+Google account is `https://accounts.google.com`. GitHub declares nothing, so
+`local:oauth:github` was right all along.
+
+Better Auth finds an account by the pair `(issuer, accountId)` and does not fall
+back to `providerId`, so a Google row written by the 2.0 migration is never
+found at sign in.
+
+### Why that locks people out
+
+The obvious guess is that the user gets a second account. That is not what
+happens to most of them. Better Auth would link the unrecognised sign in to the
+existing user by email, but that path is refused when the local user's
+`emailVerified` is false, which is the default (`accountLinking.requireLocalEmailVerified`).
+The 2.0 migration derives `emailVerified` from whether the Auth.js timestamp was
+set, and Auth.js leaves it null for most accounts created through OAuth. Those
+users get `account not linked` and cannot sign in at all.
+
+### What to do
+
+Take the release and run the migration. It is a new file rather than a fix to
+the 2.0 one, because an applied migration is never run again: editing the 2.0
+file would repair nobody who had already migrated, which is everybody this
+affects.
+
+```bash
+git fetch upstream --tags
+git merge v2.0.2
+npm install
+npx prisma migrate deploy
+```
+
+Then check the result against what the library would actually look up:
+
+```bash
+node --env-file=.env scripts/verify-auth-migration.mjs
+```
+
+The script is read only. It reads the issuer each configured provider declares,
+compares it with what is stored, and lists every row that would not be found. It
+does not compare your database against a value typed into the script, which is
+the reason the original mistake survived our own checks: a check that compares
+your data with your own assumption can only confirm the assumption.
+
+Your users' `emailVerified` stays as it is, and that is correct. Once the issuer
+is right, the pair `(issuer, accountId)` finds the account directly and the
+email linking path is never reached, so there is nothing to repair by hand. The
+first successful sign in sets `emailVerified` back to true on its own, from what
+the provider reports.
+
+### If the migration stops with an error
+
+Cognito, Microsoft Entra ID and Paybin also declare an issuer, but theirs is
+built from your own configuration or from the token: the region and user pool,
+the `iss` claim, the `issuer` option. No file shipped with the kit can know
+which value is right for your installation, so the migration stops instead of
+writing a plausible one.
+
+Repair those rows by hand, inside a transaction, then run the migration again:
+
+```sql
+UPDATE "Account"
+   SET "issuer" = 'https://the-issuer-your-provider-actually-uses'
+ WHERE "providerId" = 'your-provider-id'
+   AND "issuer" = 'local:oauth:your-provider-id';
+```
+
+The value to write is the one your provider puts in the `iss` claim of its ID
+token. For Cognito it is `https://cognito-idp.<region>.amazonaws.com/<userPoolId>`.
+
+If a user already signed in successfully after 2.0, they have two rows: the
+migrated one and the one Better Auth created. Delete the migrated one rather
+than updating it, or it collides with the unique index on `(issuer, accountId)`.
+The migration does this for the providers it repairs.
+
+### Providers added through generic-oauth
+
+A provider you added yourself has an id the migration cannot classify, so it is
+left untouched and named in a notice. Most such providers use the fallback and
+are already correct.
+
+**You will not see that notice.** We checked: with a GitHub account in the
+database, the migration raises it and the Prisma CLI prints nothing at all. The
+same is true of the plain OAuth providers the migration deliberately skips, so a
+silent run is the normal outcome and not a sign that everything was classified.
+
+Run `scripts/verify-auth-migration.mjs` after the migration. It reads your config
+and reports what the migration could not decide, and it is the only thing that
+will tell you.
+
 ## 2.0: the authentication library changed
 
 Version 2.0 replaces Auth.js with Better Auth. It is the only thing that release
@@ -109,12 +209,17 @@ an integer, the magic link user with no account row at all.
 | `PasswordResetToken` is dropped | Reset tokens live in `Verification` now. Anyone holding an unused reset link needs a new one. |
 
 **If you wrote your own migration instead**, two details are worth having,
-because the official Better Auth guide documents neither and both fail quietly:
+because the Auth.js migration guide documents neither and both fail quietly:
 
-1. **The `issuer` of an OAuth account is not the provider name.** The guide shows
-   `local:credential` for passwords and stops there. For social accounts the
-   value is `local:oauth:google`, `local:oauth:github` and so on. Write the bare
-   provider name and existing accounts are not recognised at the next sign in.
+1. **The `issuer` of an OAuth account is not the provider name, and it is not
+   the same for every provider.** The guide shows `local:credential` for
+   passwords and stops there. `local:oauth:<provider>` is what the library
+   builds for a provider that declares no issuer of its own, so it is right for
+   GitHub and wrong for Google, whose issuer is `https://accounts.google.com`.
+   Get it wrong and existing accounts are not recognised at the next sign in.
+   Read [2.0.2](#202-repairing-the-oauth-issuer) above: the kit shipped this
+   mistake in 2.0 and repairs it there, and the same section explains how to
+   check your own rows instead of trusting a value written by hand.
 2. **`expires_at` is a conversion, not a rename.** It held unix seconds as an
    integer; `accessTokenExpiresAt` is a timestamp. Rename it and every OAuth
    token in your table reads as having expired in 1970.

@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 7cd525958114
+source_checksum: afb28ea5c810
 ---
 
 # Aggiornare
@@ -45,26 +45,108 @@ I conflitti nascono dove hai modificato le stesse righe toccate dalla release. �
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
 
-## 2.0: è cambiata la libreria di autenticazione
+## 2.0.2: riparare l'issuer degli account OAuth
 
-La versione 2.0 sostituisce Auth.js con Better Auth. È l'unica cosa che quella
-release contiene: nessuna funzione nuova, niente altro da rivedere.
+**Leggi questa sezione se hai migrato alla 2.0 e i tuoi utenti accedono con
+Google, Apple, Facebook o LINE.** Se usi solo GitHub, una password o il magic
+link, non ti riguarda e la migration di questa release non trova niente da fare.
 
-**Il confine ha tenuto.** Tutto ciò che legge l'utente collegato passa ancora da
-un modulo solo, e restituisce sempre gli stessi cinque campi:
+### Cosa c'era di sbagliato
 
-```ts
-import { getCurrentUser, requireUser } from "@/lib/auth"
+La migration della 2.0 assegnava a ogni account OAuth un issuer nella forma
+`local:oauth:<provider>`. È il valore che Better Auth costruisce per un provider
+che non dichiara un issuer proprio. I provider OpenID Connect lo dichiarano,
+quindi il valore giusto per un account Google è `https://accounts.google.com`.
+GitHub non dichiara niente, quindi per lui `local:oauth:github` era corretto.
 
-const user = await getCurrentUser()   // l'utente, oppure null
-const user = await requireUser()      // l'utente, oppure un redirect all'accesso
+Better Auth cerca l'account per coppia `(issuer, accountId)` e non ripiega su
+`providerId`, quindi una riga Google scritta dalla migration della 2.0 non viene
+mai trovata all'accesso.
+
+### Perché questo chiude fuori le persone
+
+La conclusione naturale è che l'utente si ritrovi un secondo account. Per la
+maggior parte non succede questo. Better Auth collegherebbe l'accesso non
+riconosciuto all'utente esistente tramite l'email, ma quel percorso viene
+rifiutato quando l'utente locale ha `emailVerified` falso, che è il valore
+predefinito (`accountLinking.requireLocalEmailVerified`). La migration della 2.0
+ricava `emailVerified` dal fatto che il timestamp di Auth.js fosse valorizzato,
+e Auth.js lo lascia nullo per quasi tutti gli account creati via OAuth. Quegli
+utenti ricevono `account not linked` e non entrano affatto.
+
+### Cosa fare
+
+Prendi la release ed esegui la migration. È un file nuovo e non una correzione
+di quello della 2.0, perché una migration applicata non viene mai rieseguita:
+modificare il file della 2.0 non riparerebbe nessuno di quelli che hanno già
+migrato, cioè tutti quelli che il difetto colpisce.
+
+```bash
+git fetch upstream --tags
+git merge v2.0.2
+npm install
+npx prisma migrate deploy
 ```
 
-Cambiare libreria ha toccato sette file del kit, e sono esattamente quelli che
-la 1.7 aveva nominato in anticipo: le due azioni di accesso, la pagina di login,
-il route handler, il middleware, la configurazione e il confine stesso. **Se il
-tuo codice legge la sessione dal confine, non serve cambiare niente.** Se importa
-`auth()` da `@/auth` direttamente, sono quelli i punti da riscrivere.
+Poi verifica il risultato contro quello che la libreria cercherebbe davvero:
+
+```bash
+node --env-file=.env scripts/verify-auth-migration.mjs
+```
+
+Lo script è di sola lettura. Legge l'issuer che ogni provider configurato
+dichiara, lo confronta con quello memorizzato ed elenca ogni riga che non
+verrebbe trovata. Non confronta il tuo database con un valore scritto dentro lo
+script, ed è la ragione per cui l'errore originale è sopravvissuto ai nostri
+controlli: una verifica che confronta i dati con la propria assunzione non può
+che confermarla.
+
+Il campo `emailVerified` dei tuoi utenti resta com'è, ed è corretto così. Con
+l'issuer giusto la coppia `(issuer, accountId)` trova l'account direttamente e
+il collegamento per email non viene mai raggiunto, quindi non c'è niente da
+riparare a mano. Il primo accesso riuscito riporta `emailVerified` a true da
+solo, con quello che dichiara il provider.
+
+### Se la migration si ferma con un errore
+
+Anche Cognito, Microsoft Entra ID e Paybin dichiarano un issuer, ma il loro è
+costruito dalla tua configurazione o dal token: la region e lo user pool, il
+claim `iss`, l'opzione `issuer`. Nessun file spedito col kit può sapere quale
+valore sia giusto per la tua installazione, quindi la migration si ferma invece
+di scriverne uno plausibile.
+
+Ripara quelle righe a mano, dentro una transazione, poi riesegui la migration:
+
+```sql
+UPDATE "Account"
+   SET "issuer" = 'https://l-issuer-che-usa-davvero-il-tuo-provider'
+ WHERE "providerId" = 'id-del-tuo-provider'
+   AND "issuer" = 'local:oauth:id-del-tuo-provider';
+```
+
+Il valore da scrivere è quello che il tuo provider mette nel claim `iss` del suo
+ID token. Per Cognito è `https://cognito-idp.<region>.amazonaws.com/<userPoolId>`.
+
+Se un utente ha già fatto un accesso riuscito dopo la 2.0, ha due righe: quella
+migrata e quella creata da Better Auth. Cancella la migrata invece di
+aggiornarla, altrimenti collide con l'indice unico su `(issuer, accountId)`. La
+migration lo fa da sé per i provider che ripara.
+
+### Provider aggiunti con generic-oauth
+
+Un provider che hai aggiunto tu ha un id che la migration non sa classificare,
+quindi resta intatto e viene nominato in un avviso. Quasi tutti questi provider
+usano il ripiego e sono già corretti.
+
+**Quell'avviso non lo vedrai.** L'abbiamo verificato: con un account GitHub nel
+database la migration lo emette e la CLI di Prisma non stampa niente. Vale anche
+per i provider OAuth semplici che la migration salta di proposito, quindi
+un'esecuzione silenziosa è l'esito normale e non il segno che tutto è stato
+classificato.
+
+Esegui `scripts/verify-auth-migration.mjs` dopo la migration. Legge la tua
+configurazione e riporta quello che la migration non ha potuto decidere, ed è
+l'unica cosa che te lo dirà.
 
 ### Vengono scollegati tutti
 
@@ -117,14 +199,19 @@ le righe che la rompono: l'utente senza nome, l'account la cui scadenza del toke
 | `PasswordResetToken` sparisce | I token di reset stanno in `Verification`. Chi ha un link inutilizzato deve chiederne uno nuovo. |
 
 **Se ti sei scritto la migration da solo**, due dettagli valgono la pena, perché
-la guida ufficiale di Better Auth non documenta né l'uno né l'altro e tutti e due
+la guida di migrazione da Auth.js non documenta né l'uno né l'altro e tutti e due
 falliscono in silenzio:
 
-1. **L'`issuer` di un account OAuth non è il nome del provider.** La guida mostra
-   `local:credential` per le password e si ferma lì. Per gli account sociali il
-   valore è `local:oauth:google`, `local:oauth:github` e così via. Se scrivi il
-   nome nudo del provider, gli account esistenti non vengono riconosciuti al
-   primo accesso.
+1. **L'`issuer` di un account OAuth non è il nome del provider, e non è lo stesso
+   per tutti i provider.** La guida mostra `local:credential` per le password e
+   si ferma lì. `local:oauth:<provider>` è quello che la libreria costruisce per
+   un provider che non dichiara un issuer proprio, quindi è giusto per GitHub e
+   sbagliato per Google, il cui issuer è `https://accounts.google.com`. Se lo
+   sbagli, gli account esistenti non vengono riconosciuti al primo accesso.
+   Leggi la [2.0.2](#202-riparare-lissuer-degli-account-oauth) qui sopra: il kit
+   questo errore lo ha spedito nella 2.0 e lo ripara lì, e la stessa sezione
+   spiega come controllare le tue righe invece di fidarti di un valore scritto
+   a mano.
 2. **`expires_at` è una conversione, non una rinomina.** Conteneva secondi unix
    come intero; `accessTokenExpiresAt` è un timestamp. Rinominala e ogni token
    OAuth nella tua tabella risulta scaduto nel 1970.

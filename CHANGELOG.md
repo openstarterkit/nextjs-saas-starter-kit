@@ -7,6 +7,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.0.2] - 2026-08-31
+
+🔴 **The 2.0 migration wrote the wrong issuer for Google accounts, and it can lock those users out.** If you migrated to 2.0 and your users sign in with Google, Apple, Facebook or LINE, take this release. If you only use GitHub, a password or a magic link, nothing here affects you and the migration finds nothing to do.
+
+The 2.0 migration gave every OAuth account an issuer of `local:oauth:<provider>`. That is what Better Auth builds for a provider that declares no issuer of its own, which is true of GitHub and not of Google, whose issuer is `https://accounts.google.com`. Account lookup at sign in is by `(issuer, accountId)` with no fallback on `providerId`, so those rows are never found.
+
+The failure is worse than a duplicate account. Better Auth would link the unrecognised sign in to the existing user by email, but that path is refused when the local user's `emailVerified` is false, which is the default. The 2.0 migration derives `emailVerified` from whether the Auth.js timestamp was set, and Auth.js leaves it null for most accounts created through OAuth, so those users get `account not linked` and cannot sign in at all.
+
+We found it while checking whether the issuer format was worth reporting upstream. It was not: the value is documented in Better Auth's own 1.7 upgrade guide, and in the Clerk, Auth0 and Supabase migration guides. The guide we read, the one for migrating from Auth.js, is the only one that omits it.
+
+### Fixed
+
+- **A new migration repairs the issuer** of Google, Apple, Facebook and LINE accounts. It is a new file rather than an edit of the 2.0 one, because an applied migration is never run again: editing the 2.0 file would repair nobody who had already migrated, which is everybody this affects. It converges from both directions: run it after 2.0, or straight after a fresh 2.0, and the result is the same
+- A user who already signed in after 2.0 has two rows, the migrated one and the one Better Auth created. The migration removes the stale one rather than updating it, which would collide with the unique index on `(issuer, accountId)`
+- **The migration stops instead of guessing** for Cognito, Microsoft Entra ID and Paybin, whose issuer is built from your own configuration or from the token. `docs/upgrading.md` has the queries to repair those by hand
+- `docs/upgrading.md` said the issuer was `local:oauth:<provider>` for every social account. It now says what the value depends on
+- **Nothing else needs repairing by hand.** `emailVerified` stays as it is: with the issuer corrected, the pair `(issuer, accountId)` finds the account directly and the email linking path is never reached. The first successful sign in sets `emailVerified` back to true on its own
+
+### Added
+
+- **`scripts/verify-auth-migration.mjs`**, read only. It asks the library what the issuer of each configured provider should be and compares that with what is stored, rather than comparing your database against a value written into the script. That distinction is not academic: our own release check for 2.0 confirmed the issuer matched the string we had typed, so it was green while the value was wrong. Run it after upgrading:
+
+  ```bash
+  node --env-file=.env scripts/verify-auth-migration.mjs
+  ```
+
+- The Better Auth badge in the README has its logo back
+
 ## [2.0.1] - 2026-08-28
 
 📝 **The kit said Auth.js in the places people read first.** 2.0 changed the library and left its name behind on the README badge, the feature table, the landing page copy and the site description, so the shop window advertised the library the release had just removed. No code behaviour changes.
