@@ -2,7 +2,7 @@
 title: Blog e contenuti
 description: Blog MDX su file, con categorie, feed RSS e SEO per ogni articolo.
 translated_from: blog.md
-source_checksum: b4491fb3a20b
+source_checksum: aa7204a508ec
 ---
 
 # Blog e contenuti
@@ -25,7 +25,7 @@ Il tuo contenuto qui. Markdown e tabelle GFM funzionano, e trattandosi di file
 MDX puoi anche importare e usare componenti React.
 ```
 
-I campi obbligatori del frontmatter sono `title`, `description`, `date` e `category`. `cover` è facoltativo. Un campo obbligatorio mancante ferma il build con un errore, invece di spedire una scheda rotta. Il tempo di lettura è calcolato per te, e gli articoli sono ordinati dal più recente.
+I campi obbligatori del frontmatter sono `title`, `description`, `date` e `category`. `cover` e `updated` sono facoltativi. Un campo obbligatorio mancante ferma il build con un errore, invece di spedire una scheda rotta. Il tempo di lettura è calcolato per te, e gli articoli sono ordinati dal più recente.
 
 ## Immagini di copertina
 
@@ -66,6 +66,25 @@ Il feed è generato dallo stesso frontmatter e servito su `/blog/rss.xml`. È di
 ## SEO
 
 Ogni articolo imposta i propri metadati, un indirizzo canonico, i tag Open Graph e un blocco JSON-LD `Article`, e riceve un'immagine Open Graph resa al volo (vedi `src/app/[locale]/(public)/blog/[slug]/opengraph-image.tsx`). Gli articoli finiscono in `sitemap.xml` automaticamente.
+
+### Dichiarare che un articolo è stato rivisto
+
+Quando modifichi un articolo già pubblicato, aggiungi una data `updated`:
+
+```yaml
+date: "2026-08-10"
+updated: "2026-08-31"
+```
+
+Imposta `dateModified` nello schema dell'articolo e `lastModified` nel sitemap, e mostra una riga «Updated» accanto alla data di pubblicazione. Senza, una modifica resta invisibile a un crawler fino alla prossima visita naturale, e invisibile a un lettore che sta decidendo se una guida di due mesi fa vale ancora.
+
+Contiene una data sola, la più recente. Se modifichi un articolo tre volte sovrascrivi `updated` ogni volta: non c'è uno storico, e delle revisioni precedenti non resta traccia.
+
+Di proposito non cambia l'ordinamento: il blog resta ordinato per `date`. Spostare `date` in avanti è la scorciatoia da evitare, perché dichiara freschezza mentendo sulla pubblicazione e riporta in cima all'indice un articolo vecchio.
+
+Mettila solo quando è cambiata la sostanza, non per un refuso o un link sistemato. Una data di modifica è un'affermazione, e un sito che la alza a ogni ritocco insegna ai motori di ricerca a non fidarsi più delle sue date, `lastmod` del sitemap compreso. Il costo di abusarne non è una penalizzazione: è perdere il segnale.
+
+Un `updated` anteriore a `date` ferma il build. Quella coppia spedirebbe un `dateModified` precedente al `datePublished`, che è structured data non valido, e un `lastmod` del sitemap che va all'indietro, e nessuno dei due protesta da solo.
 
 ## Dove vive il codice
 

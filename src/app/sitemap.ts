@@ -67,7 +67,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const posts: MetadataRoute.Sitemap = getAllPosts().map((post) => ({
     url: `${siteConfig.url}/blog/${post.slug}`,
-    lastModified: new Date(`${post.date}T00:00:00Z`),
+    // `updated` when the post declares a revision, so an edit to an old post is
+    // a signal here rather than something a crawler has to notice on its own.
+    lastModified: new Date(`${post.updated ?? post.date}T00:00:00Z`),
     changeFrequency: "monthly",
     priority: 0.7,
   }))

@@ -18,7 +18,7 @@ Your content here. Markdown and GFM tables work, and because these are MDX
 files you can import and render React components too.
 ```
 
-Required frontmatter fields are `title`, `description`, `date` and `category`. `cover` is optional. A missing required field throws a build-time error rather than shipping a broken card. Reading time is computed for you, and posts are sorted newest first.
+Required frontmatter fields are `title`, `description`, `date` and `category`. `cover` and `updated` are optional. A missing required field throws a build-time error rather than shipping a broken card. Reading time is computed for you, and posts are sorted newest first.
 
 ## Cover images
 
@@ -59,6 +59,25 @@ The feed is generated from the same frontmatter and served at `/blog/rss.xml`. I
 ## SEO
 
 Each post sets its own metadata, a canonical URL, Open Graph tags and an Article JSON-LD block, and gets a dynamically rendered Open Graph image (see `src/app/[locale]/(public)/blog/[slug]/opengraph-image.tsx`). Posts are added to `sitemap.xml` automatically.
+
+### Saying that a post was revised
+
+When you edit a published post, add an `updated` date:
+
+```yaml
+date: "2026-08-10"
+updated: "2026-08-31"
+```
+
+It sets `dateModified` in the article schema and `lastModified` in the sitemap, and shows an "Updated" line next to the publication date. Without it an edit is invisible to a crawler until the next natural visit, and invisible to a reader who is deciding whether a two-month-old guide still applies.
+
+It holds one date, the most recent one. Edit a post three times and you overwrite `updated` each time: there is no history, and the earlier revisions leave no trace.
+
+It deliberately does not change ordering: the blog stays sorted by `date`. Moving `date` forward instead is the shortcut to avoid, because it announces freshness by lying about publication and pushes an old post back to the top of the index.
+
+Set it only when the substance changed, not for a typo or a fixed link. A modification date is a claim, and a site that raises it on every small edit teaches search engines to stop trusting its dates, sitemap `lastmod` included. The cost of overusing it is not a penalty, it is losing the signal.
+
+An `updated` earlier than `date` fails the build. That pair would ship a `dateModified` before `datePublished`, which is invalid structured data, and a sitemap `lastmod` that moves backwards, and neither of those complains on its own.
 
 ## Where the code lives
 

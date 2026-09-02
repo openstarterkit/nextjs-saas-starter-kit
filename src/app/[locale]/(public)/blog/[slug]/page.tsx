@@ -35,6 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: post.title,
       description: post.description,
       publishedTime: `${post.date}T00:00:00Z`,
+      ...(post.updated ? { modifiedTime: `${post.updated}T00:00:00Z` } : {}),
     },
     twitter: { card: "summary_large_image", title: post.title, description: post.description },
   }
@@ -137,6 +138,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       headline: post.title,
       description: post.description,
       datePublished: `${post.date}T00:00:00Z`,
+      // Only when the post declares it. An absent dateModified is honest; one
+      // that always equals datePublished is noise.
+      ...(post.updated ? { dateModified: `${post.updated}T00:00:00Z` } : {}),
       author: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
       mainEntityOfPage: `${siteConfig.url}/blog/${post.slug}`,
     },
@@ -180,7 +184,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         <header className="mt-6">
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <time dateTime={post.date}>{formatPostDate(post.date)}</time>
+            {/* Labelled on the post itself, where the two dates sit side by
+                side and an unlabelled pair reads as a range. The cards on the
+                index carry one date and stay bare. */}
+            <time dateTime={post.date}>{t("publishedOn", { date: formatPostDate(post.date) })}</time>
+            {post.updated && (
+              <time dateTime={post.updated} className="text-foreground/70">
+                {t("updatedOn", { date: formatPostDate(post.updated) })}
+              </time>
+            )}
             <Link href={`/blog/category/${categorySlug(post.category)}/`}>
               <Badge variant="secondary">{post.category}</Badge>
             </Link>

@@ -28,6 +28,15 @@ export type Post = {
   description: string
   /** ISO date (yyyy-mm-dd); lists sort newest first. */
   date: string
+  /**
+   * Optional ISO date of the last substantive revision. It feeds `dateModified`
+   * in the article schema and `lastModified` in the sitemap, so an edit to an
+   * old post is visible to a crawler instead of waiting for the next natural
+   * visit. It deliberately does NOT affect ordering: moving `date` forward
+   * would announce freshness by lying about publication and would push a
+   * three-week-old post back to the top of the blog.
+   */
+  updated?: string
   category: string
   /** Optional cover image path (e.g. "/blog/covers/my-post.svg"). */
   cover?: string
@@ -55,6 +64,28 @@ export function categorySlug(name: string): string {
     .replace(/\s+/g, "-")
 }
 
+/**
+ * gray-matter turns an unquoted `2026-08-31` into a Date and a quoted one into
+ * a string, and both forms appear in real frontmatter. Normalize to yyyy-mm-dd.
+ */
+export function isoDate(value: unknown): string {
+  return value instanceof Date ? value.toISOString().slice(0, 10) : String(value)
+}
+
+/**
+ * Refuses a revision date that predates publication.
+ *
+ * The pair is silent in both the places it reaches: a `dateModified` earlier
+ * than `datePublished` is invalid structured data, and the sitemap `lastmod`
+ * moves backwards. Neither throws on its own, so the build has to. Comparing
+ * the strings is enough, because yyyy-mm-dd sorts the way the calendar does.
+ */
+export function assertRevisionOrder(file: string, date: string, updated?: string): void {
+  if (updated !== undefined && updated < date) {
+    throw new Error(`content/blog/${file}: "updated" (${updated}) is before "date" (${date})`)
+  }
+}
+
 export function getAllPosts(): Post[] {
   if (!fs.existsSync(BLOG_DIR)) return []
   const posts: Post[] = []
@@ -80,12 +111,16 @@ export function getAllPosts(): Post[] {
       })
     }
     const words = content.split(/\s+/).filter(Boolean).length
+    // gray-matter parses unquoted dates as Date objects: normalize both.
+    const date = isoDate(data.date)
+    const updated = data.updated === undefined ? undefined : isoDate(data.updated)
+    assertRevisionOrder(file, date, updated)
     posts.push({
       slug: file.replace(/\.mdx?$/, ""),
       title: String(data.title),
       description: String(data.description),
-      // gray-matter parses unquoted dates as Date objects: normalize both.
-      date: data.date instanceof Date ? data.date.toISOString().slice(0, 10) : String(data.date),
+      date,
+      updated,
       category: String(data.category),
       cover: data.cover ? String(data.cover) : undefined,
       faq,

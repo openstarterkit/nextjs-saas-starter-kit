@@ -722,6 +722,8 @@
   "blog": {
     "title": "Blog",
     "intro": "Guides, product updates and build notes. Follow along via",
+    "publishedOn": "Published: {date}",
+    "updatedOn": "Updated: {date}",
     "empty": "No posts yet. Add an <code>.mdx</code> file to <code>content/blog/</code> to publish the first one.",
     "figureOpen": "Enlarge the diagram",
     "figureTitle": "Diagram",

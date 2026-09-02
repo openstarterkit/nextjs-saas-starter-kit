@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.0.3] - 2026-09-02
+
+🔒 **Three high severity advisories reached the dependency tree in two days, and none of them is reachable from this kit.** They are fixed here anyway, because a lock file carrying open advisories is something every clone inherits, and because `npm audit` is a step in this project's CI. Nothing in this release changes how the kit behaves. After pulling, `npm audit` reports zero.
+
+Where they come from is worth knowing, because it explains why one of them needed more than an update. `mysql2` arrives through the Prisma CLI, which pins it to an exact version, so no Prisma release in the 7 line moves it: it takes an `overrides` entry, and that entry can be deleted once Prisma 8 ships without it. The kit runs on PostgreSQL and rejects a `mysql://` connection string at startup, so the code path the advisory describes is never entered. `fast-uri` arrives through `ajv` under `@hookform/resolvers`, and the kit imports only the Zod resolver, so `ajv` never loads. `browserslist` sits in the ESLint chain and never reaches a running application.
+
+### Security
+
+- **`mysql2` pinned to `^3.24.3` through `overrides`**, closing [GHSA-3f6p-5ww8-9rcr](https://github.com/advisories/GHSA-3f6p-5ww8-9rcr), an auth plugin downgrade to `mysql_clear_password` that leaks credentials, and [GHSA-rgwj-5xj2-c3m3](https://github.com/advisories/GHSA-rgwj-5xj2-c3m3), an unbounded zlib inflate in the compressed protocol. The first is fixed in 3.22.0 and the second in 3.23.1, so stopping at the version the first advisory names would have left the second one in place
+- **`browserslist` to 4.28.8 and `fast-uri` to 3.1.7.** Both were already inside the ranges the kit declares, so these are a lock refresh and need no override
+
+### Added
+
+- **An `updated` date for posts.** Optional frontmatter that sets `dateModified` in the article schema, `modifiedTime` in Open Graph and `lastModified` in the sitemap, and prints an `Updated:` line beside the publication date. Without it, editing a published post stays invisible to a crawler until its next natural visit, and invisible to a reader deciding whether a two month old guide still applies. It holds one date, the most recent one: edit a post three times and you overwrite it three times
+- **It deliberately does not change ordering.** The index stays sorted by `date`. Moving `date` forward is the shortcut it exists to replace, because that announces freshness by lying about publication and pushes an old post back to the top
+- **The build refuses an `updated` earlier than `date`.** That pair ships a `dateModified` before `datePublished`, which is invalid structured data, together with a sitemap `lastmod` that moves backwards, and neither of those complains on its own
+- **`docs/blog.md` says when to set it**, which matters more than the field: only when the substance changed, never for a typo or a fixed link. A modification date is a claim, and raising it on every small edit teaches search engines to stop trusting the dates on your site, sitemap `lastmod` included. The cost of overusing it is not a penalty, it is losing the signal
+
+### Changed
+
+- **The two dates on a post are now labelled** `Published:` and `Updated:`. Side by side and unlabelled they read as a date range. The cards on the index carry a single date and stay as they were, and the date format is unchanged everywhere
+- `next-intl` to 4.14.2, `lucide-react` to 1.39.0, and `prisma`, `@prisma/client` and `@prisma/adapter-pg` to 7.10.0
+
 ## [2.0.2] - 2026-08-31
 
 🔴 **The 2.0 migration wrote the wrong issuer for Google accounts, and it can lock those users out.** If you migrated to 2.0 and your users sign in with Google, Apple, Facebook or LINE, take this release. If you only use GitHub, a password or a magic link, nothing here affects you and the migration finds nothing to do.
@@ -398,6 +421,8 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.0.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.3
+[2.0.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.2
 [2.0.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.1
 [2.0.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.0
 [1.7.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v1.7.0
