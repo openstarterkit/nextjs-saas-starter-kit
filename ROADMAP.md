@@ -71,7 +71,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 - **Mobile audit across the whole kit**: every page and every flow opened on a phone, not the marketing pages alone
 - **Groundwork for 2.0**: everything that reads the signed-in user now goes through `@/lib/auth`, so the release that changes the authentication library changes one file. See [Upgrading](./docs/upgrading.md)
 
-## ✅ v2.0 - Better Auth *(current, major)*
+## ✅ v2.0 - Better Auth *(major)*
 One thing, and nothing else. The authentication layer moves to [Better Auth](https://better-auth.com), and no feature rides along: a major that only migrates is a major you can adopt in an afternoon, and one that also adds things is a major people postpone.
 
 - All six ways in, on the new library: Google, GitHub, magic link, email plus password, and the dev and demo sign-ins
@@ -81,15 +81,23 @@ One thing, and nothing else. The authentication layer moves to [Better Auth](htt
 - A migration that moves the data, with the counts to check before and after, because the one failure that matters here leaves a valid database and no error
 - An upgrade guide written before the release, not after
 
-## 🔜 v2.1 - Auth depth & accessibility *(next)*
-- Self-hosted two-factor authentication (TOTP), no third-party auth vendor required
+## ✅ v2.1 - Better Auth 1.7.3 alignment *(current)*
+Not the release this line was going to be. Better Auth removed the `issuer` column that 2.0 was built on, and a schema that disagrees with the library underneath it comes before new features. What was announced here moves down one, unchanged.
+
+- **`Account.issuer` is gone and `@@unique([providerId, accountId])` is back**, which is the identity this kit used before 2.0 and the one Better Auth used in 1.6
+- A migration that refuses to run on duplicate account keys and names them, rather than letting the database report a constraint violation at the end
+- `scripts/verify-auth-migration.mjs` rewritten around the two questions that matter now, and useful before the upgrade as well as after
+- **Every page has an Open Graph image again.** They all asked for the large card and handed it nothing, and the generated image was working the whole time
+
+## 🔜 v2.2 - Auth depth & accessibility *(next)*
+- Self-hosted two-factor authentication (TOTP), no third-party auth vendor required. It gets its own release rather than a corner of another one, because it touches the sign-in flow
 - Active session management in Settings, which 2.0 made cheap: the rows are already there, with their IP address and user agent
 - Syntax highlighting and a copy button on the code blocks in the docs and the blog
 - Rate limiting on a shared store, so the limits hold across serverless instances instead of one bucket per instance
 - **Accessibility audit** against WCAG 2.1 AA: keyboard navigation, visible focus, contrast, labelled forms and heading order, checked across the kit rather than on the marketing pages alone
 - Account depth: change your email address, upload a profile photo
 
-## 🔜 v2.2 - Billing depth
+## 🔜 v2.3 - Billing depth
 - Free trials, coupon and promo codes
 - Stripe Tax and PDF invoices
 - Upgrade and downgrade flows with proration in the UI

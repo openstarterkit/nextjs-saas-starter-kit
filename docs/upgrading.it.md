@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: afb28ea5c810
+source_checksum: 4fcd872c7f86
 ---
 
 # Aggiornare
@@ -44,6 +44,102 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.1.0: la tabella account torna allineata a Better Auth 1.7.3
+
+**Leggi questa sezione se sei sulla 2.0.0, 2.0.1, 2.0.2 o 2.0.3.** Se stai
+installando il kit per la prima volta il tuo database nasce dallo schema
+attuale e qui non c'è niente che ti riguardi.
+
+### Cosa è cambiato, e non siamo stati noi
+
+Better Auth 1.7.0 aveva aggiunto alla tabella account una colonna `issuer`
+obbligatoria e cercava gli account con la coppia `(issuer, accountId)`. La 2.0
+di questo kit è stata costruita su quello, e la 2.0.2 ha riparato i valori che
+aveva scritto.
+
+Il 5 settembre 2026 Better Auth ha fatto marcia indietro. La loro motivazione,
+dalla pull request: una colonna obbligatoria che un database 1.6 già popolato
+non può accettare senza un backfill è troppo rischiosa da chiedere a un servizio
+in produzione, quindi ripristinare lo schema precedente è la strada meno
+dirompente. Gli account tornano a essere identificati da
+`(providerId, accountId)`, esattamente come nella 1.6, e si sono impegnati a non
+toccare più lo schema core per tutto il resto della v1.
+
+È uscita come `better-auth@1.7.3` il 6 settembre 2026. La loro guida è
+[qui](https://www.better-auth.com/docs/guides/1-7-upgrade-guide).
+
+### Cosa si rompe se non fai niente
+
+Better Auth 1.7.3 non scrive mai `issuer`. Una colonna `NOT NULL` senza default
+che nessuno scrive rifiuta ogni inserimento, quindi ogni registrazione e ogni
+collegamento di un account fallisce. La libreria inoltre controlla lo schema
+all'avvio, anche in produzione, e rifiuta le richieste di autenticazione invece
+di fallire un inserimento alla volta.
+
+Il tuo lockfile è fermo alla 1.7.2, quindi finché non aggiorni le dipendenze non
+si rompe niente. Ed è proprio lì il rischio: il cambiamento arriva vestito da
+numero di patch.
+
+### Cosa fare
+
+```bash
+git fetch upstream --tags
+git merge v2.1.0
+npm install
+```
+
+Prima di migrare, chiedi al tuo database se può:
+
+```bash
+node --env-file=.env scripts/verify-auth-migration.mjs
+```
+
+È in sola lettura. Dice se la colonna `issuer` è ancora obbligatoria e se due
+account condividono la stessa coppia `(providerId, accountId)`, che è l'unica
+cosa che può fermare la migrazione. Poi:
+
+```bash
+npx prisma migrate deploy
+node --env-file=.env scripts/verify-auth-migration.mjs
+```
+
+La migrazione rilascia l'indice unico prima della colonna, che è l'ordine su cui
+insiste la guida di Better Auth: MySQL ricostruisce un indice a cui sparisce una
+colonna, trasformando un indice unico composto in un vincolo sul solo
+`accountId`, e questo rifiuta un utente che ha lo stesso identificativo presso
+due provider diversi. Questo kit è su Postgres, dove non succede, ma l'ordine
+non costa niente e l'SQL viene copiato.
+
+Non si perde nulla. L'issuer era una funzione del provider, quindi niente di ciò
+che viveva solo in quella colonna esisteva davvero solo lì.
+
+### Se la migrazione si ferma sui duplicati
+
+Nella 1.7.0-1.7.2 due configurazioni di provider potevano condividere un issuer
+e finire in un'unica riga. Dalla 1.7.3 ogni provider si tiene la propria riga,
+quindi l'indice unico ripristinato non può essere creato finché due righe hanno
+la stessa coppia `(providerId, accountId)`. La migrazione controlla prima e si
+ferma nominando le coppie, invece di lasciare che sia Postgres a segnalare una
+violazione di vincolo alla fine.
+
+Decidi quale riga sopravvive, cancella le altre e rilanciala. Due righe con lo
+stesso provider e lo stesso identificativo sono due registrazioni di una sola
+identità, quindi tenerle entrambe non ha mai voluto dire niente. La riga da
+tenere di solito è quella i cui token vengono da un accesso vero.
+
+### Se preferisci non eliminare ancora la colonna
+
+Allentare il vincolo basta a sbloccare le registrazioni, ed è reversibile:
+
+```sql
+ALTER TABLE "Account" ALTER COLUMN "issuer" DROP NOT NULL;
+DROP INDEX "Account_issuer_accountId_key";
+```
+
+Il kit la elimina perché `prisma/schema.prisma` è lo schema da cui parte ogni
+clone, e una colonna che nessuno scrive sopravvivrebbe alla ragione per cui
+esiste. La tua copia però è tua.
 
 ## 2.0.2: riparare l'issuer degli account OAuth
 
@@ -94,12 +190,19 @@ Poi verifica il risultato contro quello che la libreria cercherebbe davvero:
 node --env-file=.env scripts/verify-auth-migration.mjs
 ```
 
-Lo script è di sola lettura. Legge l'issuer che ogni provider configurato
-dichiara, lo confronta con quello memorizzato ed elenca ogni riga che non
-verrebbe trovata. Non confronta il tuo database con un valore scritto dentro lo
-script, ed è la ragione per cui l'errore originale è sopravvissuto ai nostri
-controlli: una verifica che confronta i dati con la propria assunzione non può
-che confermarla.
+Lo script è di sola lettura. Leggeva l'issuer che ogni provider configurato
+dichiara, lo confrontava con quello memorizzato ed elencava ogni riga che non
+sarebbe stata trovata, invece di confrontare il tuo database con un valore
+scritto dentro lo script, ed è quella distinzione la ragione per cui l'errore
+originale è sopravvissuto ai nostri controlli: una verifica che confronta i dati
+con la propria assunzione non può che confermarla.
+
+**Dalla 2.1.0 controlla altro**, perché Better Auth ha rimosso la colonna e con
+lei i due helper che lo script leggeva. Se sei sulla 2.1.0 o successiva non puoi
+più verificare con questo una riparazione della 2.0.2, e non ti serve: la
+migrazione della 2.1.0 elimina la colonna in cui quei valori vivevano. Vai alla
+[2.1.0](#210-la-tabella-account-torna-allineata-a-better-auth-173) e prendi
+quella.
 
 Il campo `emailVerified` dei tuoi utenti resta com'è, ed è corretto così. Con
 l'issuer giusto la coppia `(issuer, accountId)` trova l'account direttamente e
@@ -144,9 +247,11 @@ per i provider OAuth semplici che la migration salta di proposito, quindi
 un'esecuzione silenziosa è l'esito normale e non il segno che tutto è stato
 classificato.
 
-Esegui `scripts/verify-auth-migration.mjs` dopo la migration. Legge la tua
-configurazione e riporta quello che la migration non ha potuto decidere, ed è
-l'unica cosa che te lo dirà.
+Esegui `scripts/verify-auth-migration.mjs` dopo la migration. Sulla 2.0.x leggeva
+la tua configurazione e riportava quello che la migration non aveva potuto
+decidere, ed era l'unica cosa che te lo diceva. Dalla 2.1.0 la colonna non c'è
+più e lo script risponde a una domanda diversa, quindi su quella versione qui non
+resta niente da classificare.
 
 ### Vengono scollegati tutti
 

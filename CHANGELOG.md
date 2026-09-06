@@ -7,6 +7,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.1.0] - 2026-09-06
+
+🔄 **Better Auth removed the `issuer` column that 2.0 was built on, and this release follows them back.** If you are on 2.0.0 through 2.0.3, take it and run the migration. If you are installing the kit for the first time there is nothing to do: your database is built from the current schema.
+
+Better Auth 1.7.0 added a required `issuer` column to the account table and found accounts by `(issuer, accountId)`. On 5 September they reverted it, and 1.7.3 shipped the next morning. Their reasoning, and it is a fair one: a required column that a populated 1.6 database cannot take without a backfill is too risky to ask of a production service, so restoring the previous schema is the less disruptive path. They have committed to leaving the core schema alone for the rest of v1.
+
+The consequence for anyone on 2.0.x is not cosmetic. Better Auth 1.7.3 never writes `issuer`, and a `NOT NULL` column with no default that nobody writes rejects every insert, so every sign-up and every account link fails. The library now checks the schema when it starts, including in production, and refuses authentication rather than failing one insert at a time. Your lock file pins 1.7.2, so nothing breaks until a dependency update moves you, which is the actual risk: the change arrives wearing a patch number.
+
+`docs/upgrading.md` has the steps, including what to do when two accounts share a `(providerId, accountId)` pair.
+
+### Changed
+
+- **`Account.issuer` is gone, and `@@unique([providerId, accountId])` is back**, which is the identity this kit used before 2.0 and the one Better Auth used in 1.6. The migration drops the unique index before the column, which is the order Better Auth's guide insists on: MySQL rebuilds an index whose column disappears and turns a compound unique index into a constraint on `accountId` alone, which rejects a user holding the same account id at two providers. This kit is Postgres, where that does not happen, but the order is free and SQL gets copied
+- **The migration refuses to run on duplicate account keys** rather than letting Postgres report a constraint violation at the end. On 1.7.0 through 1.7.2 two provider configurations could share one issuer and collapse into a single row; from 1.7.3 each provider keeps its own row again, so a duplicate pair has to be resolved first. It names the pairs
+- **`scripts/verify-auth-migration.mjs` checks something different now.** It used to ask the library what issuer each provider declares and compare that with your data. Both helpers it relied on were removed in 1.7.3, so it would not even import. It now reports whether the `issuer` column is still required and whether any two accounts share a `(providerId, accountId)` pair, and it is useful both before and after the migration
+- `better-auth` and `@better-auth/prisma-adapter` to 1.7.3, and `zod` to `^4.5.4`, which 1.7.3 requires
+
+### Fixed
+
+- **Every page has an Open Graph image again.** The home page, pricing, docs, blog and the legal pages declared `twitter:card: summary_large_image` and no image at all, which asks a platform for the large card and hands it nothing. The generated image at `/opengraph-image` was working the whole time and simply never referenced: Next merges `openGraph` shallowly, so a page that declares the object replaces the parent's and loses the image the file convention put there. A colocated image survives, which is why blog posts were unaffected and nothing looked wrong from inside the site
+
+### Notes
+
+- **This is not the v2.1 the roadmap described.** Two-factor authentication, rate limiting on a shared store, the accessibility audit and profile photos move to v2.2, and `Billing depth` becomes v2.3. A schema that disagrees with the library underneath it comes before new features, and 2FA in particular touches the sign-in flow, which is where 2.0.2 went wrong. It gets a release of its own rather than a corner of this one
+- We had opened a documentation pull request upstream about the issuer, because the Auth.js migration guide was the one guide of theirs that never mentioned it. It was [closed](https://github.com/better-auth/better-auth/pull/11079), absorbed into the larger revert rather than turned down. The guide no longer needs that paragraph, because the column no longer exists
+
 ## [2.0.3] - 2026-09-02
 
 🔒 **Three high severity advisories reached the dependency tree in two days, and none of them is reachable from this kit.** They are fixed here anyway, because a lock file carrying open advisories is something every clone inherits, and because `npm audit` is a step in this project's CI. Nothing in this release changes how the kit behaves. After pulling, `npm audit` reports zero.
@@ -421,6 +447,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.1.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.1.0
 [2.0.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.3
 [2.0.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.2
 [2.0.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.1

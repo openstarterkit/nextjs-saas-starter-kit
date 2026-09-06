@@ -59,13 +59,16 @@ describe("pageMetadata", () => {
     expect(ogType(pageMetadata({ title: "A post", type: "article" }))).toBe("article")
   })
 
-  // The image comes from the opengraph-image file convention, which Next
-  // resolves per route. Declaring one here would override the generated image
-  // on every page that has its own.
-  it("declares no social image", () => {
+  // This used to assert the opposite, on the assumption that the file
+  // convention would be inherited and that naming an image here would override
+  // a page's own. Neither holds: a page declaring `openGraph` replaces the
+  // parent object and loses the inherited image, while a colocated file is
+  // merged and wins anyway. The suite stayed green for months because the test
+  // encoded the same assumption as the code it was checking.
+  it("names the generated image in both social blocks", () => {
     const out = pageMetadata({ title: "Pricing" })
 
-    expect(out.openGraph).not.toHaveProperty("images")
-    expect(out.twitter).not.toHaveProperty("images")
+    expect(out.openGraph).toHaveProperty("images", ["/opengraph-image"])
+    expect(out.twitter).toHaveProperty("images", ["/opengraph-image"])
   })
 })

@@ -70,9 +70,9 @@ model User {
 model Account {
   id                    String    @id @default(cuid())
   userId                String
-  // The authority that issued the identifier, and the identifier itself. For a
-  // password account the pair is "local:credential" and the user's own id.
-  issuer                String
+  // The identifier the provider gave us. Paired with providerId it identifies
+  // the account at sign-in: Better Auth 1.7.0 through 1.7.2 keyed accounts by
+  // an issuer column instead, and 1.7.3 reverted that. See the 2.1.0 migration.
   accountId             String
   providerId            String
   accessToken           String?
@@ -90,7 +90,7 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  @@unique([issuer, accountId])
+  @@unique([providerId, accountId])
   @@index([userId])
 }
 

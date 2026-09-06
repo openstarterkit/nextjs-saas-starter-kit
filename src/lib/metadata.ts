@@ -3,6 +3,27 @@ import type { Metadata } from "next"
 import { siteConfig } from "@/config/site"
 
 /**
+ * The generated image at `src/app/opengraph-image.tsx`, named rather than
+ * inherited.
+ *
+ * Next resolves the `opengraph-image` file convention per route and merges
+ * metadata shallowly, and those two facts do not combine the way they read.
+ * A page that declares `openGraph` REPLACES the parent's object, and the image
+ * the ancestor file put there goes with it. A colocated file survives, because
+ * it is merged into the segment's own metadata: that is why blog posts, which
+ * have their own image beside them, kept theirs while every page using this
+ * helper had none.
+ *
+ * The result was worse than no tags. Every page still declared
+ * `summary_large_image`, which asks a platform for the big card and then hands
+ * it nothing.
+ *
+ * Relative on purpose: `metadataBase` in the root layout makes it absolute, so
+ * a preview deployment advertises itself rather than production.
+ */
+const OG_IMAGE = "/opengraph-image"
+
+/**
  * Builds a page's metadata, including the Open Graph and Twitter blocks.
  *
  * Why a helper rather than the fields written out on each page: Next merges
@@ -42,14 +63,13 @@ export function pageMetadata({
       url,
       siteName: siteConfig.name,
       type,
+      images: [OG_IMAGE],
     },
-    // The image itself comes from the opengraph-image file convention, which
-    // Next resolves per route: declaring one here would override the generated
-    // one on every page that has its own.
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [OG_IMAGE],
     },
   }
 }

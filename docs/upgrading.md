@@ -38,6 +38,98 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.1.0: the account table realigns with Better Auth 1.7.3
+
+**Read this if you are on 2.0.0 through 2.0.3.** If you are installing the kit
+for the first time, your database is built from the current schema and there is
+nothing here for you.
+
+### What changed, and it was not us
+
+Better Auth 1.7.0 added a required `issuer` column to the account table and
+found accounts by the pair `(issuer, accountId)`. Version 2.0 of this kit was
+built on that, and 2.0.2 repaired the values it wrote.
+
+On 5 September 2026 Better Auth reverted it. Their reasoning, from the pull
+request: a required column that a populated 1.6 database cannot take without a
+backfill is too risky to ask of production services, so restoring the previous
+schema is the less disruptive path. Accounts are identified by
+`(providerId, accountId)` again, exactly as in 1.6, and they committed to
+keeping the core schema unchanged for the rest of v1.
+
+It shipped as `better-auth@1.7.3` on 6 September 2026. Their own guide for it is
+[here](https://www.better-auth.com/docs/guides/1-7-upgrade-guide).
+
+### What it breaks if you do nothing
+
+Better Auth 1.7.3 never writes `issuer`. A `NOT NULL` column with no default
+that nobody writes rejects every insert, so every sign up and every account link
+fails. The library also checks the schema when it starts, including in
+production, and refuses authentication requests rather than failing one insert
+at a time.
+
+Your lockfile pins 1.7.2, so nothing breaks until a dependency update moves you.
+That is the actual risk here: the change arrives wearing a patch number.
+
+### What to do
+
+```bash
+git fetch upstream --tags
+git merge v2.1.0
+npm install
+```
+
+Before migrating, ask your database whether it can:
+
+```bash
+node --env-file=.env scripts/verify-auth-migration.mjs
+```
+
+It is read only. It reports whether the `issuer` column is still required, and
+whether any two accounts share a `(providerId, accountId)` pair, which is the
+one thing that stops the migration. Then:
+
+```bash
+npx prisma migrate deploy
+node --env-file=.env scripts/verify-auth-migration.mjs
+```
+
+The migration drops the unique index before the column, which is the order
+Better Auth's guide insists on: MySQL rebuilds an index whose column disappears,
+turning a compound unique index into a constraint on `accountId` alone, and that
+rejects a user who holds the same account id at two providers. This kit is
+Postgres, where that does not happen, but the order is free and SQL gets copied.
+
+Nothing is lost. An issuer was a function of the provider, so nothing that only
+lived in that column existed anywhere else.
+
+### If the migration stops on duplicates
+
+On 1.7.0 through 1.7.2 two provider configurations could share one issuer and
+collapse into a single row. From 1.7.3 each provider id keeps its own row again,
+so the restored unique index cannot be created while two rows share a
+`(providerId, accountId)` pair. The migration checks first and stops with the
+pairs named, rather than letting Postgres report a constraint violation at the
+end.
+
+Decide which row survives and delete the others, then run it again. Two rows for
+the same provider and the same account id are two records of one identity, so
+keeping both was never meaningful. The row to keep is usually the one whose
+tokens came from a real sign in.
+
+### If you would rather not drop the column yet
+
+Relaxing the constraint is enough to unblock sign ups, and it is reversible:
+
+```sql
+ALTER TABLE "Account" ALTER COLUMN "issuer" DROP NOT NULL;
+DROP INDEX "Account_issuer_accountId_key";
+```
+
+The kit drops the column because `prisma/schema.prisma` is the schema every
+clone starts from, and a nullable column nothing writes would outlive the reason
+it exists. Your copy is yours.
+
 ## 2.0.2: repairing the OAuth issuer
 
 **Read this if you migrated to 2.0 and your users sign in with Google, Apple,
@@ -86,11 +178,18 @@ Then check the result against what the library would actually look up:
 node --env-file=.env scripts/verify-auth-migration.mjs
 ```
 
-The script is read only. It reads the issuer each configured provider declares,
-compares it with what is stored, and lists every row that would not be found. It
-does not compare your database against a value typed into the script, which is
-the reason the original mistake survived our own checks: a check that compares
+The script is read only. It compared the issuer each configured provider declares
+with what was stored, and listed every row that would not be found, rather than
+comparing your database against a value typed into the script. That distinction
+is the reason the original mistake survived our own checks: a check that compares
 your data with your own assumption can only confirm the assumption.
+
+**Since 2.1.0 it checks something else**, because Better Auth removed the column
+and with it the two helpers the script read. If you are running 2.1.0 or later
+you cannot verify a 2.0.2 repair with it any more, and you do not need to: the
+2.1.0 migration removes the column those values lived in. Go to
+[2.1.0](#210-the-account-table-realigns-with-better-auth-173) and take that
+instead.
 
 Your users' `emailVerified` stays as it is, and that is correct. Once the issuer
 is right, the pair `(issuer, accountId)` finds the account directly and the
@@ -134,9 +233,10 @@ database, the migration raises it and the Prisma CLI prints nothing at all. The
 same is true of the plain OAuth providers the migration deliberately skips, so a
 silent run is the normal outcome and not a sign that everything was classified.
 
-Run `scripts/verify-auth-migration.mjs` after the migration. It reads your config
-and reports what the migration could not decide, and it is the only thing that
-will tell you.
+Run `scripts/verify-auth-migration.mjs` after the migration. On 2.0.x it read your
+config and reported what the migration could not decide, and it was the only thing
+that would tell you. From 2.1.0 the column is gone and the script answers a
+different question, so on that version there is nothing here left to classify.
 
 ## 2.0: the authentication library changed
 

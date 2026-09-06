@@ -1,32 +1,40 @@
 #!/usr/bin/env node
 /**
- * Checks that every account row can actually be found at sign-in.
+ * Checks that the account table matches what Better Auth expects.
  *
  *   node --env-file=.env scripts/verify-auth-migration.mjs
  *
- * Run it after migrating to 2.0, and again after the 2.0.2 repair migration.
- * Read-only: it never writes to your database.
+ * Run it BEFORE upgrading to 2.1.0, to find out whether the migration can
+ * succeed, and AFTER, to confirm it did. Read-only: it never writes to your
+ * database.
  *
- * WHY THIS EXISTS
+ * WHY THIS EXISTS, AND WHY IT CHECKS SOMETHING DIFFERENT THAN IT USED TO
  *
- * Better Auth finds an account by the pair (issuer, accountId), with no
- * fallback on providerId. A row whose issuer is wrong is not an error, is not
- * a warning, and does not fail a schema check: it is simply never found. The
- * user is told their account is not linked, or gets a second account, and the
- * database looks perfectly healthy from the outside.
+ * Better Auth 1.7.0 keyed accounts by an `issuer` column, and 2.0 of this kit
+ * was built on it. Version 1.7.3 reverted that: accounts are found by
+ * (providerId, accountId) again, as they were in 1.6, and the library never
+ * writes `issuer` any more.
  *
- * So this script does not compare your data against a value written here. It
- * asks the library what the issuer should be — `provider.accountIssuer` for a
- * provider that declares one, `createOAuthAccountIssuer()` for one that does
- * not — and compares that with what is stored. A check that compares your
- * database against a string typed by hand can only confirm the assumption
- * that produced the string.
+ * That leaves two ways for a database upgraded to 2.0 to be wrong, and neither
+ * announces itself:
+ *
+ *   1. The `issuer` column is still there and still NOT NULL. Nothing writes
+ *      it, so every sign-up and every account link fails. Better Auth 1.7.3
+ *      checks the schema when it starts and refuses authentication rather than
+ *      failing one insert at a time, which is loud, but only once you deploy.
+ *
+ *   2. Two accounts share a (providerId, accountId) pair. On 1.7.0 through
+ *      1.7.2 two provider configurations could share one issuer and collapse
+ *      into a single row; from 1.7.3 each provider id keeps its own row again.
+ *      A duplicate pair makes sign-in ambiguous, and it stops the 2.1.0
+ *      migration from restoring the unique index.
+ *
+ * Both are questions about your data, so this asks your database rather than
+ * comparing it against a value written here.
  */
 
 import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
-import { socialProviders } from "better-auth/social-providers"
-import { createOAuthAccountIssuer, createLocalAccountIssuer } from "better-auth/db"
 
 if (!process.env.DATABASE_URL) {
   console.error("DATABASE_URL is not set. Run with: node --env-file=.env scripts/verify-auth-migration.mjs")
@@ -38,139 +46,85 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 })
 
-/**
- * Options with values nothing would ever use, to find out whether a provider's
- * issuer is a fixed property of the provider or something you configure.
- */
-const PROBE = {
-  clientId: "-",
-  clientSecret: "-",
-  issuer: "https://probe.invalid",
-  domain: "probe.invalid",
-  region: "probe-1",
-  userPoolId: "probe",
-  tenantId: "probe",
-}
+const problems = []
 
-/**
- * What the library would store for this provider.
- *
- * The issuer is decided by the provider definition and not by the account, so
- * placeholder credentials are enough to read it — but only if the value does
- * not move when the options move. It does for some providers: Paybin defaults
- * to `https://idp.paybin.io` and takes an `issuer` option that replaces it, so
- * reading the default and calling it "expected" would produce exactly the kind
- * of confident wrong answer this script exists to catch. So the provider is
- * built twice, and a value that changes between the two is reported as one
- * this check cannot decide rather than guessed at.
- */
-function expectedIssuer(providerId) {
-  const factory = socialProviders[providerId]
-  if (!factory) {
-    return { kind: "unknown", reason: "not a built-in provider (generic-oauth, or an id of your own)" }
-  }
+try {
+  // ── 1. Is the 1.7.0-1.7.2 column still there, and can it still block writes?
+  //
+  // Asked of the database rather than of the Prisma schema, because the two
+  // disagreeing is exactly the situation worth catching: the schema file is
+  // what you intend, the column is what you have.
+  const [column] = await prisma.$queryRaw`
+    SELECT is_nullable, column_default
+      FROM information_schema.columns
+     WHERE table_name = 'Account' AND column_name = 'issuer'
+  `
 
-  const build = (options) => {
-    try {
-      return { ok: true, issuer: factory(options).accountIssuer }
-    } catch {
-      // Cognito refuses to be built without a region and a user pool, and
-      // those are exactly what its issuer is made of.
-      return { ok: false }
-    }
-  }
-
-  const plain = build({ clientId: "-", clientSecret: "-" })
-  const probed = build(PROBE)
-
-  if (!plain.ok || !probed.ok) {
-    return { kind: "dynamic", reason: "issuer depends on options this check cannot supply" }
-  }
-  // Order matters: two builds return two different function objects, so the
-  // comparison below would report a function as "configurable" and say the
-  // less useful of the two true things.
-  if (typeof plain.issuer === "function") {
-    return { kind: "dynamic", reason: "issuer is computed at runtime from the token" }
-  }
-  if (plain.issuer !== probed.issuer) {
-    return { kind: "dynamic", reason: "issuer is configurable, so the default is not authoritative" }
-  }
-  if (typeof plain.issuer === "string") return { kind: "exact", issuer: plain.issuer }
-
-  // Declares nothing: the library falls back to the synthetic namespace.
-  return { kind: "exact", issuer: createOAuthAccountIssuer(providerId) }
-}
-
-const rows = await prisma.account.groupBy({
-  by: ["providerId", "issuer"],
-  _count: { _all: true },
-  orderBy: [{ providerId: "asc" }, { issuer: "asc" }],
-})
-
-if (rows.length === 0) {
-  console.log("\nNo account rows. Nothing to verify.\n")
-  await prisma.$disconnect()
-  process.exit(0)
-}
-
-const credentialIssuer = createLocalAccountIssuer("credential")
-const findings = []
-
-console.log("\nAccount identities\n")
-for (const { providerId, issuer, _count } of rows) {
-  const count = _count._all
-  let verdict
-
-  if (providerId === "credential") {
-    const ok = issuer === credentialIssuer
-    verdict = ok ? "OK" : "WRONG"
-    if (!ok) {
-      findings.push(
-        `credential accounts have issuer "${issuer}", expected "${credentialIssuer}". Password sign-in will fail`,
-      )
-    }
+  if (!column) {
+    console.log('  issuer column   gone, which is what 1.7.3 expects')
+  } else if (column.is_nullable === "NO" && column.column_default === null) {
+    console.log('  issuer column   PRESENT, NOT NULL, no default')
+    problems.push(
+      'The "issuer" column is still required and Better Auth 1.7.3 never writes it, so every sign-up and account link will fail. Apply the 2.1.0 migration, or relax it by hand with: ALTER TABLE "Account" ALTER COLUMN "issuer" DROP NOT NULL;'
+    )
   } else {
-    const expected = expectedIssuer(providerId)
-    if (expected.kind === "exact") {
-      const ok = issuer === expected.issuer
-      verdict = ok ? "OK" : `WRONG, expected "${expected.issuer}"`
-      if (!ok) {
-        findings.push(
-          `${count} ${providerId} account(s) have issuer "${issuer}", expected "${expected.issuer}". These sign-ins will not be recognised`,
-        )
-      }
-    } else {
-      verdict = `CHECK BY HAND (${expected.reason})`
-      findings.push(
-        `${count} ${providerId} account(s) could not be checked: ${expected.reason}. Compare "${issuer}" with what your provider issues.`,
-      )
-    }
+    console.log('  issuer column   present but nullable, so it cannot block a write')
   }
 
-  console.log(`  ${String(count).padStart(5)}  ${providerId.padEnd(14)} ${issuer.padEnd(34)} ${verdict}`)
+  // ── 2. Would the restored key be unique?
+  const dupes = await prisma.$queryRaw`
+    SELECT "providerId", "accountId", count(*)::int AS rows
+      FROM "Account"
+     GROUP BY "providerId", "accountId"
+    HAVING count(*) > 1
+     ORDER BY rows DESC
+     LIMIT 20
+  `
+
+  if (dupes.length === 0) {
+    console.log("  duplicate keys  none")
+  } else {
+    console.log(`  duplicate keys  ${dupes.length}`)
+    for (const d of dupes) {
+      console.log(`                  ${d.rows} rows for ${d.providerId} / ${d.accountId}`)
+    }
+    problems.push(
+      `${dupes.length} duplicate (providerId, accountId) pair(s). Decide which row survives and delete the others before migrating: two rows for the same provider and account id are two records of one identity.`
+    )
+  }
+
+  // ── 3. The counts, so a before-and-after comparison is possible.
+  //
+  // Nothing here can fail. It is here because the useful discipline around a
+  // data migration is writing down what you expect before you run it, and this
+  // gives you the numbers to write down.
+  const byProvider = await prisma.account.groupBy({
+    by: ["providerId"],
+    _count: { _all: true },
+    orderBy: { providerId: "asc" },
+  })
+
+  const users = await prisma.user.count()
+  const sessions = await prisma.session.count()
+
+  console.log("\n  accounts by provider")
+  if (byProvider.length === 0) {
+    console.log("                  none")
+  }
+  for (const row of byProvider) {
+    console.log(`    ${String(row._count._all).padStart(5)}  ${row.providerId}`)
+  }
+  console.log(`\n  users ${users}, sessions ${sessions}`)
+} finally {
+  await prisma.$disconnect()
 }
 
-// A credential row is only usable when accountId is the user's own id: the
-// three fields go together, and a row missing one of them is present and
-// useless.
-const brokenCredentials = await prisma.$queryRaw`
-  SELECT count(*)::int AS n FROM "Account"
-  WHERE "providerId" = 'credential' AND "accountId" <> "userId"
-`
-if (brokenCredentials[0].n > 0) {
-  findings.push(
-    `${brokenCredentials[0].n} credential account(s) have an accountId that is not the user id. Password sign-in will fail for them`,
-  )
-}
-
-await prisma.$disconnect()
-
-if (findings.length === 0) {
-  console.log("\nEvery account identity matches what the library would look up.\n")
+if (problems.length === 0) {
+  console.log("\nNothing to fix. This database matches what Better Auth 1.7.3 expects.\n")
   process.exit(0)
 }
 
-console.log("\nFindings\n")
-for (const f of findings) console.log(`  - ${f}`)
-console.log("\nSee docs/upgrading.md, section \"Repairing the OAuth issuer\".\n")
+console.log("")
+for (const p of problems) console.log(`PROBLEM  ${p}`)
+console.log('\nSee docs/upgrading.md, section "Upgrading to 2.1.0".\n')
 process.exit(1)
