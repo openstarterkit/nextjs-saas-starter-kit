@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
-## [2.2.0] - 2026-09-16
+## [2.2.0] - 2026-09-13
 
 🔐 **Two-factor authentication, active sessions, and an accessibility audit that runs with the tests.** This is a MINOR: `git pull`, `npm install`, `npx prisma migrate deploy`. The migration is additive, and there is no new required environment variable.
 
