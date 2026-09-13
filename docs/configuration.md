@@ -52,6 +52,17 @@ Setup: create an account at [resend.com](https://resend.com), verify your domain
 
    Copy the signing secret into `STRIPE_WEBHOOK_SECRET`. Production webhooks are covered in [Deployment](./deployment.md); how the billing flows work (subscriptions, one-time, usage-based) is covered in [Billing](./billing.md).
 
+## Rate limiting
+
+| Variable | Notes |
+|---|---|
+| `UPSTASH_REDIS_REST_URL` | Optional. Unset, the limits live in each instance's memory, which on serverless means a request that lands elsewhere starts from zero. |
+| `UPSTASH_REDIS_REST_TOKEN` | Optional. Set both and the same counters move to Upstash Redis, shared by every instance and region. |
+
+Both are optional on purpose: a required variable would have made the release that added this a major one for everybody who had already cloned the kit. Nothing else changes when you set them, no client library is installed, and if the store is configured but unreachable the limiter falls back to the in-memory counter rather than failing in either direction.
+
+Worth knowing which limit to move first, because they are not protecting the same thing. The limit on sign-in guards password attempts, and there bcrypt's cost carries most of the weight. The limits on magic link, signup and reset guard **outbound email**: each caps how many messages one address can trigger, and bcrypt has nothing to do with it. If what you are protecting is your Resend bill or your sending reputation, that is the one that gains most from a shared store. [Authentication](./authentication.md#rate-limiting-honestly) has the rest.
+
 ## Flags and extras
 
 | Variable | Notes |

@@ -37,6 +37,7 @@ const UNLOCALIZED = [
   "/forgot-password",
   "/reset-password",
   "/verify-request",
+  "/2fa",
   // Root level metadata routes.
   "/sitemap.xml",
   "/robots.txt",
@@ -60,7 +61,11 @@ const UNLOCALIZED = [
  */
 const PROTECTED_ROUTES = ["/dashboard", "/api/checkout", "/api/billing"]
 const ADMIN_ROUTES = ["/admin", "/api/admin"]
-const AUTH_ROUTES = ["/login", "/signup"]
+// `/2fa` belongs here for the same reason as the other two: it is a step on the
+// way in, so somebody who already holds a session has nothing to do on it. The
+// second factor is asked for BEFORE a session exists, which is why sending a
+// signed-in visitor to the dashboard cannot interrupt a verification.
+const AUTH_ROUTES = ["/login", "/signup", "/2fa"]
 
 // Reading the session here means one database round trip per request, where
 // the old JWT was verified in memory. `session.cookieCache` in src/auth.ts is

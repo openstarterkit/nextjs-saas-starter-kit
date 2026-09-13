@@ -5,10 +5,13 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { ProfileForm } from "@/components/dashboard/profile-form"
 import { DeleteAccount } from "@/components/dashboard/delete-account"
+import { TwoFactorCard } from "@/components/settings/two-factor-card"
+import { ActiveSessions } from "@/components/settings/active-sessions"
 import { PendingButton } from "@/components/auth/pending-button"
-import { linkProvider, unlinkProvider, updatePassword } from "@/app/actions/account"
+import { changeEmail, linkProvider, unlinkProvider, updatePassword } from "@/app/actions/account"
 
 const PROVIDER_LABELS: Record<string, string> = {
   google: "Google",
@@ -20,6 +23,19 @@ const PROVIDER_LABELS: Record<string, string> = {
 const MESSAGE_IS_ERROR: Record<string, boolean> = {
   unlinked: false,
   password: false,
+  "2fa-enabled": false,
+  "2fa-disabled": false,
+  "2fa-password": true,
+  "email-sent": false,
+  "email-invalid": true,
+  "email-same": true,
+  "email-change": true,
+  rate: true,
+  "session-revoked": false,
+  "sessions-revoked": false,
+  session: true,
+  // Not an error: a sign-in that spent a backup code and says so.
+  "backup-used": false,
   "last-method": true,
   demo: true,
   confirm: true,
@@ -62,6 +78,7 @@ export async function SettingsView({
       email: true,
       image: true,
       createdAt: true,
+      twoFactorEnabled: true,
       accounts: { select: { id: true, providerId: true } },
     },
   })
@@ -149,6 +166,28 @@ export async function SettingsView({
             )
           })}
 
+          {/* The address lives with the other ways in, not with the display
+              name: it is a credential, and changing it is a two-step round trip
+              rather than a field you save. Its own form, because the profile
+              form cannot contain another one. */}
+          <div className="border-b border-border pb-4">
+            <Label htmlFor="new-email" className="font-medium">{t("email.label")}</Label>
+            <p className="mt-1 max-w-prose text-xs text-muted-foreground">{t("email.hint")}</p>
+            <form action={changeEmail} className="mt-2 flex flex-wrap items-center gap-2">
+              <Input
+                id="new-email"
+                name="email"
+                type="email"
+                placeholder={t("email.placeholder")}
+                className="h-9 w-full sm:w-64"
+                required
+              />
+              <PendingButton className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                {t("email.submit")}
+              </PendingButton>
+            </form>
+          </div>
+
           <div className="pt-1">
             <div className="mb-3 flex items-center gap-2">
               <span className="font-medium">{t("password")}</span>
@@ -187,6 +226,34 @@ export async function SettingsView({
               </p>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Between the sign-in methods and the account facts, because that is
+          where someone looking for it looks: it belongs to how you get in. */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("twoFactor.title")}</CardTitle>
+          <CardDescription>{t("twoFactor.description")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TwoFactorCard
+            enabled={user.twoFactorEnabled}
+            hasPassword={hasPassword}
+            isDemo={process.env.DEMO_MODE === "true"}
+          />
+        </CardContent>
+      </Card>
+
+      {/* After the second factor, because both answer the same question — who
+          can get in — and this one is the evidence for it. */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("sessions.title")}</CardTitle>
+          <CardDescription>{t("sessions.description")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ActiveSessions />
         </CardContent>
       </Card>
 

@@ -38,6 +38,39 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.2.0: two-factor authentication, and nothing you have to decide
+
+This one is a MINOR, and the number is the whole summary:
+
+```bash
+git fetch upstream --tags
+git merge v2.2.0
+npm install
+npx prisma migrate deploy
+```
+
+The migration adds a `TwoFactor` table and a `User.twoFactorEnabled` column with a default. Both are additive, so it runs against a populated database without asking you anything, and there is no new required environment variable.
+
+### Three behaviour changes worth reading before you merge
+
+They affect accounts that turn the feature on, so nothing changes for anybody until somebody does. They are listed here because each one is a decision you may want to revisit in your own product rather than inherit silently.
+
+**Accounts with 2FA no longer receive a magic link.** The link opens a session directly, so for an account with a second factor it would be a way around the very thing its owner turned on. The response is identical to the normal one, so the form cannot be used to ask whether an address has an account or whether that account has 2FA. Nobody is locked out: enabling 2FA requires a password.
+
+**Automatic account linking is refused for accounts with 2FA.** A provider that verifies an email address normally attaches itself to the account that already has it. For an account protected by a password and a TOTP that would let whoever controls a Google account with the same address sign in with no password and no code. Connecting a provider yourself from Settings still works, because that request carries your session. The rule is four booleans in `src/lib/account-linking.ts` if you want to read it or change it.
+
+**OAuth sign-ins are not asked for a code on top**, because a second factor on the provider's side is the provider's job. If your product needs it anyway, that is the decision to change, and [Authentication](./authentication.md#two-factor-authentication) has the table of which way in asks for what.
+
+### One operational consequence
+
+TOTP secrets and backup codes are stored encrypted with `AUTH_SECRET`. **Rotating that variable makes them unreadable**, which means every user who had the feature on has to set up their authenticator again. That was already true of other things it protects; with 2FA on it is the one worth knowing before you rotate.
+
+If both the phone and the backup codes are gone there is no self-service way back in, by design. An administrator clears the second factor with two SQL statements, which are in [Authentication](./authentication.md).
+
+### If you customised the sign-in flow
+
+The kit signs in through a server action rather than the client SDK. With 2FA enabled, `signInEmail` does not create a session: it answers `twoFactorRedirect`, and a caller that ignores it lands the user on the dashboard with no session and no error. If you wrote your own sign-in action against `@/lib/auth`, that is the one line to add. `src/app/actions/auth.ts` shows it.
+
 ## 2.1.0: the account table realigns with Better Auth 1.7.3
 
 **Read this if you are on 2.0.0 through 2.0.3.** If you are installing the kit

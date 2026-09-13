@@ -2,7 +2,7 @@
 title: Blog e contenuti
 description: Blog MDX su file, con categorie, feed RSS e SEO per ogni articolo.
 translated_from: blog.md
-source_checksum: aa7204a508ec
+source_checksum: bd7438b96816
 ---
 
 # Blog e contenuti
@@ -85,6 +85,24 @@ Di proposito non cambia l'ordinamento: il blog resta ordinato per `date`. Sposta
 Mettila solo quando è cambiata la sostanza, non per un refuso o un link sistemato. Una data di modifica è un'affermazione, e un sito che la alza a ogni ritocco insegna ai motori di ricerca a non fidarsi più delle sue date, `lastmod` del sitemap compreso. Il costo di abusarne non è una penalizzazione: è perdere il segnale.
 
 Un `updated` anteriore a `date` ferma il build. Quella coppia spedirebbe un `dateModified` precedente al `datePublished`, che è structured data non valido, e un `lastmod` del sitemap che va all'indietro, e nessuno dei due protesta da solo.
+
+## Blocchi di codice
+
+I blocchi vengono colorati **in fase di build** e non spediscono JavaScript per farlo: al browser arriva markup già colorato. Entrambi i temi finiscono nel markup come variabili CSS, quindi la modalità scura cambia insieme al resto della pagina, senza un secondo render e senza sfarfallii.
+
+Se dichiari il file da cui viene lo snippet, il blocco riceve un'intestazione, con l'icona del tipo di file e il bottone copia accanto:
+
+````
+```ts title="src/lib/auth.ts"
+export const auth = betterAuth({ ... })
+```
+````
+
+`filename="..."` funziona allo stesso modo. Senza nessuno dei due il blocco resta come è sempre stato, con il bottone copia nell'angolo. Il bottone copia è sempre visibile invece di comparire al passaggio del mouse, perché un comando che esiste solo sotto il puntatore su un telefono non esiste affatto.
+
+Vale anche per le guide in `docs/`, che passano dallo stesso evidenziatore. Lì c'è una cosa da pesare: quei file li rende anche GitHub, che ignora il titolo, quindi un blocco la cui prima riga è un commento `// percorso/del/file` si tiene quel commento invece di spostarlo nell'intestazione, e il nome sopravvive in tutti e due i posti.
+
+I linguaggi sono quelli importati in `src/lib/shiki.ts`. Un blocco in un linguaggio diverso viene reso come testo semplice invece di fallire, e aggiungerne uno significa aggiungere il suo import a quella lista.
 
 ## Dove vive il codice
 

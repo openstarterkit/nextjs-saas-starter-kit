@@ -108,8 +108,19 @@ export function Hero() {
           {t("trust")}
         </p>
 
-        {/* Dashboard mockup — mirrors the real app shell */}
+        {/* Dashboard mockup — mirrors the real app shell.
+
+            Hidden from assistive technology, and that is the accurate
+            description of it rather than a way to quiet the audit: this is a
+            picture of the product, drawn in markup instead of exported as an
+            image. A screen reader was reading out "Welcome back, Alex, Current
+            Plan Pro, Next Billing Jul 24" in the middle of the home page,
+            which tells nobody anything. The same markup also accounted for 23
+            of the page's contrast findings, because a deliberately faint
+            illustration was being measured as if it were text to read. The
+            headline above already says what the product is. */}
         <div
+          aria-hidden="true"
           className="mx-auto mt-16 max-w-4xl animate-fade-in-up text-left"
           style={{ animationDelay: "320ms" }}
         >
@@ -181,7 +192,7 @@ export function Hero() {
                       <div key={key} className="rounded-xl border border-border bg-card p-3">
                         <p className="text-[11px] text-muted-foreground">{tm(key)}</p>
                         {badge ? (
-                          <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400">
+                          <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-400">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                             {valueKey ? tm(valueKey) : value}
                           </span>
@@ -196,7 +207,7 @@ export function Hero() {
                   <div className="rounded-xl border border-border bg-card p-4">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-semibold text-foreground">Revenue</p>
-                      <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">+12.5%</span>
+                      <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">+12.5%</span>
                     </div>
                     <div className="mt-3 flex h-20 items-end gap-1.5">
                       {mockBars.map((h, i) => (

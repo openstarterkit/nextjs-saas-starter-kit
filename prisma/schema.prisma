@@ -50,12 +50,18 @@ model User {
   emailVerified         Boolean       @default(false)
   image                 String?
   role                  Role          @default(USER)
+  // Owned by the two-factor plugin, which is why it is `input: false` on its
+  // side: nobody can set it through the API or an OAuth profile. It exists on
+  // User rather than being derived from the TwoFactor row because sign-in has
+  // to know whether to stop and ask, before it goes looking for a secret.
+  twoFactorEnabled      Boolean       @default(false)
   stripeCustomerId      String?       @unique
   // When the user dismissed the "Get started" checklist; the checklist items
   // themselves are derived live (name, projects, billing), only this persists.
   onboardingDismissedAt DateTime?
   accounts              Account[]
   sessions              Session[]
+  twoFactor             TwoFactor[]
   subscription          Subscription?
   purchases             Purchase[]
   projects              Project[]
@@ -109,6 +115,34 @@ model Session {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+// One row per user who turned on two-factor authentication, added in 2.2.
+//
+// Every column here is Better Auth's, not ours: the plugin declares this shape
+// and reads it by these names. The three that are easy to miss are the ones
+// that make it safe. `verified` stays false between "enable" and the first
+// correct code, so an interrupted setup never locks anyone out. The other two
+// are the plugin's own lockout: ten consecutive wrong codes park the account
+// until `lockedUntil`, which is what stops a six-digit code from being guessed
+// at leisure.
+//
+// `secret` and `backupCodes` are written encrypted (storeBackupCodes in
+// src/auth.ts); the plugin never returns either one to the client.
+model TwoFactor {
+  id                      String    @id @default(cuid())
+  userId                  String
+  secret                  String
+  backupCodes             String
+  verified                Boolean   @default(true)
+  failedVerificationCount Int       @default(0)
+  lockedUntil             DateTime?
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([secret])
 }
 
 // Every short-lived token Better Auth issues: magic links, email verification

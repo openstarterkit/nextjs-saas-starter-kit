@@ -2,7 +2,7 @@
 title: Configurazione
 description: "Ogni variabile d'ambiente spiegata: database, OAuth, Stripe, email, marchio."
 translated_from: configuration.md
-source_checksum: 140429ac03ea
+source_checksum: 83b28ed5b845
 ---
 
 # Configurazione
@@ -58,6 +58,17 @@ Come si prepara: apri un account su [resend.com](https://resend.com), verifica i
    ```
 
    Copia il signing secret in `STRIPE_WEBHOOK_SECRET`. I webhook di produzione sono in [Deployment](./deployment.md); come funzionano i flussi di pagamento (abbonamenti, una tantum, a consumo) è in [Pagamenti](./billing.md).
+
+## Limitazione delle richieste
+
+| Variabile | Note |
+|---|---|
+| `UPSTASH_REDIS_REST_URL` | Facoltativa. Se non impostata, i limiti vivono nella memoria di ogni istanza: su serverless una richiesta che atterra altrove riparte da zero. |
+| `UPSTASH_REDIS_REST_TOKEN` | Facoltativa. Impostandole entrambe gli stessi contatori si spostano su Upstash Redis, condivisi da ogni istanza e regione. |
+
+Sono facoltative di proposito: una variabile obbligatoria avrebbe reso una major, per chiunque avesse già clonato il kit, la release che ha aggiunto questa funzione. Impostandole non cambia nient'altro, non viene installata nessuna libreria client, e se l'archivio è configurato ma irraggiungibile il limitatore ricade sul contatore in memoria invece di fallire in una delle due direzioni.
+
+Vale la pena sapere quale limite spostare per primo, perché non proteggono la stessa cosa. Il limite sull'accesso protegge i tentativi di password, e lì il costo di bcrypt porta gran parte del peso. I limiti su magic link, registrazione e reset proteggono **l'invio di email**: ognuno stabilisce quanti messaggi può innescare un singolo indirizzo, e bcrypt non c'entra niente. Se quello che stai proteggendo è la bolletta di Resend o la tua reputazione da mittente, è quello che guadagna di più da un archivio condiviso. Il resto sta in [Autenticazione](./authentication.md).
 
 ## Interruttori ed extra
 

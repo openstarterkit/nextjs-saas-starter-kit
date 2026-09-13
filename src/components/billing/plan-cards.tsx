@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl"
 import { useState } from "react"
 import Link from "next/link"
 import { Check } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UpgradeButton } from "@/components/billing/upgrade-button"
 import { ContactDialog } from "@/components/landing/contact-dialog"
 
@@ -112,6 +112,9 @@ function ContactTierCard({ card, onYearly }: { card: ContactCardData; onYearly: 
   )
 }
 
+/** Names the toggle for anyone who reaches it without seeing the prices. */
+const intervalGroupLabel = "Billing interval"
+
 export function PlanCards({
   plans,
   currentPlanId,
@@ -153,12 +156,34 @@ export function PlanCards({
   return (
     <div className="space-y-4">
       {hasBothIntervals && (
-        <Tabs value={interval} onValueChange={(v) => setInterval(v as "MONTH" | "YEAR")}>
-          <TabsList>
-            <TabsTrigger value="MONTH">Monthly</TabsTrigger>
-            <TabsTrigger value="YEAR">Yearly</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        /* Two buttons in a group, not tabs.
+           It looked like tabs and was built with them, but there were no tab
+           panels underneath: Radix therefore pointed each trigger's
+           `aria-controls` at an element that does not exist, which is an
+           invalid ARIA reference and the one critical finding in the audit.
+           What this really is — two controls that swap a value shown nearby —
+           is a group of toggle buttons, and `aria-pressed` says which one is
+           on. Same markup classes, so nothing moves visually. */
+        <div
+          role="group"
+          aria-label={intervalGroupLabel}
+          className="inline-flex h-10 items-center justify-center rounded-[var(--radius)] bg-muted p-1 text-muted-foreground"
+        >
+          {(["MONTH", "YEAR"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={interval === value}
+              onClick={() => setInterval(value)}
+              className={cn(
+                "inline-flex items-center justify-center whitespace-nowrap rounded-[calc(var(--radius)-2px)] px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                interval === value && "bg-background text-foreground shadow-soft"
+              )}
+            >
+              {value === "MONTH" ? "Monthly" : "Yearly"}
+            </button>
+          ))}
+        </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

@@ -15,11 +15,11 @@ defect that nothing else catches.
 
 **Read the session through `@/lib/auth`.** `getCurrentUser()` returns the user
 or null, `requireUser()` returns it or redirects. Do not import `auth()` from
-`@/auth`: that boundary exists because the next major release moves
-authentication to a different library, and code written against the library
-directly is code that has to be found and rewritten then. The sign-in flow, the
-route handler and the middleware are the exceptions, and they are already
-written.
+`@/auth`: that boundary is what made the move to Better Auth in 2.0 a change
+to seven files instead of a rewrite, and code written against the library
+directly is code that has to be found and rewritten the next time. The sign-in
+flow, the route handler and the middleware are the exceptions, and they are
+already written.
 
 **User-facing text lives in `src/locales/en.json`.** Read it with
 `useTranslations` or `getTranslations`. A test fails on a key nothing reads and

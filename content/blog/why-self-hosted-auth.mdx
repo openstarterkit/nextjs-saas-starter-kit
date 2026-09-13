@@ -14,6 +14,20 @@ With a hosted authentication provider, the user table lives on someone else's se
 
 Self-hosting flips that. Your account sits next to your projects and your subscription, in one database we operate. When you ask us to export your data or delete your account, we are not filing a request with somebody else to make it happen.
 
+Concretely, it is a table you could read yourself:
+
+```prisma title="prisma/schema.prisma"
+model User {
+  id       String    @id @default(cuid())
+  email    String    @unique
+  name     String
+  projects Project[]
+  sessions Session[]
+}
+```
+
+Your session is a row beside it, which is why signing out of one device takes effect straight away: ending a session is deleting a row, not waiting for a token to expire somewhere else.
+
 ## No per-seat tax on signing in
 
 Hosted providers often price by monthly active users. That is a fee that grows exactly as a product succeeds, charged on the act of signing in. Keeping it in house means the cost of you signing in is the row you already have, and our pricing can stay about what you actually use.

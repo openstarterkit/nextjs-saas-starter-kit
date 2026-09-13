@@ -70,6 +70,7 @@
       "passwordPlaceholder": "Password",
       "submit": "Sign in",
       "magicLink": "✉️ Email me a sign-in link",
+      "magicLinkTwoFactorNote": "Accounts with two-factor authentication sign in with their password and a code, not with a link.",
       "forgot": "Forgot password?",
       "noAccount": "No account? Sign up",
       "dividerDemo": "try the demo",
@@ -81,8 +82,31 @@
         "email": "Enter a valid email address.",
         "rate": "Too many attempts. Try again in a few minutes.",
         "Verification": "That sign-in link is invalid or has expired. Request a new one.",
-        "generic": "Something went wrong. Try again."
+        "generic": "Something went wrong. Try again.",
+        "2fa": "This account uses two-factor authentication, so it signs in with a password and a code from your authenticator app.",
+        "two_factor_linking": "This account uses two-factor authentication, so a provider cannot attach itself to it here. Sign in with your password and a code, then connect the provider from Settings."
       }
+    },
+    "twoFactor": {
+      "title": "Two-factor authentication",
+      "subtitle": "Enter the six digit code from your authenticator app.",
+      "codeLabel": "Code",
+      "submit": "Verify",
+      "useBackup": "Use a backup code",
+      "useApp": "Use your authenticator app",
+      "backupTitle": "Backup code",
+      "backupSubtitle": "Enter one code from the list you saved. Each code works once, and using it does not affect the others.",
+      "backupLabel": "Backup code",
+      "backToLogin": "Back to sign in",
+      "errors": {
+        "code": "That code is wrong or has expired. Codes change every 30 seconds.",
+        "backup": "That backup code is wrong, or has already been used.",
+        "rate": "Too many attempts. Try again in a few minutes.",
+        "expired": "That sign-in timed out. Start again.",
+        "generic": "Something went wrong. Try again.",
+        "multiple": "That is the whole list. Enter a single code from it, in the form ABCDE-FGHJK: the others stay valid."
+      },
+      "backupLost": "Lost your phone and these codes? There is no way to reset this yourself: ask whoever runs this site to remove the second factor from your account."
     }
   },
   "dashboard": {
@@ -139,6 +163,12 @@
       "profileDescription": "Update your display name and view account details.",
       "methodsTitle": "Sign-in methods",
       "methodsDescription": "Connect multiple ways to sign in to the same account.",
+      "email": {
+        "label": "Email address",
+        "hint": "The address you sign in with. Changing it takes two confirmations: one from this address, then one from the new one. The account moves only after both, so a mistyped address cannot lock you out.",
+        "placeholder": "new@example.com",
+        "submit": "Change email"
+      },
       "connected": "Connected",
       "disconnect": "Disconnect",
       "connect": "Connect",
@@ -151,6 +181,56 @@
       "changePassword": "Change password",
       "setPassword": "Set password",
       "passwordHint": "With a password set you can sign in even without your OAuth providers.",
+      "twoFactor": {
+        "title": "Two-factor authentication",
+        "description": "A code from your authenticator app, on top of your password.",
+        "status": "Two-factor authentication",
+        "on": "On",
+        "blurb": "Pair an authenticator app. After that, signing in with your password also asks for a six digit code.",
+        "passwordLabel": "Your account password",
+        "turnOn": "Turn on",
+        "turnOff": "Turn off",
+        "turnOffTitle": "Turn off two-factor authentication?",
+        "turnOffDescription": "The secret is deleted rather than parked, so turning it back on later pairs a new authenticator from scratch.",
+        "cancel": "Cancel",
+        "scan": "Scan this with your authenticator app.",
+        "manualEntry": "Cannot scan it? In your app, choose to add an account by entering a key, and type this in:",
+        "codeLabel": "Code from the app",
+        "confirm": "Confirm",
+        "regenerate": "New backup codes",
+        "codesTitle": "Backup codes",
+        "codesWarning": "Shown once. Save them now: each one signs you in if you lose your phone, and leaving this page means generating a new set.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "download": "Download",
+        "needsPassword": "Set a password first. A second factor is added to a password, so an account that only signs in with Google or GitHub has nothing to add it to.",
+        "demo": "Two-factor authentication is off on the demo. The accounts here are shared and reset every night, so a second factor would lock the next visitor out.",
+        "errors": {
+          "password": "That password is wrong.",
+          "code": "That code is wrong or has expired. Codes change every 30 seconds.",
+          "rate": "Too many attempts. Try again in a few minutes.",
+          "demo": "Not available on the demo.",
+          "generic": "Something went wrong. Try again."
+        },
+        "apps": "Any authenticator app works: Google Authenticator, 1Password, Bitwarden, Authy.",
+        "codesStore": "Keep them somewhere other than the phone holding your authenticator: one lost thing should not take both.",
+        "regenerateHint": "Used one, or lost the list? A new set replaces the old one, and the old codes stop working immediately.",
+        "passwordWhy": "The one you sign in with. We ask for it here so that somebody who finds your screen unlocked cannot pair their own authenticator to your account: a second factor set up by someone else protects them, not you.",
+        "passwordWhyShort": "The one you sign in with. It confirms it is you, and not somebody who found your screen unlocked.",
+        "keyShape": "Letters and the digits 2 to 7 only: a round character is always the letter O, never a zero, and there is no 1 to mistake for I or L. Spaces do not matter.",
+        "codesShape": "Upper case, without the characters that look like each other: no O or zero, no I or one. Spaces and the dash are forgiven when you type one back in.",
+        "codesHowToUse": "You get ten because each one is spent when you use it. At sign-in you enter a single code, not the list: that one stops working from then on, and next time you take another."
+      },
+      "sessions": {
+        "title": "Active sessions",
+        "description": "Every device signed in to this account right now.",
+        "blurb": "One row per sign-in, with the device and address it came from. If you do not recognise one, end it.",
+        "thisDevice": "This device",
+        "unknownDevice": "Unknown device",
+        "revoke": "End session",
+        "revokeOthers": "End all other sessions ({count})",
+        "caveat": "A session you end here can survive on the other device for up to a minute, because the session is cached in a cookie for that long. Changing your password ends every other session at once, with no such delay."
+      },
       "accountTitle": "Account",
       "accountDescription": "Account information and metadata.",
       "memberSince": "Member since",
@@ -164,7 +244,19 @@
         "demo": "Account deletion is disabled on the demo.",
         "confirm": "The address did not match, so nothing was deleted.",
         "subscription": "Your subscription could not be cancelled, so nothing was deleted. Cancel it in the billing portal and try again.",
-        "last-admin": "You are the only administrator. Promote someone else before deleting this account."
+        "last-admin": "You are the only administrator. Promote someone else before deleting this account.",
+        "2fa-enabled": "Two-factor authentication is on.",
+        "2fa-disabled": "Two-factor authentication is off.",
+        "2fa-password": "That password is wrong, so nothing changed.",
+        "backup-used": "You signed in with a backup code, and that code is now spent. If the list is running low, generate a new set below.",
+        "session-revoked": "That session was ended.",
+        "sessions-revoked": "Every other session was ended.",
+        "session": "That session could not be found, so nothing changed.",
+        "email-sent": "If that address can be used, we have sent a confirmation to your current one. The account moves only after you confirm there and then on the new address.",
+        "email-invalid": "That does not look like an email address.",
+        "email-same": "That is already your address.",
+        "email-change": "The address could not be changed. Try again in a moment.",
+        "rate": "Too many attempts. Try again in a few minutes."
       },
       "deleteAccount": {
         "heading": "Delete this account",
@@ -251,7 +343,7 @@
       "avatarCurrent": "Current profile photo",
       "avatarNone": "No profile photo yet",
       "email": "Email",
-      "emailHint": "This address identifies your account and is one of the ways you sign in. It cannot be changed here.",
+      "emailHint": "The address you sign in with. Change it under Sign-in methods, below.",
       "save": "Save changes"
     },
     "signOut": {
@@ -339,6 +431,7 @@
     "purchaseConfirmed": "Your {plan} purchase is confirmed",
     "magicLink": "Sign in to {site}",
     "passwordReset": "Reset your {site} password",
+    "changeEmail": "Confirm the change of address on {site}",
     "subscriptionCancelled": "Your {site} subscription has been cancelled",
     "contact": "Contact form: {from}",
     "newsletterConfirm": "Confirm your spot on the {site} waitlist",
@@ -370,6 +463,13 @@
       "intro": "We received a request to reset your {site} password. Click the button below to choose a new one. The link is valid for 30 minutes and can be used once.",
       "cta": "Reset password →",
       "ignore": "If you didn't request a password reset, you can safely ignore this email: your password will not change."
+    },
+    "changeEmailBody": {
+      "hello": "Hey there,",
+      "intro": "Somebody asked to move this {site} account to {newEmail}. This message went to your current address on purpose: nothing changes until you approve it here.",
+      "cta": "Confirm this change →",
+      "next": "After you confirm, we send one more email to the new address. The account moves only when that one is confirmed too, so a mistyped address cannot lock you out.",
+      "ignore": "If this was not you, ignore this email and nothing will change — but do check that your password is still yours, because whoever asked was signed in as you."
     },
     "subscriptionBody": {
       "hello": "Hey {name} 👋",
@@ -750,7 +850,11 @@
     "previous": "Previous",
     "next": "Next",
     "pagination": "Blog pages",
-    "page": "Page"
+    "page": "Page",
+    "code": {
+      "copy": "Copy",
+      "copied": "Copied"
+    }
   },
   "docs": {
     "title": "Documentation",

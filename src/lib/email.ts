@@ -96,6 +96,16 @@ export async function sendPasswordResetEmail(to: string, url: string) {
   })
 }
 
+export async function sendChangeEmailConfirmation(to: string, newEmail: string, url: string) {
+  const resend = getInstance()
+  return resend.emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: (await emailStrings())("changeEmail", { site: siteConfig.name }),
+    html: await changeEmailTemplate(newEmail, url),
+  })
+}
+
 export async function sendSubscriptionCancelledEmail(to: string, name: string, endDate: string) {
   const resend = getInstance()
   return resend.emails.send({
@@ -177,6 +187,22 @@ async function passwordResetTemplate(url: string) {
     <p>${t("passwordResetBody.intro", { site: siteConfig.name })}</p>
     <a href="${url}" class="btn">${t("passwordResetBody.cta")}</a>
     <p style="margin-top:24px">${t("passwordResetBody.ignore")}</p>
+  `)
+}
+
+/**
+ * The confirmation that goes to the address the account has NOW, not the one it
+ * is moving to. That is the point of it: if somebody with your session tries to
+ * walk off with the account, the warning arrives where they cannot read it.
+ */
+async function changeEmailTemplate(newEmail: string, url: string) {
+  const t = await emailStrings()
+  return baseTemplate(`
+    <p>${t("changeEmailBody.hello")}</p>
+    <p>${t("changeEmailBody.intro", { site: siteConfig.name, newEmail })}</p>
+    <a href="${url}" class="btn">${t("changeEmailBody.cta")}</a>
+    <p style="margin-top:24px">${t("changeEmailBody.next")}</p>
+    <p>${t("changeEmailBody.ignore")}</p>
   `)
 }
 

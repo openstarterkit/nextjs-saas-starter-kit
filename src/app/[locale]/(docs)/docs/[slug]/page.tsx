@@ -4,6 +4,8 @@ import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { rehypeShikiPlugin } from "@/lib/shiki"
+import { CodeBlock } from "@/components/blog/code-block"
 import { Languages } from "lucide-react"
 import { getDocs, getDoc, getDocContent, translatedLocales } from "@/lib/docs"
 import { extractToc, slugify, nodeText } from "@/lib/toc"
@@ -90,7 +92,9 @@ export default async function DocPage({
         )}
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeShikiPlugin]}
           components={{
+            pre: CodeBlock,
             // A table wide enough to overflow scrolls inside its own box
             // instead of widening the page: on a phone the second is a
             // document you have to drag sideways to read a single line of.

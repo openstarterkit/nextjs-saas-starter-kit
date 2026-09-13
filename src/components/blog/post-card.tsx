@@ -9,8 +9,15 @@ import { categorySlug, formatPostDate, type Post } from "@/lib/blog"
 export function PostCard({ post }: { post: Post }) {
   return (
     <article className="group flex flex-col">
+      {/* Out of the tab order, and hidden from screen readers, because it is a
+          second link to the post the title below already links to. It held
+          only a decorative image, so its accessible name was empty: somebody
+          tabbing through the index heard "link" with no destination, then
+          reached the same article again. The mouse target is unchanged. */}
       <Link
         href={`/blog/${post.slug}/`}
+        tabIndex={-1}
+        aria-hidden="true"
         className="block overflow-hidden rounded-xl border border-border transition-colors group-hover:border-primary/40"
       >
         {post.cover ? (

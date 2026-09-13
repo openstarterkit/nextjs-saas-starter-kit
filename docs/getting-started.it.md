@@ -2,7 +2,7 @@
 title: Primi passi
 description: Da git clone all'app che gira, in una decina di minuti.
 translated_from: getting-started.md
-source_checksum: 3954fb6a1cdc
+source_checksum: 0d232aab4f9b
 ---
 
 # Primi passi
@@ -25,7 +25,7 @@ cp .env.example .env.local
 
 Per il primo avvio in locale bastano due valori:
 
-```bash
+```bash title=".env.local"
 DATABASE_URL="postgresql://..."   # la stringa di connessione a Postgres
 AUTH_SECRET="..."                 # generane uno: npx auth secret
 ```

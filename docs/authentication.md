@@ -9,6 +9,8 @@ The kit ships four ways to sign in, all wired to the same `User` row so any comb
 | Email + password | nothing | bcrypt-hashed, with a full reset flow |
 | Dev login | `NODE_ENV=development` | One-click admin, never active in production |
 
+On top of any of these, an account with a password can require a **second factor** — see [Two-factor authentication](#two-factor-authentication), which also says which of the four ways in ask for it and which do not.
+
 A public demo deployment (`DEMO_MODE="true"`) replaces all of the above with one-click shared accounts. The signup and password reset pages stay visible as a showcase, but their forms are disabled (with a notice explaining why) and the server actions reject demo submissions too, so visitors cannot trigger emails or create accounts from your demo.
 
 ## Magic link
@@ -25,23 +27,86 @@ If `RESEND_API_KEY` is not set, the button hides itself and the provider is not 
 
 ### Rate limiting, honestly
 
-Sign-in, signup, magic link and reset requests go through a small fixed-window in-memory limiter (`src/lib/rate-limit.ts`). On serverless platforms each instance has its own memory, so treat it as a speed bump, not a wall: bcrypt's cost is the real brute-force brake. If you need hard guarantees at scale, swap in a shared store (for example Upstash Redis) behind the same function signature.
+Sign-in, signup, magic link and reset requests go through a small fixed-window limiter (`src/lib/rate-limit.ts`). By default the counters live in each instance's memory, which on serverless means a request that lands on another instance starts from zero: treat that as a speed bump, not a wall, with bcrypt's cost as the real brute-force brake.
+
+Since v2.2 the wall is two environment variables away. Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` and the same counters move to Upstash Redis, shared by every instance and region. Both are optional by design — a required variable would have made this release a major one for everybody who already cloned the kit — and nothing else changes: no client library is installed, it is two commands in one pipelined `fetch`.
+
+If the shared store is configured but unreachable, the limiter falls back to the in-memory counter rather than failing in either direction. Refusing everybody would take the site down with the Redis; letting everybody through would drop the protection exactly when something is already wrong.
 
 It is worth knowing which limit does what, because the argument above only covers one of them. The limit on sign-in guards password attempts, and there bcrypt carries most of the weight. The limits on magic link, signup and reset guard **outbound email**: each caps how many messages one address can trigger, and bcrypt has nothing to do with it. If what you are protecting is your Resend bill or your sending reputation, that is the one to move to a shared store first.
 
 Public forms (contact, newsletter) are limited by IP rather than by address. How that behaves away from Vercel is in [Deployment](./deployment.md#deploying-somewhere-other-than-vercel).
 
-### A note on JWT sessions
+### A note on sessions
 
-Sessions are stateless JWTs, which normally makes them impossible to revoke server-side. The kit closes the gap that matters: every user has a `sessionVersion` counter that is stamped into the token and re-checked against the database at most once a minute. A password reset bumps the counter, so every other session dies within about 60 seconds; the check fails open on database errors (availability first) and is throttled because the middleware runs on nearly every request. Changing the password from Settings deliberately does NOT bump the counter, so the session doing the change stays signed in. If your threat model needs instant revocation, switch to database sessions.
+Sessions are **rows in the database**, one per sign-in, carrying the IP address and user agent they were created with. Revoking one is deleting it, which takes effect immediately and everywhere. Until v2.0 they were stateless JWTs with a `sessionVersion` counter faking that ability; the column is gone and so is the need for it.
 
-That same check re-reads the user's **role**, so changing it (from the admin panel, or by hand in the database) reaches a session that already exists within the same minute, and without signing anyone out. Before v1.6.4 the role was stamped once at sign-in and never read again: promoting someone did nothing visible until they signed out, and demoting someone left their privileges live for as long as the token did, which is 30 days by default.
+One deliberate trade remains. `session.cookieCache` (60 seconds, in `src/auth.ts`) keeps the session in a signed cookie for a minute so that reading it does not hit the database on every request. A session revoked elsewhere can therefore stay alive on another device for up to that minute. Same window the old counter had, one config line instead of three files. Resetting a password still ends every other session at once (`revokeSessionsOnPasswordReset`), and the role is read from the row, so promoting or demoting somebody reaches a live session inside the same minute without signing them out.
+
+### Active sessions, in Settings
+
+Dashboard → Settings lists every session on the account with the device, browser and IP address it was created with, the current one marked, and a button to end any of the others. This is a view of rows that were already there since 2.0, not something new to keep.
+
+Two details are worth knowing. What the browser sends is `revokeSession`'s **session id**, never the token: the token is the credential, and a page that prints it hands a working session to anything that can read the DOM or a screenshot. And the device line is a reading of the user agent (`src/lib/user-agent.ts`), which is a string a client chooses freely: it is there to help somebody recognise their own laptop, not to prove anything.
+
+You cannot end your own current session from the list, because the button for that is called "Sign out" and already exists.
+
+## Changing your email address
+
+Dashboard → Settings → Sign-in methods. The address does not change when the form is submitted: it changes when the link sent to the **new** address is clicked, which is the only way to know that the person asking can read mail there.
+
+A second message goes to the **old** address, telling it what was requested. It is not a veto, it is a warning: somebody who gets hold of a live session should not be able to move an account away quietly. If that message arrives and you did not ask for it, the password reset is the thing to do next.
+
+The response is the same whether or not the new address already belongs to another account, for the same reason the sign-in form gives one message for every failure: a form that answers differently is a way of asking the site who is registered.
+
+## Two-factor authentication
+
+Any account with a password can turn on a second factor from Dashboard → Settings: a six digit code from an authenticator app (TOTP, RFC 6238). Self-hosted, so no vendor and no SMS bill. The name your users will read inside their app comes from `siteConfig.name`, which is why it is worth setting before anyone enables this.
+
+**Turning it on is two steps on purpose.** The first stores an unverified secret and shows the QR code, the manual key and ten backup codes; only a correct code from the app switches it on. A setup abandoned halfway therefore leaves the account exactly as it was, which is the difference between a feature and a lock-out.
+
+**What asks for the code, and what does not:**
+
+| Way in | Second factor |
+|---|---|
+| Email + password | **Asked.** The password alone opens no session |
+| Magic link | **Not sent at all** to accounts that have 2FA on |
+| Google / GitHub | **Not asked** — the provider already does that better |
+| Dev / demo sign-in | Not asked, and the demo account cannot enable 2FA |
+
+Three of those rows are decisions rather than defaults, and each is worth a sentence.
+
+**The magic link is withheld** because it opens a session directly: for an account with 2FA it would be a way around the very thing its owner turned on. Nobody is locked out by this, since enabling 2FA requires a password in the first place. The response is identical to the normal one — same redirect, no message — so it cannot be used to ask whether an address has an account or whether that account has 2FA; what replaces the explanation is a line on the sign-in page, addressed to everyone.
+
+**Password reset is not the same hole**, and it is worth knowing why: after a reset you still sign in through email and password, which still asks for the code.
+
+**OAuth is not asked for a TOTP on top**, because a second factor on Google's side is Google's job and it does it better. But the automatic half of account linking is refused for these accounts — see below.
+
+**Dev and demo sign-ins** open a session without verifying anything, so a check there would be guarding a door with no lock. What keeps them safe is what always did: dev is refused outside development, demo only exists when `DEMO_MODE` is on. On top of that the demo account cannot turn 2FA on at all, because the nightly reset would strand the next visitor with a factor nobody holds.
+
+### Backup codes
+
+Ten of them, each good for exactly one sign-in and spent when used. They are shown **once**, at setup, and cannot be retrieved afterwards — regenerating replaces the whole set and the old ones stop working immediately.
+
+They are generated upper case and without `0`, `O`, `1` or `I` (`src/lib/backup-codes.ts`), because they get written on paper and typed back in on the day the phone is gone; what a user types is forgiven for lower case, spaces and a missing dash, never for a wrong code. They are stored **encrypted** with `AUTH_SECRET`, like the TOTP secret itself — which is the one operational consequence worth knowing before rotating that variable: rotating it makes every stored secret and every backup code unreadable.
+
+### If both the phone and the codes are gone
+
+There is no self-service way back in, and the sign-in screen says so rather than letting somebody try combinations at midnight. An administrator clears the second factor for that user:
+
+```sql
+DELETE FROM "TwoFactor" WHERE "userId" = '...';
+UPDATE "User" SET "twoFactorEnabled" = false WHERE id = '...';
+```
+
+Verify who is asking before you run it. That query is the whole recovery path, which is exactly why it should not be reachable from a form.
 
 ## Account linking
 
 One user, several ways in:
 
-- **Automatic**: Google and GitHub are configured with `allowDangerousEmailAccountLinking`. Despite the scary name this is safe here, because both providers verify email ownership; the flag exists to protect against providers that do not. Sign in with Google, later with GitHub on the same email, and both land on the same account. The magic link and the password flow match by email the same way.
+- **Automatic**: a provider that has verified the email address attaches itself to the account that already has it. Sign in with Google, later with GitHub on the same email, and both land on the same account. The magic link and the password flow match by email the same way.
+- **Except for accounts with two-factor authentication**, where the automatic half is refused. Better Auth asks for the second factor on email sign-in and nowhere else, so without this an account protected by a password and a TOTP could be entered by whoever controls a Google account with the same address: press "Continue with Google", get attached, and be signed in with no password and no code — even having never connected Google. Only the automatic half is refused: connecting the provider **yourself from Settings** still works, because that request carries your session and you are already past the second factor when you make it. The rule is four booleans in `src/lib/account-linking.ts`.
 - **Manual**: Dashboard → Settings → **Sign-in methods** shows the connected providers with Connect / Disconnect buttons, plus a set-or-change password form. Connecting starts a normal OAuth flow while signed in, which makes the adapter attach the new account instead of creating one.
 - **Lock-out guard**: you cannot disconnect your only remaining way in. The server checks that at least one method survives (another provider, a password, or the magic link when Resend is configured).
 

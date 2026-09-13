@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react"
-import { inferAdditionalFields, magicLinkClient } from "better-auth/client/plugins"
+import { inferAdditionalFields, magicLinkClient, twoFactorClient } from "better-auth/client/plugins"
 import type { auth } from "@/auth"
 
 /**
@@ -17,9 +17,16 @@ import type { auth } from "@/auth"
  * which only loads when RESEND_API_KEY is set. A client plugin only adds
  * methods: registering it when the server has not costs nothing, and the sign
  * in form is hidden by the same env check anyway.
+ *
+ * The two-factor plugin is here for the same reason, and the kit itself does
+ * not call it: sign-in, setup and verification all run through server actions
+ * (src/app/actions/two-factor.ts), the way the rest of authentication does, so
+ * no secret and no code is ever handled in the browser. It is registered so
+ * that a clone building a client-side flow has `authClient.twoFactor.*` and
+ * its types without editing this file.
  */
 export const authClient = createAuthClient({
-  plugins: [magicLinkClient(), inferAdditionalFields<typeof auth>()],
+  plugins: [magicLinkClient(), twoFactorClient(), inferAdditionalFields<typeof auth>()],
 })
 
 export const { signIn, signOut, signUp, useSession } = authClient

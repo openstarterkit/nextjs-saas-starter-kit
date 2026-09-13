@@ -51,6 +51,12 @@ export function SidebarNav({
   showAdminLink?: boolean
 }) {
   const t = useTranslations("dashboard.nav")
+  // Rendered route, not the URL: with Settings open as a modal over the
+  // dashboard this stays "/dashboard", so Dashboard keeps the highlight and
+  // Settings does not take it. Deliberate, decided 10 Sep 2026, not an
+  // oversight to fix: see the note on the hook. Switching to `usePathname`
+  // would light Settings during the modal, and would reintroduce the stale
+  // path after server-action redirects that this hook exists to avoid.
   const pathname = useRenderedPathname()
   const isActive = (item: { href: string; exact?: boolean }) =>
     item.exact
@@ -61,8 +67,20 @@ export function SidebarNav({
     <nav className="flex-1 space-y-1 overflow-y-auto p-3">
       {menus[variant].map((item) => {
         const Icon = item.icon
+        const active = isActive(item)
         return (
-          <Link key={item.href} href={item.href} title={t(item.key)} className={linkClass(isActive(item))}>
+          <Link
+            key={item.href}
+            href={item.href}
+            title={t(item.key)}
+            // Which entry is current was visible and not announced: the
+            // styling said it and nothing else did, so anyone not looking at
+            // the colours had no way to know where they were. Deferred here on
+            // purpose when the modal behaviour was settled, because this is
+            // the release that goes through accessibility.
+            aria-current={active ? "page" : undefined}
+            className={linkClass(active)}
+          >
             <Icon className="h-4 w-4 shrink-0" />
             <NavLabel>{t(item.key)}</NavLabel>
           </Link>

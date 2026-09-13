@@ -42,7 +42,7 @@ export async function sendContactRequest(_prev: ContactState, formData: FormData
   // Bots that fill the hidden field get a quiet success and no email.
   if (parsed.data.website) return { status: "sent" }
 
-  if (!checkRateLimit(await rateLimitKeyFromIp("contact"), 5)) {
+  if (!(await checkRateLimit(await rateLimitKeyFromIp("contact"), 5))) {
     return { status: "error", error: t("tooManyMessages") }
   }
 

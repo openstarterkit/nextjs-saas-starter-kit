@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.1.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.2.0-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -50,7 +50,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 
 - 💳 **Payments included in the free tier**: full Stripe Checkout, Customer Portal and webhooks, not paywalled behind a Pro plan.
 - 🔓 **It is plain Next.js**: no compiler, no config DSL, no proprietary CLI. The App Router, Server Actions and Prisma behave exactly as their own docs say, with plain PostgreSQL underneath: host it anywhere, own your data.
-- 🧩 **A complete SaaS, not a starter demo**: auth, billing, an admin panel with real MRR metrics, transactional emails and a polished landing page.
+- 🧩 **A complete SaaS, not a starter demo**: auth with two-factor and session management, billing, an admin panel with real MRR metrics, transactional emails and a polished landing page.
 - 📖 **MIT licensed**: use it for anything, commercial included. No license keys, no unlock fees.
 - 🌍 **Ships in more than one language**: every user-facing string lives in a message file, with routing, fallback and a language switch already wired. No translation service and no account required, and it is in the free kit instead of a paid add-on.
 - 🕹️ **A publishable demo, built in**: one env var turns a deployment into a safe public demo of *your* product, with one-click explore accounts and writes disabled. Normally that is something you build yourself.
@@ -61,12 +61,12 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 
 | | Feature | What you get |
 |---|---|---|
-| 🔐 | **Authentication** | Better Auth: Google + GitHub OAuth, magic link, email + password with reset, account linking |
+| 🔐 | **Authentication** | Better Auth: Google + GitHub OAuth, magic link, email + password with reset, account linking, self-hosted two-factor (TOTP) with backup codes, and active session management |
 | 💳 | **Payments** | Stripe Checkout, Customer Portal, signature-verified webhooks, subscriptions + one-time payments, multiple tiers, usage-based example |
 | 🛠️ | **Admin panel** | User management, search + pagination, live MRR metrics, promote users to admin |
 | 📊 | **User dashboard** | Plan status, billing history, profile & settings |
 | 📁 | **Projects CRUD** | A ready example resource with ownership checks to build on |
-| 📧 | **Transactional email** | Resend-powered welcome, subscription, magic link & password reset emails |
+| 📧 | **Transactional email** | Resend-powered welcome, subscription, magic link, password reset and email-change confirmation messages |
 | 🎨 | **Design system** | Custom Tailwind v4 UI (Button, Card, Badge, Input, Table), brand-neutral by default with one-file or env rebranding |
 | 🌗 | **Dark mode** | System-aware theme with no flash of unstyled content |
 | 🧱 | **Landing page** | Hero, Features, Pricing and FAQ sections ready to edit |
@@ -76,7 +76,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 | 🌍 | **i18n** | next-intl with a prefix only for non-default locales, per-key fallback to English, `hreflang`, and bilingual Markdown docs with a staleness check |
 | 📨 | **Waitlist & contact** | Double opt-in newsletter waitlist (admin export, Resend sync) and a spam-protected contact form |
 | 🤖 | **AI-ready** | Ships agent instructions for Claude Code, Cursor and Copilot (`AGENTS.md`) so your assistant is productive on day one |
-| ✅ | **CI + security** | GitHub Actions pipeline (lint, tests, build), security headers, per-endpoint rate limiting (in-memory by default, swap in a shared store for scale), Dependabot with grouped updates |
+| ✅ | **CI + security** | GitHub Actions pipeline (lint, tests, build), security headers, per-endpoint rate limiting (in-memory by default, two optional env vars move it to a shared store), an axe-core accessibility audit against WCAG 2.1 AA across the app, Dependabot with grouped updates |
 
 ---
 
@@ -88,7 +88,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 - **UI**: [Radix UI](https://www.radix-ui.com) primitives under a design system written for this kit (Button, Card, Badge, Input, Table and the rest). Radix handles the accessible behavior, you own the look, and both live in your codebase with no component library to upgrade around.
 - **Icons**: [Lucide](https://lucide.dev), an open source set shipped as React components, so an icon is something you import and not an asset you manage.
 - **Notifications**: [Sonner](https://sonner.emilkowal.ski) for toasts, wired to every success and failure the interface reports back, Server Actions included.
-- **Auth**: [Better Auth](https://better-auth.com) with Google and GitHub OAuth, magic link, and email and password. Sessions live in your own database, so there is no auth vendor and no per-user pricing as you grow.
+- **Auth**: [Better Auth](https://better-auth.com) with Google and GitHub OAuth, magic link, email and password, and two-factor authentication you host yourself. Sessions live in your own database, so there is no auth vendor and no per-user pricing as you grow.
 - **Database**: [Prisma 7](https://www.prisma.io) on [PostgreSQL](https://www.postgresql.org). Plain Postgres underneath keeps your data portable, and [Neon](https://neon.tech) has a free managed tier if you would rather not run one yourself.
 - **Payments**: [Stripe](https://stripe.com) with Checkout, the Customer Portal and signature-verified webhooks, in the free kit instead of behind a Pro plan.
 - **Emails**: [Resend](https://resend.com) for welcome, subscription, magic link and password reset messages, with the templates in your repository rather than in a dashboard you do not own.
@@ -107,9 +107,10 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 /login               → Sign in (OAuth, magic link, email + password)
 /signup              → Create an account
 /forgot-password     → Password reset request (+ /reset-password)
+/2fa                 → Second factor, when the account has one
 /dashboard           → User overview + plan status
 /dashboard/billing   → Subscription management + invoice history
-/dashboard/settings  → Profile, sign-in methods & password
+/dashboard/settings  → Profile, sign-in methods, password, two-factor & active sessions
 /admin               → Admin panel (ADMIN role required)
 ```
 
@@ -255,7 +256,7 @@ No real emails, no real payments (use Stripe test keys), nothing to GDPR-worry a
 src/
 ├── app/
 │   ├── (public)/          # Landing pages (no auth required)
-│   ├── (auth)/            # Login, signup, magic link & password reset pages
+│   ├── (auth)/            # Login, signup, magic link, password reset & second factor
 │   ├── (dashboard)/       # Protected user area
 │   ├── (admin)/           # Admin panel (ADMIN role)
 │   └── api/               # API routes (auth, checkout, billing, webhooks)
@@ -264,6 +265,7 @@ src/
 │   ├── landing/           # Landing page sections
 │   ├── billing/           # Stripe billing components
 │   ├── dashboard/         # Dashboard-specific components
+│   ├── settings/          # Two-factor card, active sessions, sign-in methods
 │   └── admin/             # Admin components
 ├── lib/
 │   ├── prisma.ts          # Prisma client (Prisma 7 + adapter)
@@ -273,7 +275,7 @@ src/
 ├── app/actions/           # Server actions (profile, admin)
 └── auth.ts                # Better Auth configuration
 prisma/
-├── schema.prisma          # User, Account, Session, Plan, Subscription
+├── schema.prisma          # User, Account, Session, TwoFactor, Plan, Subscription
 └── seed.ts                # Seeds example plans (replace with your own)
 ```
 
@@ -287,7 +289,7 @@ npm run test:watch    # re-run on change
 npm run test:coverage # with a coverage report
 ```
 
-Vitest, on the pure logic in `src/lib`: the rate limiter, the password policy, the session rules behind role changes and revocation, the Markdown parsers behind the blog, docs and changelog, the environment schema, the builders behind structured data and page metadata, and the boundary every page reads the session through. Plus the two routes worth guarding: the health endpoint, and the Stripe webhook, tested with **real signatures** generated by Stripe's own SDK, so a forged or replayed request is proven never to reach the database writes behind it.
+Vitest, on the pure logic in `src/lib`: the rate limiter and its shared store, the password policy, the backup code alphabet, the account linking rule that decides when a provider may attach itself, the session rules behind role changes and revocation, the Markdown parsers behind the blog, docs and changelog, the environment schema, the builders behind structured data and page metadata, and the boundary every page reads the session through. Plus the two routes worth guarding: the health endpoint, and the Stripe webhook, tested with **real signatures** generated by Stripe's own SDK, so a forged or replayed request is proven never to reach the database writes behind it.
 
 ### End-to-end
 
@@ -296,7 +298,12 @@ npx playwright install chromium   # once, about 115 MB
 npm run test:e2e
 ```
 
-Playwright on the two flows that cost money when they break: **signing up** (account created, session issued, dashboard reached, duplicate email refused) and **starting a checkout** (billing page reachable, anonymous requests bounced, handoff to Stripe returns a real Stripe URL).
+Playwright on the flows that cost something when they break:
+
+- **Signing up and signing in**: account created, session issued, dashboard reached, duplicate email refused.
+- **Starting a checkout**: billing page reachable, anonymous requests bounced, handoff to Stripe returns a real Stripe URL.
+- **The whole two-factor chain**: enable it, sign out, sign back in with a code, then with a backup code. The test computes the TOTP itself, so it runs with nobody in front of it.
+- **Accessibility**: axe-core against WCAG 2.1 AA on eight pages, the signed-in ones included, failing on serious and critical findings.
 
 Deliberately not part of `npm test` or CI: these need a database and a browser binary, and a clone should not have to install either to run the unit suite. Chromium only, because three engines mean three downloads and three times the flakes.
 
@@ -306,10 +313,10 @@ Coverage of `src/lib`, excluding the thin wrappers around Prisma, Stripe and Res
 
 | | |
 |---|---|
-| Lines | **71%** |
-| Statements | **68%** |
-| Functions | **76%** |
-| Branches | **55%** |
+| Lines | **76%** |
+| Statements | **74%** |
+| Functions | **81%** |
+| Branches | **65%** |
 
 Run `npm run test:coverage` to check those numbers yourself: they are printed by the command, not published to a badge service.
 
@@ -327,7 +334,7 @@ Your environment is validated at boot (`src/instrumentation.ts`): a configuratio
 
 ```bash
 npm run smoke -- https://your-app.com
-npm run smoke -- https://your-app.com --expect-version 1.4.0
+npm run smoke -- https://your-app.com --expect-version 2.2.0
 ```
 
 Checks a running deployment from the outside: `/api/health`, home, blog index, feed, a real post, the SEO surfaces, and two routing guards (an unknown path is a 404, `/dashboard` redirects to sign in). With `--expect-version` it also compares the version the site reports with the one you are releasing, which is how you catch a deploy that succeeded while still serving the previous build.

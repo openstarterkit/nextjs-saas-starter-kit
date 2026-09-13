@@ -77,6 +77,30 @@ export function brandOverrideCss(): string {
   return decls.length ? `${base}:root{${decls.join(";")}}` : base
 }
 
+/**
+ * The neutral mark: a hex socket head, the screw you turn to fasten a part.
+ * It stands in for your logo until you swap it, and it lives here because two
+ * files draw it and they have to draw the same shape: the logo in the page
+ * (src/components/logo.tsx) and the favicon (src/app/icon.tsx).
+ *
+ * One path, two subpaths, `fill-rule="evenodd"`: the socket is a hole, so the
+ * tile shows through it. Painted as a solid shape it would need the tile's
+ * colour, which in dark mode is a translucent tint and not a colour we can
+ * name. It used to be the plain lucide hexagon, which is what every dark tile
+ * with a lucide icon in it looks like, down to live sites already shipping
+ * that exact one. The socket costs a subpath and is nobody else's.
+ *
+ * The head covers 19.5 of the 24-unit box, not the 18 a lucide icon covers.
+ * That is deliberate: the hexagon was drawn filled *and* stroked at 1.5, and
+ * the stroke added half its width all around. Filling alone at 18 would have
+ * shrunk the mark by 8% in every place that asks for it by size, the auth
+ * pages and the loader included. Drawn at 19.5 they all keep the size they
+ * already ask for.
+ */
+export const neutralMarkPath =
+  "M21.75 16.333V7.667a2.167 2.167 0 0 0 -1.083 -1.874l-7.583 -4.333a2.167 2.167 0 0 0 -2.167 0l-7.583 4.333A2.167 2.167 0 0 0 2.25 7.667v8.667a2.167 2.167 0 0 0 1.083 1.874l7.583 4.333a2.167 2.167 0 0 0 2.167 0l7.583 -4.333A2.167 2.167 0 0 0 21.75 16.333z" +
+  "M12 6.475l4.767 2.762v5.525L12 17.525l-4.767 -2.762v-5.525z"
+
 /** Solid brand accent for HTML emails (no CSS vars available there). */
 export const emailAccent = brand.primary ?? (isKitSite ? "#2563eb" : "#0a0a0a")
 

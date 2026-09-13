@@ -79,6 +79,24 @@ Set it only when the substance changed, not for a typo or a fixed link. A modifi
 
 An `updated` earlier than `date` fails the build. That pair would ship a `dateModified` before `datePublished`, which is invalid structured data, and a sitemap `lastmod` that moves backwards, and neither of those complains on its own.
 
+## Code blocks
+
+Fences are syntax highlighted at **build time** and ship no JavaScript for it: what reaches the browser is already coloured. Both themes are written into the markup as CSS variables, so dark mode switches with the rest of the page, with no second render and no flash.
+
+Name the file a snippet comes from and the block gets a header, with an icon for the file type and the copy button beside it:
+
+````
+```ts title="src/lib/auth.ts"
+export const auth = betterAuth({ ... })
+```
+````
+
+`filename="..."` works the same way. Without either, the block looks as it always did, with the copy button in the corner. The copy button is always visible rather than appearing on hover, because a control that only exists under a pointer does not exist at all on a phone.
+
+The same applies to the guides in `docs/`, which run through the same highlighter. One thing to weigh there: GitHub renders those files too and ignores the title, so a fence whose first line is a `// path/to/file` comment keeps that comment rather than moving it into the header, and the name survives in both places.
+
+The languages are the ones imported in `src/lib/shiki.ts`. A fence in any other renders as plain text instead of failing, and adding one is adding its import to that list.
+
 ## Where the code lives
 
 | File | Role |

@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 4fcd872c7f86
+source_checksum: 4a54c0daedf2
 ---
 
 # Aggiornare
@@ -44,6 +44,39 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.2.0: autenticazione a due fattori, e niente da decidere
+
+Questa è una MINOR, e il numero è tutto il riassunto:
+
+```bash
+git fetch upstream --tags
+git merge v2.2.0
+npm install
+npx prisma migrate deploy
+```
+
+La migrazione aggiunge una tabella `TwoFactor` e una colonna `User.twoFactorEnabled` con un default. Sono entrambe additive, quindi gira su un database popolato senza chiederti niente, e non c'è nessuna nuova variabile d'ambiente obbligatoria.
+
+### Tre cambi di comportamento da leggere prima del merge
+
+Riguardano gli account che attivano la funzione, quindi finché nessuno la attiva non cambia niente per nessuno. Sono elencati qui perché ognuno è una decisione che nel tuo prodotto puoi voler rivedere invece che ereditare in silenzio.
+
+**Agli account con 2FA non viene più inviato il magic link.** Il link apre una sessione direttamente, quindi per un account con un secondo fattore sarebbe un modo per aggirare proprio la cosa che il suo proprietario ha acceso. La risposta è identica a quella normale, così il form non può essere usato per chiedere se un indirizzo ha un account o se quell'account ha il 2FA. Nessuno resta chiuso fuori: per attivare il 2FA serve già una password.
+
+**Il collegamento automatico degli account è rifiutato per gli account con 2FA.** Un provider che verifica un indirizzo email normalmente si aggancia all'account che ce l'ha già. Per un account protetto da password e TOTP questo permetterebbe a chi controlla un account Google con lo stesso indirizzo di entrare senza password e senza codice. Collegare un provider da Impostazioni continua a funzionare, perché quella richiesta porta con sé la tua sessione. La regola sta in quattro booleani in `src/lib/account-linking.ts`, se vuoi leggerla o cambiarla.
+
+**Agli accessi OAuth non viene chiesto un codice in più**, perché un secondo fattore dalla parte del provider è compito del provider. Se il tuo prodotto lo richiede comunque, è quella la decisione da cambiare, e [Autenticazione](./authentication.md) ha la tabella di cosa chiede ogni via d'accesso.
+
+### Una conseguenza operativa
+
+I segreti TOTP e i codici di backup sono conservati cifrati con `AUTH_SECRET`. **Ruotare quella variabile li rende illeggibili**, il che significa che ogni utente che aveva la funzione attiva deve riconfigurare la sua app authenticator. Era già vero per altre cose che quella variabile protegge; con il 2FA acceso è quella da sapere prima di ruotarla.
+
+Se sia il telefono sia i codici di backup sono persi non c'è un modo automatico per rientrare, ed è voluto. Un amministratore azzera il secondo fattore con due istruzioni SQL, che stanno in [Autenticazione](./authentication.md).
+
+### Se hai personalizzato il flusso di accesso
+
+Il kit fa l'accesso con una server action invece che con l'SDK client. Con il 2FA attivo `signInEmail` non crea la sessione: risponde `twoFactorRedirect`, e un chiamante che lo ignora porta l'utente sul dashboard senza sessione e senza errore. Se hai scritto la tua action di accesso appoggiandoti a `@/lib/auth`, è quella la riga da aggiungere. In `src/app/actions/auth.ts` si vede com'è fatta.
 
 ## 2.1.0: la tabella account torna allineata a Better Auth 1.7.3
 

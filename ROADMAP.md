@@ -81,7 +81,7 @@ One thing, and nothing else. The authentication layer moves to [Better Auth](htt
 - A migration that moves the data, with the counts to check before and after, because the one failure that matters here leaves a valid database and no error
 - An upgrade guide written before the release, not after
 
-## ✅ v2.1 - Better Auth 1.7.3 alignment *(current)*
+## ✅ v2.1 - Better Auth 1.7.3 alignment
 Not the release this line was going to be. Better Auth removed the `issuer` column that 2.0 was built on, and a schema that disagrees with the library underneath it comes before new features. What was announced here moves down one, unchanged.
 
 - **`Account.issuer` is gone and `@@unique([providerId, accountId])` is back**, which is the identity this kit used before 2.0 and the one Better Auth used in 1.6
@@ -89,18 +89,23 @@ Not the release this line was going to be. Better Auth removed the `issuer` colu
 - `scripts/verify-auth-migration.mjs` rewritten around the two questions that matter now, and useful before the upgrade as well as after
 - **Every page has an Open Graph image again.** They all asked for the large card and handed it nothing, and the generated image was working the whole time
 
-## 🔜 v2.2 - Auth depth & accessibility *(next)*
-- Self-hosted two-factor authentication (TOTP), no third-party auth vendor required. It gets its own release rather than a corner of another one, because it touches the sign-in flow
-- Active session management in Settings, which 2.0 made cheap: the rows are already there, with their IP address and user agent
-- Syntax highlighting and a copy button on the code blocks in the docs and the blog
-- Rate limiting on a shared store, so the limits hold across serverless instances instead of one bucket per instance
-- **Accessibility audit** against WCAG 2.1 AA: keyboard navigation, visible focus, contrast, labelled forms and heading order, checked across the kit rather than on the marketing pages alone
-- Account depth: change your email address, upload a profile photo
+## ✅ v2.2 - Auth depth & accessibility *(current)*
+Two-factor authentication, and the two paths around it that were closed before it shipped: a kit has six ways in, and a plugin guards one of them.
 
-## 🔜 v2.3 - Billing depth
+- **Self-hosted two-factor authentication (TOTP)**, no third-party auth vendor required. Server rendered QR code, manual key, and ten single-use backup codes generated without the characters people confuse on paper
+- **The magic link is withheld from accounts that have 2FA on**, because it opens a session directly and would be a way around the very thing its owner turned on. The response stays identical to the normal one, so the form cannot be used to ask whether an address has an account
+- **Automatic account linking is refused for accounts with 2FA.** Otherwise whoever controlled a Google account with the same address could press "Continue with Google" and be signed in with no password and no code. Connecting a provider yourself from Settings still works, because that request carries your session
+- **Active session management in Settings**, which 2.0 made cheap: the rows are already there, with their IP address and user agent
+- **Change your email address**, in two confirmations: one to the new address to prove you hold it, one to the old one so a stolen session cannot move an account away quietly
+- **Rate limiting on a shared store**, so the limits hold across serverless instances instead of one bucket per instance. Two optional environment variables, no client library
+- **Syntax highlighting and a copy button** on the code blocks in the docs and the blog, at build time, plus a header naming the file a snippet comes from
+- **Accessibility audit** against WCAG 2.1 AA, running with the tests on eight pages rather than on the marketing pages alone, and failing the build on serious and critical findings
+
+## 🔜 v2.3 - Billing depth & profile *(next)*
 - Free trials, coupon and promo codes
 - Stripe Tax and PDF invoices
 - Upgrade and downgrade flows with proration in the UI
+- **Profile photo upload**, moved here from v2.2 on purpose: it is the first endpoint in this kit that accepts bytes from outside, and validating the real file type, capping the size, naming the file ourselves and putting storage behind an optional variable is a release of its own rather than a corner of another one
 
 ## 🎯 Pro - Teams & scale *(paid, coming)*
 The paid tier, built for teams. The waitlist is open: subscribers get build updates when there is real news, and an early adopter discount at launch. Everything in the free kit, plus:

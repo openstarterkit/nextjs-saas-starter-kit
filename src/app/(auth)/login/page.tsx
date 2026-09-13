@@ -41,7 +41,7 @@ export default async function LoginPage({
       <div className="rounded-3xl border border-border bg-card/80 p-8 shadow-[var(--shadow-soft-lg)] backdrop-blur-xl">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
-            <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
+            <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -154,6 +154,17 @@ export default async function LoginPage({
                 </PendingButton>
               )}
             </form>
+
+            {/* Shown to everyone, on purpose. Accounts with two-factor on are
+                not sent a magic link, because a link would sign them in without
+                ever asking the authenticator. Saying so only to those accounts
+                would answer "does this address exist, and does it have 2FA" to
+                anyone who asked, so the line is addressed to the room. */}
+            {hasMagicLink && (
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                {t("magicLinkTwoFactorNote")}
+              </p>
+            )}
 
             <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
               <Link href="/forgot-password" className="underline underline-offset-4 hover:text-foreground">

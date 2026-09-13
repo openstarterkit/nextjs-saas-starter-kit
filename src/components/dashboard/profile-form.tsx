@@ -48,11 +48,11 @@ export function ProfileForm({ name, email, image, avatarProvider }: ProfileFormP
         </p>
       </div>
 
-      {/* Read-only on purpose: the address identifies the account and is one of
-          the ways to sign in, so changing it needs a verified round trip to the
-          new inbox rather than a text field. Shown as a disabled control rather
-          than plain text, so it is clear that this is the value and that it is
-          not editable here. */}
+      {/* Read-only here, and now for a different reason than before: since 2.2
+          the address CAN be changed, but through the two-step round trip under
+          Sign-in methods rather than as a field you save with your name. Shown
+          as a disabled control rather than plain text, so it reads as the
+          current value rather than as a gap. */}
       <div className="space-y-1.5">
         <Label htmlFor="email">{t("email")}</Label>
         <Input id="email" name="email" type="email" value={email} disabled readOnly />

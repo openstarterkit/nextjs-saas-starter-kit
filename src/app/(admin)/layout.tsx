@@ -20,7 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <aside className="sticky top-0 hidden h-screen w-60 flex-col border-r border-border bg-background transition-[width] duration-200 md:flex sidebar-collapsed:w-16">
         <div className="flex h-16 items-center border-b border-border px-5 sidebar-collapsed:justify-center sidebar-collapsed:px-0">
           <Link href="/" className="flex items-center gap-2 font-bold text-foreground">
-            <Logo wordmarkClassName="sidebar-collapsed:hidden" />
+            <Logo animated wordmarkClassName="sidebar-collapsed:hidden" />
           </Link>
           <span className="ml-2 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive sidebar-collapsed:hidden">{t("badge")}</span>
         </div>
@@ -42,7 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <SidebarCollapseToggle />
           <div className="flex items-center gap-1 md:hidden">
             <MobileNav variant="admin" />
-            <Logo wordmarkClassName="text-base font-bold text-foreground" />
+            <Logo animated wordmarkClassName="text-base font-bold text-foreground" />
             <span className="ml-1 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive">{t("badge")}</span>
           </div>
           <div className="flex items-center gap-3 ml-auto">

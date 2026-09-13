@@ -18,7 +18,7 @@ cp .env.example .env.local
 
 For the first local run you only need two values:
 
-```bash
+```bash title=".env.local"
 DATABASE_URL="postgresql://..."   # your Postgres connection string
 AUTH_SECRET="..."                 # generate one: npx auth secret
 ```

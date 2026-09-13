@@ -11,6 +11,20 @@ const DialogTrigger = DialogPrimitive.Trigger
 const DialogPortal = DialogPrimitive.Portal
 const DialogClose = DialogPrimitive.Close
 
+/**
+ * The veil behind a dialog: darkened *and* blurred. Dark alone leaves the page
+ * behind readable, and a readable page keeps pulling the eye out of the dialog.
+ *
+ * The 2px is deliberate, and it is the low end on purpose: enough to soften the
+ * text behind, not enough to hide where you were. It was walked down from 12px,
+ * and below 1px the blur stops being distinguishable from the darkening on most
+ * screens, so at that point it belongs removed rather than kept for show. It
+ * also reads stronger on light themes than on dark, where the veil already does
+ * most of the work: judge any change to it on light.
+ *
+ * Same value in alert-dialog.tsx and sheet.tsx. Change all three together, or
+ * the app blurs behind a dialog and not behind a drawer, which reads as a bug.
+ */
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -18,7 +32,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-black/50 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}

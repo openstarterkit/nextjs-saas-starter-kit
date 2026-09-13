@@ -40,8 +40,8 @@ export async function POST(req: Request) {
   const { email, source } = parsed.data
 
   // Two buckets: per-IP against form abuse, per-email against confirm spam.
-  if (!checkRateLimit(await rateLimitKeyFromIp("newsletter"), 5)) return ok()
-  if (!checkRateLimit(`newsletter:${email}`, 3)) return ok()
+  if (!(await checkRateLimit(await rateLimitKeyFromIp("newsletter"), 5))) return ok()
+  if (!(await checkRateLimit(`newsletter:${email}`, 3))) return ok()
 
   const token = () => crypto.randomBytes(24).toString("base64url")
   const confirmUrl = (t: string) => `${siteConfig.url}/newsletter/confirm?token=${t}`

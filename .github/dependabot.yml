@@ -73,6 +73,18 @@ updates:
       # conflict on install, which is impossible to miss.
       - dependency-name: eslint
         update-types: [version-update:semver-major]
+      # Same shape as the ESLint case, and with a published number to point at.
+      # The compiler major is gated by the linter, not by this project:
+      # typescript-eslint arrives through eslint-config-next and its peer range
+      # is `typescript >=4.8.4 <6.1.0`, in its latest release. A TypeScript 7
+      # pull request therefore cannot go green here no matter what we do, and an
+      # automated one sat red for forty days, which makes the pull requests that
+      # matter harder to see.
+      #
+      # When to lift this: when typescript-eslint publishes a peer range that
+      # includes the major you want. Nothing else needs to change here.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /

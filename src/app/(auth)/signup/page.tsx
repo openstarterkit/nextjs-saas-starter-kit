@@ -33,7 +33,7 @@ export default async function SignupPage({
       <div className="rounded-3xl border border-border bg-card/80 p-8 shadow-[var(--shadow-soft-lg)] backdrop-blur-xl">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
-            <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
+            <LogoMark className="h-12 w-12 rounded-2xl ring-1 ring-primary/15" iconClassName="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">

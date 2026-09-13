@@ -2,11 +2,14 @@
 
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { APIError } from "better-auth/api"
+import { z } from "zod"
 import { auth } from "@/auth"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { passwordSchema } from "@/lib/password"
 import { stripe } from "@/lib/stripe"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 // Account-management actions behind a session: link/unlink OAuth providers
 // and set or change the password. Outcomes surface as query params on the
@@ -170,4 +173,51 @@ export async function deleteAccount(formData: FormData) {
   // the cookie that now points at nothing.
   await auth.api.signOut({ headers: await headers() })
   redirect("/")
+}
+
+/**
+ * Moving the account to another address.
+ *
+ * The work is Better Auth's, in two hops (see `user.changeEmail` in
+ * src/auth.ts): a confirmation to the current address, then a verification to
+ * the new one, and only then does the email change. What this action adds is
+ * the two refusals that belong to us, and one careful silence.
+ *
+ * The silence: when the new address already belongs to somebody else, the
+ * library answers exactly as it does on success. We keep that, and say the same
+ * thing back either way. Anything more helpful here would turn a settings form
+ * into a way to ask which addresses have accounts — the same property the
+ * sign-in page and the password reset defend.
+ */
+export async function changeEmail(formData: FormData) {
+  const currentUser = await getCurrentUser()
+  if (!currentUser) redirect("/login")
+
+  // Shared demo accounts, restored nightly: moving one would take the showcase
+  // with it until the reset.
+  if (process.env.DEMO_MODE === "true") redirect(`${SETTINGS}?error=demo`)
+
+  const parsed = z
+    .email()
+    .safeParse(String(formData.get("email") ?? "").trim().toLowerCase())
+  if (!parsed.success) redirect(`${SETTINGS}?error=email-invalid`)
+
+  // Asking to move to the address you already have is a no-op that would
+  // otherwise send you an email about nothing.
+  if (parsed.data === currentUser.email?.toLowerCase()) redirect(`${SETTINGS}?error=email-same`)
+
+  // Rate limited by address, like the other flows that send mail: what is being
+  // protected here is somebody else's inbox, not a password.
+  if (!(await checkRateLimit(`change-email:${currentUser.id}`, 3))) redirect(`${SETTINGS}?error=rate`)
+
+  try {
+    await auth.api.changeEmail({
+      body: { newEmail: parsed.data, callbackURL: SETTINGS },
+      headers: await headers(),
+    })
+  } catch (error) {
+    if (error instanceof APIError) redirect(`${SETTINGS}?error=email-change`)
+    throw error
+  }
+  redirect(`${SETTINGS}?ok=email-sent`)
 }

@@ -1,7 +1,8 @@
-import { Hexagon, Zap } from "lucide-react"
+import { Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/config/site"
 import { isKitSite } from "@/config/kit"
+import { neutralMarkPath } from "@/config/brand"
 
 /**
  * Your app's logo, in one place. Together with `src/config/site.ts` this is
@@ -17,13 +18,25 @@ export function LogoMark({
   className,
   iconClassName,
   generic,
+  animated,
 }: {
   className?: string
   iconClassName?: string
   /**
+   * Turns the head slowly and without stopping, a full turn every 8s.
+   * Reserved for the logo in the header: the mark shows up several times on
+   * one page (footer, mockups, the loader) and all of them turning at once is
+   * noise, and in a mockup it would be someone else's logo moving.
+   *
+   * Only the placeholder head turns, never the kit's bolt, and reduced-motion
+   * switches it off through the reset in globals.css.
+   */
+  animated?: boolean
+  /**
    * Renders a stand-in mark instead of this deployment's own: neutral grey,
-   * and the hexagon even on the kit's site. For screenshots and mockups that
-   * depict *someone else's* product, where our bolt would claim it as ours.
+   * and the socket head even on the kit's site. For screenshots and mockups
+   * that depict *someone else's* product, where our bolt would claim it as
+   * ours.
    */
   generic?: boolean
 }) {
@@ -48,17 +61,29 @@ export function LogoMark({
       )}
     >
       {/* The bolt is the OpenStarterKit mark and stays on the kit's own site
-          and on the attribution badge. Everywhere else the placeholder is a
-          plain hexagon: a clone should not ship wearing our symbol, and with
-          the badge in the footer the same bolt would appear twice on one page
-          meaning two different things.
-          Both filled. The hexagon is drawn a size down from the bolt so the
-          solid shape keeps some tile around it instead of filling the whole
-          square. Swap this together with src/app/icon.tsx when you rebrand. */}
+          and on the attribution badge. Everywhere else the placeholder is the
+          socket head from `neutralMarkPath`: a clone should not ship wearing
+          our symbol, and with the badge in the footer the same bolt would
+          appear twice on one page meaning two different things.
+          Both filled. The head stays a size down from the bolt so the solid
+          shape keeps some tile around it instead of filling the whole square;
+          it covers more of its box than a lucide icon does, which is what
+          keeps this 18px the same 18px it always was (see neutralMarkPath).
+          Swap this together with src/app/icon.tsx when you rebrand. */}
       {useOwnMark ? (
         <Zap className={cn("h-5 w-5 fill-current", iconClassName)} />
       ) : (
-        <Hexagon className={cn("h-[18px] w-[18px] fill-current stroke-[1.5]", iconClassName)} />
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className={cn(
+            "h-[18px] w-[18px]",
+            animated && "origin-center animate-spin-mark",
+            iconClassName
+          )}
+        >
+          <path d={neutralMarkPath} fill="currentColor" fillRule="evenodd" />
+        </svg>
       )}
     </span>
   )
@@ -94,16 +119,19 @@ export function Logo({
   markClassName,
   wordmarkClassName,
   generic,
+  animated,
 }: {
   className?: string
   markClassName?: string
   wordmarkClassName?: string
   /** A stand-in brand, for depicting someone else's product. See LogoMark. */
   generic?: boolean
+  /** Turns the head, slowly and without stopping. Header only. See LogoMark. */
+  animated?: boolean
 }) {
   return (
     <span className={cn("flex items-center gap-2", className)}>
-      <LogoMark className={markClassName} generic={generic} />
+      <LogoMark className={markClassName} generic={generic} animated={animated} />
       <LogoWordmark className={wordmarkClassName} generic={generic} />
     </span>
   )

@@ -61,7 +61,7 @@ export function BrandLoader({
           }}
         />
         <span className="absolute inset-0 flex items-center justify-center">
-          <LogoMark className="h-11 w-11 rounded-2xl ring-1 ring-primary/15" iconClassName="h-5 w-5" />
+          <LogoMark className="h-11 w-11 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
         </span>
       </div>
       {/* One announcement, not two: with a visible label the sr-only copy

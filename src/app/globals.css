@@ -141,6 +141,32 @@
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-glow: pulse-glow 2.5s ease-in-out infinite;
   --animate-price-swap: price-swap 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-spin-mark: spin-mark 8s linear infinite;
+}
+
+/* Syntax highlighting (Shiki).
+
+   Shiki writes both palettes into the markup at build time, as inline CSS
+   variables on every token. Switching theme is therefore a matter of reading a
+   different variable: no second copy of the block in the HTML, no JavaScript,
+   and no flash on load — which is what a runtime highlighter costs.
+
+   `!important` is Shiki's own recipe for the dual-theme setup, because the
+   light colours it writes are inline styles and nothing else could win. */
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+/* The prose styles paint their own code background; Shiki brings one that
+   belongs to the theme, so the block keeps the border and radius of the kit
+   and the colours of the theme. */
+.prose pre.shiki {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  overflow-x: auto;
 }
 
 @keyframes accordion-down {
@@ -170,6 +196,14 @@
 @keyframes price-swap {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+/* The placeholder mark is a screw head, and in the header it turns: a full
+   turn every 8s, slow enough to read as motion and not as a spinner. Only the
+   header wears it (see the `animated` prop on Logo). Reduced-motion is handled
+   by the reset below, which cuts every animation to a single instant frame. */
+@keyframes spin-mark {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 html {

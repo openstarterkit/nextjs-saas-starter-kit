@@ -5,6 +5,8 @@ import { notFound } from "next/navigation"
 import { getTranslations } from "next-intl/server"
 import { MDXRemote } from "next-mdx-remote/rsc"
 import remarkGfm from "remark-gfm"
+import { rehypeShikiPlugin } from "@/lib/shiki"
+import { CodeBlock } from "@/components/blog/code-block"
 import { getAllPosts, getPost, categorySlug, formatPostDate } from "@/lib/blog"
 import { extractToc, slugify, nodeText } from "@/lib/toc"
 import { breadcrumbJsonLd, type Crumb } from "@/lib/breadcrumb"
@@ -78,6 +80,9 @@ function MarkdownAnchor({
 
 const mdxComponents = {
   a: MarkdownAnchor,
+  // Shiki has already coloured what is inside; this only wraps it so the copy
+  // button has somewhere to sit.
+  pre: CodeBlock,
   // Markdown puts every block on its own line inside a paragraph, and the
   // figure above is a `<figure>`: a `<figure>` inside a `<p>` is invalid HTML,
   // so the browser closes the paragraph before it and builds a tree that does
@@ -215,7 +220,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <MDXRemote
             source={post.content}
             components={mdxComponents}
-            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeShikiPlugin] } }}
           />
         </article>
         </div>

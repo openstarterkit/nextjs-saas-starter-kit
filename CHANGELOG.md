@@ -7,6 +7,53 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.2.0] - 2026-09-16
+
+🔐 **Two-factor authentication, active sessions, and an accessibility audit that runs with the tests.** This is a MINOR: `git pull`, `npm install`, `npx prisma migrate deploy`. The migration is additive, and there is no new required environment variable.
+
+**Two behaviour changes to know about**, because they affect accounts that turn 2FA on. Better Auth asks for the second factor on email sign-in and nowhere else, so the kit closes the two paths that went around it. Accounts with 2FA **no longer receive a magic link**, since it opens a session directly; the response stays identical to the normal one, so the form cannot be used to ask whether an address has an account. And **automatic account linking is refused** for them, because otherwise whoever controlled a Google account with the same address could sign in with no password and no code. Connecting a provider yourself from Settings still works, since that request carries your session. Both are decisions rather than defaults, and [Upgrading](./docs/upgrading.md) says where to change them.
+
+### Added
+
+- **Two-factor authentication (TOTP, RFC 6238)**, self-hosted, from Dashboard → Settings. No vendor and no SMS bill. The QR code is rendered server side as SVG, so no QR library reaches your users' browsers, and the manual key is there for anyone who cannot scan. The name shown inside the authenticator app comes from your `siteConfig.name`
+- **Enabling it takes two steps**: the first shows the QR code, the key and the backup codes, and only a correct code from the app switches it on. A setup abandoned halfway leaves the account exactly as it was
+- **Ten backup codes**, each good for one sign-in and spent when used. Generated upper case and without `0`, `O`, `1` or `I`, because they get typed back in from paper, and stored encrypted with `AUTH_SECRET`
+- **Active sessions in Settings**: every session with its device, browser and IP address, the current one marked, and a button to end any of the others. Sessions have been database rows since 2.0, so this is a view of what was already there
+- **Change your email address**, in two confirmations: one to the new address to prove you hold it, one to the old address so a stolen session cannot move an account away quietly
+- **Rate limiting on a shared store.** Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` and the counters move to Upstash Redis, shared by every instance and region. Both optional by design: a required variable would have made this release a major one. No client library is installed, and an unreachable store falls back to the in-memory counter
+- **Syntax highlighting and a copy button** on every code block in the docs and the blog. It runs at build time and ships no JavaScript: both themes are written into the markup as CSS variables, so dark mode switches with no second render and no flash
+- **A header naming the file a snippet comes from**, with an icon for the file type. Write `title="src/lib/auth.ts"` on the fence, or `filename=`
+- **An accessibility audit that runs with the tests**: axe-core against WCAG 2.1 AA on eight pages, the signed-in ones included, failing the build on serious and critical findings
+
+### Changed
+
+- **A more distinctive brand mark by default**: an allen key head in place of the plain hexagon. It only shows if you ship without rebranding
+- **Modal overlays blur what is behind them** (dialog, alert dialog and sheet), so the page underneath stops competing with the modal. More visible on the light theme than on the dark one
+- `checkRateLimit` is now async and its callers await it. Internal: the surface the kit promises you does not move
+- The active navigation item carries `aria-current`, so what was visible is now also announced
+
+### Fixed
+
+- **An OAuth failure no longer leaves your site.** `onAPIError.errorURL` was never configured, so every OAuth error landed on Better Auth's own error page. They now arrive at `/login` as a code in the query string, which that page already displays
+- **The hero mockup is no longer read out as content.** It is a picture of the product drawn in markup, and a screen reader announced its contents in the middle of the home page. It is `aria-hidden`
+- **The monthly/yearly toggle on pricing** pointed with `aria-controls` at elements that did not exist. It is two buttons in a group with `aria-pressed` now. Same classes, nothing moves
+- **The cover image on a blog card** was a second link to the same article with no accessible name. It is out of the tab order, and the mouse behaves identically
+- Contrast raised on two pieces of text that were below the ratio
+
+### Security
+
+- **sharp to 0.35.4** ([GHSA-rgj7-g3m4-5g8c](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c), high), which carries two fixes from the upstream libheif dependency. It reaches the tree as an optional dependency of Next.js rather than as one of ours, so no `overrides` entry is involved
+- **js-yaml in both places it appears** ([GHSA-2883-xcg3-v3hh](https://github.com/advisories/GHSA-2883-xcg3-v3hh), high): 3.15.2 under `gray-matter`, which is the copy in the production tree, and 4.3.2 under ESLint, which is development only
+- **Neither is reachable from outside in the kit as it ships**, and the reason differs for each. `next.config` declares no `images` configuration and no route accepts an upload, so the optimiser only ever handles assets you shipped yourself and sharp is never handed a file chosen by a visitor. `gray-matter` parses the frontmatter of the Markdown in your own repository, at build time, so the YAML it reads is yours. They are updated to keep the tree clean. After pulling, `npm audit` reports zero
+
+### Notes
+
+- **Rotating `AUTH_SECRET` makes every stored TOTP secret and backup code unreadable**, so users with 2FA on would have to set up their authenticator again. Worth knowing before you rotate it
+- **If both the phone and the backup codes are gone there is no self-service way back in**, by design. An administrator clears the second factor with two SQL statements, in [Authentication](./docs/authentication.md)
+- **OAuth sign-ins are not asked for a code on top**, because a second factor on the provider's side is the provider's job. [Authentication](./docs/authentication.md) has the table of which way in asks for what
+- **Profile photo uploads move to 2.3.** They would be the first endpoint in this kit that accepts bytes from outside, which means file type validation, a size ceiling, a filename the user does not choose and storage behind an optional variable. That is a release of its own
+- **What the accessibility suite does not cover** is stated in the test file: axe finds the mechanical third of WCAG. Keyboard completion, focus order and whether a label says something useful stay manual. Minor and moderate findings are printed but do not fail the build
+
 ## [2.1.0] - 2026-09-06
 
 🔄 **Better Auth removed the `issuer` column that 2.0 was built on, and this release follows them back.** If you are on 2.0.0 through 2.0.3, take it and run the migration. If you are installing the kit for the first time there is nothing to do: your database is built from the current schema.
@@ -447,6 +494,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.2.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.2.0
 [2.1.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.1.0
 [2.0.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.3
 [2.0.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.2
