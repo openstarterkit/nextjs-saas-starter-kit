@@ -1,27 +1,19 @@
 import { requireUser } from "@/lib/auth"
 import { getFormatter, getTranslations } from "next-intl/server"
 import { prisma } from "@/lib/prisma"
-import { getEntitlement } from "@/lib/billing"
+import { describeDiscount, getEntitlement, trialDaysFor, type DiscountSummary } from "@/lib/billing"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ManageBillingButton } from "@/components/billing/manage-billing-button"
+import { SubscriptionStatusBadge } from "@/components/billing/subscription-status-badge"
 import { PlanCards, type PlanCardData } from "@/components/billing/plan-cards"
 import { exampleEnterpriseCard } from "@/components/billing/enterprise-card"
 import { CheckoutStatusToast } from "@/components/billing/checkout-status-toast"
 
-const STATUS_VARIANTS: Record<string, "success" | "default" | "destructive" | "secondary"> = {
-  ACTIVE: "success",
-  TRIALING: "default",
-  PAST_DUE: "destructive",
-  CANCELED: "secondary",
-  UNPAID: "destructive",
-  INCOMPLETE: "secondary",
-}
-
-// Subscription statuses come from Stripe as stable codes; their labels live
-// in the message files under `dashboard.billing.status`.
-const STATUS_CODES = ["ACTIVE", "TRIALING", "PAST_DUE", "CANCELED", "UNPAID", "INCOMPLETE"]
+// Invoice statuses come from Stripe as stable codes, like subscription ones;
+// their labels live in the message files under `dashboard.billing.invoiceStatus`.
+const INVOICE_STATUSES = ["draft", "open", "paid", "uncollectible", "void"]
 
 async function getInvoices(customerId: string | null) {
   if (!customerId || !process.env.STRIPE_SECRET_KEY) return []
@@ -34,6 +26,23 @@ async function getInvoices(customerId: string | null) {
   }
 }
 
+// Read live from Stripe, like the invoices. A discount is Stripe's to end (a
+// repeating coupon runs out, or you remove it from the dashboard), and a copy
+// in the database would go stale without a webhook of its own. Skipped in demo
+// mode, whose subscriptions exist only in the seed.
+async function getDiscounts(stripeSubscriptionId: string | null): Promise<DiscountSummary[]> {
+  if (!stripeSubscriptionId || !process.env.STRIPE_SECRET_KEY || process.env.DEMO_MODE === "true") return []
+  try {
+    const { stripe } = await import("@/lib/stripe")
+    const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId, {
+      expand: ["discounts.source.coupon", "discounts.promotion_code"],
+    })
+    return subscription.discounts.flatMap((discount) => describeDiscount(discount) ?? [])
+  } catch {
+    return []
+  }
+}
+
 export default async function BillingPage() {
   const t = await getTranslations("dashboard.billing")
   const format = await getFormatter()
@@ -41,7 +50,7 @@ export default async function BillingPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: currentUser.id },
-    select: { stripeCustomerId: true },
+    select: { stripeCustomerId: true, subscription: { select: { id: true } } },
   })
 
   const entitlement = await getEntitlement(currentUser.id)
@@ -52,7 +61,10 @@ export default async function BillingPage() {
       : entitlement.kind === "lifetime"
         ? entitlement.subscription
         : null
-  const invoices = await getInvoices(user?.stripeCustomerId ?? null)
+  const [invoices, discounts] = await Promise.all([
+    getInvoices(user?.stripeCustomerId ?? null),
+    getDiscounts(!purchase && subscription ? subscription.stripeSubscriptionId : null),
+  ])
 
   // Metered plans are excluded from the grid: they exist for the usage-based
   // example (docs/billing.md) and would be confusing as a self-serve card.
@@ -70,6 +82,10 @@ export default async function BillingPage() {
         orderBy: { price: "asc" },
       })
       : []
+  // Same rule as the checkout route, so a card only shows the trial a checkout
+  // from it would really carry: a free user whose subscription was cancelled
+  // still has the row, and gets no second trial.
+  const hasHadSubscription = Boolean(user?.subscription)
   const plans: PlanCardData[] = planRows.map((p) => ({
     id: p.id,
     slug: p.slug,
@@ -79,26 +95,39 @@ export default async function BillingPage() {
     interval: p.interval,
     stripePriceId: p.stripePriceId,
     features: p.features,
+    trialDays: trialDaysFor(p, hasHadSubscription),
   }))
   const checkoutDisabled = isDemo || !process.env.STRIPE_SECRET_KEY
   const disabledNote = isDemo
     ? t("checkoutDisabledDemo")
     : t("checkoutDisabledStripe")
 
-  const renewalDate = subscription?.currentPeriodEnd
-    ? new Date(subscription.currentPeriodEnd).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-    : null
-  const purchaseDate = purchase
-    ? format.dateTime(new Date(purchase.createdAt), {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-    : null
+  const longDate = (date: Date) =>
+    format.dateTime(new Date(date), { year: "numeric", month: "long", day: "numeric" })
+  const money = (amount: number, currency: string | null) =>
+    format.number(amount / 100, { style: "currency", currency: (currency ?? "usd").toUpperCase() })
+  const renewalDate = subscription?.currentPeriodEnd ? longDate(subscription.currentPeriodEnd) : null
+  // trialEndsAt stays set after a trial is over, so the status decides.
+  const trialEndDate =
+    subscription?.status === "TRIALING" && subscription.trialEndsAt
+      ? longDate(subscription.trialEndsAt)
+      : null
+  const purchaseDate = purchase ? longDate(purchase.createdAt) : null
+
+  const discountLines = discounts.map((d) => {
+    const off =
+      d.percentOff != null
+        ? t("discountPercent", { percent: d.percentOff })
+        : t("discountAmount", { amount: money(d.amountOff ?? 0, d.currency) })
+    const duration =
+      d.duration === "once"
+        ? t("discountOnce")
+        : d.endsAt
+          ? t("discountUntil", { date: longDate(d.endsAt) })
+          : t("discountForever")
+    const line = t("discount", { discount: off, duration })
+    return d.code ? `${line} · ${t("discountCode", { code: d.code })}` : line
+  })
 
   return (
     <div className="space-y-6">
@@ -114,9 +143,11 @@ export default async function BillingPage() {
           <CardDescription>
             {purchase
               ? t("purchasedOn", { date: purchaseDate ?? "" })
-              : subscription
-                ? t("renewsOn", { date: renewalDate ?? "" })
-                : t("onFreePlan")}
+              : trialEndDate
+                ? t("trialEndsOn", { date: trialEndDate })
+                : subscription
+                  ? t("renewsOn", { date: renewalDate ?? "" })
+                  : t("onFreePlan")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -126,16 +157,15 @@ export default async function BillingPage() {
                 {purchase?.plan.name ?? subscription?.plan.name ?? t("free")}
               </p>
               {purchase && <Badge variant="success">{t("lifetimeAccess")}</Badge>}
-              {!purchase && subscription && (
-                <Badge variant={STATUS_VARIANTS[subscription.status] ?? "secondary"}>
-                  {STATUS_CODES.includes(subscription.status)
-                    ? t(`status.${subscription.status}`)
-                    : subscription.status}
-                </Badge>
-              )}
+              {!purchase && subscription && <SubscriptionStatusBadge status={subscription.status} />}
               {!purchase && subscription?.cancelAtPeriodEnd && (
                 <p className="text-sm text-muted-foreground">{t("cancelsAtPeriodEnd")}</p>
               )}
+              {discountLines.map((line) => (
+                <p key={line} className="text-sm text-muted-foreground">
+                  {line}
+                </p>
+              ))}
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold">
@@ -219,25 +249,40 @@ export default async function BillingPage() {
                         day: "numeric",
                       })}
                     </TableCell>
-                    <TableCell>
-                      ${((invoice.amount_paid ?? 0) / 100).toFixed(2)}{" "}
-                      {invoice.currency?.toUpperCase()}
-                    </TableCell>
+                    {/* The invoice total in its own currency. The total, not what
+                        has been paid so far, which reads as zero on an open one. */}
+                    <TableCell>{money(invoice.total ?? 0, invoice.currency)}</TableCell>
                     <TableCell>
                       <Badge variant={invoice.status === "paid" ? "success" : "secondary"}>
-                        {invoice.status ?? t("statusUnknown")}
+                        {invoice.status && INVOICE_STATUSES.includes(invoice.status)
+                          ? t(`invoiceStatus.${invoice.status}`)
+                          : invoice.status ?? t("statusUnknown")}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {invoice.hosted_invoice_url ? (
-                        <a
-                          href={invoice.hosted_invoice_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline"
-                        >
-                          {t("viewPdf")}
-                        </a>
+                      {invoice.hosted_invoice_url || invoice.invoice_pdf ? (
+                        <div className="flex gap-3">
+                          {invoice.hosted_invoice_url && (
+                            <a
+                              href={invoice.hosted_invoice_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-primary hover:underline"
+                            >
+                              {t("viewInvoice")}
+                            </a>
+                          )}
+                          {invoice.invoice_pdf && (
+                            <a
+                              href={invoice.invoice_pdf}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-primary hover:underline"
+                            >
+                              {t("downloadPdf")}
+                            </a>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-sm text-muted-foreground">-</span>
                       )}

@@ -13,7 +13,7 @@
  * someone on every run is a smoke test nobody runs.
  *
  * Exits non-zero on the first failed expectation, so CI or a release script
- * can gate on it.
+ * can gate on it. A warning does not fail the run.
  */
 
 const args = process.argv.slice(2)
@@ -25,6 +25,7 @@ const skipSeo = args.includes("--skip-seo")
 
 const results = []
 let failed = 0
+let warned = 0
 
 async function check(name, fn) {
   try {
@@ -34,6 +35,11 @@ async function check(name, fn) {
     failed++
     results.push({ ok: false, name, detail: error.message })
   }
+}
+
+function warn(name, detail) {
+  warned++
+  results.push({ ok: true, warning: true, name, detail })
 }
 
 function expect(condition, message) {
@@ -69,6 +75,30 @@ if (expectVersion) {
     )
     return "match"
   })
+}
+
+// --- database -------------------------------------------------------------
+
+// The check none of the others can make. A database behind the code answers
+// every page below correctly and fails the first sign-in, and nothing in this
+// file signs in. /api/health reports whether the deployment's database has
+// every migration the build ships. A deployment older than that field does not
+// report it, and is not failed for it.
+if (health && Object.hasOwn(health, "schema")) {
+  if (health.schema?.aligned === null) {
+    warn(
+      "the database schema could not be checked",
+      "the deployment could not ask its database; check it directly with npm run check:deploy",
+    )
+  } else {
+    await check("the database has every migration this build ships", () => {
+      expect(
+        health.schema?.aligned === true,
+        `${health.schema?.pending} migration(s) not applied: run npx prisma migrate deploy against this database, then run the smoke again`,
+      )
+      return "aligned"
+    })
+  }
 }
 
 // --- public pages ---------------------------------------------------------
@@ -188,11 +218,12 @@ await check("/dashboard redirects an anonymous visitor to sign in", async () => 
 // --- report ---------------------------------------------------------------
 
 console.log(`\nSmoke test: ${baseUrl}\n`)
-for (const { ok, name, detail } of results) {
-  console.log(`  ${ok ? "PASS" : "FAIL"}  ${name}${detail ? `: ${detail}` : ""}`)
+for (const { ok, warning, name, detail } of results) {
+  const label = warning ? "WARN" : ok ? "PASS" : "FAIL"
+  console.log(`  ${label}  ${name}${detail ? `: ${detail}` : ""}`)
 }
 
-const passed = results.length - failed
-console.log(`\n${passed}/${results.length} checks passed\n`)
+const passed = results.length - failed - warned
+console.log(`\n${passed}/${results.length - warned} checks passed${warned ? `, ${warned} warning(s)` : ""}\n`)
 
 if (failed > 0) process.exit(1)

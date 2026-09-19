@@ -19,6 +19,12 @@ import { prisma } from "@/lib/prisma"
  * So the id travels, the server looks up the token, and the lookup is scoped to
  * the caller's own rows: `where: { id, userId }` cannot reach somebody else's
  * session even if the id is guessed or tampered with.
+ *
+ * Ending a session does not ask for a recent sign-in: the library guards these
+ * three endpoints by reading the session from the database rather than from the
+ * cookie cache, which is the check that matters here. Listing them was the one
+ * call that wanted a fresh session, and it is not made any more
+ * (src/components/settings/active-sessions.tsx).
  */
 
 const SETTINGS = "/dashboard/settings"

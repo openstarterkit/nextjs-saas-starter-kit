@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
+import { subscriptionDates } from "@/lib/billing"
 import type Stripe from "stripe"
 
 export async function POST(req: NextRequest) {
@@ -55,6 +56,9 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ received: true })
 }
 
+const longDate = (date: Date) =>
+  date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.mode === "payment") {
     await handleOneTimeCheckout(session)
@@ -75,9 +79,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const plan = await prisma.plan.findUnique({ where: { stripePriceId: priceId } })
   if (!plan) return
 
-  // period dates are on SubscriptionItem in Stripe API 2026
-  const periodStart = new Date((item.current_period_start ?? 0) * 1000)
-  const periodEnd = new Date((item.current_period_end ?? 0) * 1000)
+  const { currentPeriodStart, currentPeriodEnd, trialEndsAt } = subscriptionDates(subscription)
 
   // Idempotency guard for side effects. Stripe delivers events at least once and
   // retries on errors, so the same checkout.session.completed can arrive twice.
@@ -97,18 +99,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       planId: plan.id,
       stripeSubscriptionId: subscription.id,
       status: mapSubscriptionStatus(subscription.status),
-      currentPeriodStart: periodStart,
-      currentPeriodEnd: periodEnd,
+      currentPeriodStart,
+      currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      trialEndsAt,
     },
     create: {
       userId: session.metadata.userId,
       planId: plan.id,
       stripeSubscriptionId: subscription.id,
       status: mapSubscriptionStatus(subscription.status),
-      currentPeriodStart: periodStart,
-      currentPeriodEnd: periodEnd,
+      currentPeriodStart,
+      currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      trialEndsAt,
     },
   })
 
@@ -119,18 +123,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   })
   if (isNewSubscription && user && process.env.RESEND_API_KEY) {
     const { sendSubscriptionConfirmation } = await import("@/lib/email")
-    const renewalDate = periodEnd.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
     sendSubscriptionConfirmation(
       user.email,
       user.name ?? "",
       plan.name,
       plan.price,
       "usd",
-      renewalDate
+      longDate(currentPeriodEnd),
+      // Nothing has been charged yet on a trial, so the email says when the
+      // first charge happens instead of announcing an active subscription.
+      subscription.status === "trialing" && trialEndsAt ? longDate(trialEndsAt) : undefined
     ).catch(console.error)
   }
 }
@@ -201,17 +203,17 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     ? await prisma.plan.findUnique({ where: { stripePriceId: priceId } })
     : null
 
-  const periodStart = new Date((item?.current_period_start ?? 0) * 1000)
-  const periodEnd = new Date((item?.current_period_end ?? 0) * 1000)
+  const { currentPeriodStart, currentPeriodEnd, trialEndsAt } = subscriptionDates(subscription)
 
   await prisma.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
     data: {
       ...(plan && { planId: plan.id }),
       status: mapSubscriptionStatus(subscription.status),
-      currentPeriodStart: periodStart,
-      currentPeriodEnd: periodEnd,
+      currentPeriodStart,
+      currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      trialEndsAt,
     },
   })
 
@@ -223,11 +225,9 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     })
     if (user && process.env.RESEND_API_KEY) {
       const { sendSubscriptionCancelledEmail } = await import("@/lib/email")
-      sendSubscriptionCancelledEmail(
-        user.email,
-        user.name ?? "",
-        periodEnd.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
-      ).catch(console.error)
+      sendSubscriptionCancelledEmail(user.email, user.name ?? "", longDate(currentPeriodEnd)).catch(
+        console.error
+      )
     }
   }
 }

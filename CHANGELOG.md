@@ -7,6 +7,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.3.0] - 2026-09-19
+
+💳 **Free trials, promotion codes, optional Stripe Tax and PDF invoices, and a command that tells you whether a database is ready for the code you are about to deploy.** This is a MINOR: `git pull`, `npm install`, `npm run check:deploy`, `npx prisma migrate deploy`. The migration adds two nullable columns, and the two new environment variables are optional and off by default.
+
+**Run `npm run check:deploy` before you deploy, from now on.** Builds do not run migrations, so a deploy can put new code in front of a database that is still behind it, and nothing fails at that moment: public pages keep rendering, and the first sign-in or checkout that touches a missing column fails with a database error that does not say what happened. The command reads your database, names the migrations it is missing, and never writes anything. [Upgrading](./docs/upgrading.md) has the steps.
+
+### Added
+
+- **Free trials**, set per plan with `Plan.trialDays`, and offered **once per customer**: anyone who has had a subscription, a cancelled one included, checks out without a trial, which is what stops cancelling and resubscribing from restarting it. The card is collected up front, as Checkout does by default, so the first charge happens when the trial ends with no second step. The billing page shows the end date, and plan cards show a trial only to someone who would get it. The seeded Pro monthly plan has 14 days, to show the pattern
+- **Promotion codes at checkout**, behind `STRIPE_ALLOW_PROMOTION_CODES="true"`. Off by default, because Checkout shows the code field whether or not any code exists. An active discount appears on the billing page with its amount, how long it lasts and the code that applied it, read from Stripe when the page loads
+- **Stripe Tax at checkout**, behind `STRIPE_AUTOMATIC_TAX="true"`: automatic tax, a required billing address and tax ID collection. Stripe does not refuse a checkout when Stripe Tax is not active on the account: it creates the session and charges no tax. So at checkout the kit asks Stripe for the Tax settings and logs a warning naming what is missing until the setup is finished. It never blocks a payment
+- **A link to the PDF** of every invoice, next to the hosted invoice page
+- **`npm run check:deploy`**: connection, migrations missing or stuck half way, the account table of a database that came through 2.0.x, and row counts. It prints which database it is looking at before anything else, warns when the connection string is the pooled one, and exits 0 when ready, 1 with what to fix, 2 when it could not check. A `DATABASE_URL` set in the shell wins over the env files, so the same command checks production
+- **[Deployment](./docs/deployment.md) shows how to point these at production**: the connection string goes on the same line as each command. Setting it once for a shell and then running three commands fails quietly when the shell no longer has it, because the fallback is your own env files and the migration reports success against your development database
+- **`/api/health` reports whether the database has every migration the build ships**, as `schema: { aligned, pending }`: a boolean and a count, never the migration names, and `null` when the database cannot be asked. `npm run smoke` fails on a deployment whose database is behind
+
+### Changed
+
+- **Three light theme colours are darker**: the destructive red (`#ef4444` to `#c81e1e`), muted text (`#737373` to `#6b6b6b`) and the success badge text (green-600 to green-700). Each is the lightest value that clears WCAG AA on every surface it is drawn on, where the danger zone cards, error messages, the delete button, the getting-started checklist, the upsell card and the success badge were below 4.5:1. If you set your own `--destructive` or `--muted-foreground` in `src/app/globals.css`, check them on tinted surfaces as well as on white
+- **The subscription confirmation email, when a subscription starts with a trial**, says the trial has started and when the first charge happens, instead of announcing an active subscription with an amount
+- **`scripts/verify-auth-migration.mjs` is replaced by `npm run check:deploy`**, which runs the same two checks on the account table among the others
+- **Stripe API version** moved from `2026-07-29.dahlia` to `2026-08-26.dahlia`, with `stripe` 22.6.2. Nothing in Stripe's changelog between the two is marked breaking. If you pinned the previous one deliberately, `src/lib/stripe.ts` is the line to change back
+- `next` and `eslint-config-next` to 16.3.5, `react` and `react-dom` to 19.3.0, `better-auth` and `@better-auth/prisma-adapter` to 1.7.5 with no schema change. Upgrade the last two together: moved one at a time, npm can leave two copies of `@better-auth/core` in the tree while the build stays green, and `npm ls @better-auth/core` should print a single version
+- The end-to-end config reads `.env.local` and `.env`, so the checkout test runs whenever a Stripe price is configured instead of skipping itself
+
+### Fixed
+
+- **The settings page no longer fails for anyone who signed in more than a day ago**, which is most people most of the time. The active sessions card listed devices through Better Auth's `listSessions`, and that endpoint requires a session created within `freshAge`, a day by default, refusing anything older with "Session is not fresh". The error took the whole page down, not just the card. Sessions have been rows in your own database since 2.0, so the list is read from them directly; ending a session is unchanged. **This affects 2.2.0 too**, where the card shipped: taking 2.3.0 fixes it
+- **The accessibility audit judges the whole page.** axe decides colour contrast only inside the viewport and leaves the rest undecided, which the audit did not count, so anything below the first screen went unchecked. Each page is now measured at its full height, and sign-in is also audited with an error message on screen
+- **Invoice amounts are shown in the invoice's own currency**, as the invoice total. They carried a dollar sign whatever the currency, and showed what had been paid so far, which on an open invoice read as zero
+- **Subscription and invoice statuses show as labels** instead of Stripe's codes, on the billing page and on the dashboard home
+- **`DIRECT_URL` is documented as what it is**: nothing reads it since Prisma 7 moved the connection to `prisma.config.ts`, and migrations run over whatever `DATABASE_URL` holds. [Deployment](./docs/deployment.md) shows how to point them at the direct connection
+
+### Notes
+
+- **A coupon that lasts a number of months counts from when it is applied**, a trial included: three months applied at the start of a 14-day trial cover about two and a half paid months
+- **Stripe Tax is a paid Stripe feature**, charged per transaction on top of the usual fees, and it **calculates and collects while registering you nowhere.** It collects only where you have added a registration, and a price with no tax behaviour set is treated as tax exclusive. [Billing](./docs/billing.md) has the setup
+- **Reminder emails before a trial ends are Stripe's**: turn them on in your Stripe Billing settings rather than in the kit
+- **Two items announced for this release are not in it.** Plan changes with proration stay in the Stripe Customer Portal, which already prorates. Profile photo upload is not part of it either, so the kit still accepts no file from outside
+- The source archive attached to the `v2.2.0` tag carries 16 September as the date of 2.2.0 in this file. The release date is 13 September: the file was corrected on `main` afterwards, and release tags are not moved
+
 ## [2.2.0] - 2026-09-13
 
 🔐 **Two-factor authentication, active sessions, and an accessibility audit that runs with the tests.** This is a MINOR: `git pull`, `npm install`, `npx prisma migrate deploy`. The migration is additive, and there is no new required environment variable.
@@ -494,6 +535,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.3.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.0
 [2.2.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.2.0
 [2.1.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.1.0
 [2.0.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.0.3

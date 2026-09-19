@@ -43,6 +43,20 @@ describe("parseEnv", () => {
     ).toThrow(/STRIPE_WEBHOOK_SECRET is required/)
   })
 
+  // A switch that reads "yes" as off would leave someone wondering why the
+  // promotion code field never shows up, so anything but true/false stops the boot.
+  it("reads STRIPE_ALLOW_PROMOTION_CODES as a true/false switch", () => {
+    expect(() => parseEnv(base({ STRIPE_ALLOW_PROMOTION_CODES: "true" }))).not.toThrow()
+    expect(() => parseEnv(base({ STRIPE_ALLOW_PROMOTION_CODES: "" }))).not.toThrow()
+    expect(() => parseEnv(base({ STRIPE_ALLOW_PROMOTION_CODES: "yes" }))).toThrow(/STRIPE_ALLOW_PROMOTION_CODES/)
+  })
+
+  it("reads STRIPE_AUTOMATIC_TAX as a true/false switch", () => {
+    expect(() => parseEnv(base({ STRIPE_AUTOMATIC_TAX: "true" }))).not.toThrow()
+    expect(() => parseEnv(base({ STRIPE_AUTOMATIC_TAX: "" }))).not.toThrow()
+    expect(() => parseEnv(base({ STRIPE_AUTOMATIC_TAX: "on" }))).toThrow(/STRIPE_AUTOMATIC_TAX/)
+  })
+
   it("reports every problem at once, not one per restart", () => {
     let message = ""
     try {

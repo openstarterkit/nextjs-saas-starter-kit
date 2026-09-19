@@ -7,7 +7,7 @@ Every variable lives in [.env.example](../.env.example) with inline comments. Co
 | Variable | Notes |
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string. With Neon, use the pooled connection string here. |
-| `DIRECT_URL` | Direct (non-pooled) connection, used by Prisma migrations. Optional on providers without pooling. |
+| `DIRECT_URL` | Not read by the kit. Prisma 7 takes the connection from `DATABASE_URL` in `prisma.config.ts`, for the app and for migrations alike: to migrate over the direct (non-pooled) connection, set `DATABASE_URL` to it for that command, as [Deployment](./deployment.md#database-migrations) shows. |
 
 ## Auth core
 
@@ -39,6 +39,8 @@ Both providers are optional; configure the ones you want on the login page.
 
 Setup: create an account at [resend.com](https://resend.com), verify your domain, create an API key.
 
+Verifying the domain in Resend sets up SPF and DKIM, not a DMARC policy. Add a DMARC record at your DNS provider as well, a `TXT` record on `_dmarc.yourdomain.com` such as `v=DMARC1; p=quarantine; rua=mailto:you@yourdomain.com`: without one, some mailbox providers file transactional email as spam, and nothing tells receiving servers what to do with mail that fakes your domain.
+
 ## Stripe
 
 1. Create an account at [stripe.com](https://stripe.com) and copy the **Secret key** into `STRIPE_SECRET_KEY` (and the publishable key into `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`).
@@ -51,6 +53,13 @@ Setup: create an account at [resend.com](https://resend.com), verify your domain
    ```
 
    Copy the signing secret into `STRIPE_WEBHOOK_SECRET`. Production webhooks are covered in [Deployment](./deployment.md); how the billing flows work (subscriptions, one-time, usage-based) is covered in [Billing](./billing.md).
+
+Two optional switches, both off unless set to `"true"`:
+
+| Variable | Notes |
+|---|---|
+| `STRIPE_ALLOW_PROMOTION_CODES` | Shows the promotion code field in Checkout. See [Billing](./billing.md#promotion-codes). |
+| `STRIPE_AUTOMATIC_TAX` | Turns on Stripe Tax in Checkout. Activate Stripe Tax in the Stripe dashboard first: with Tax not active, checkout still works and charges no tax. See [Billing](./billing.md#stripe-tax). |
 
 ## Rate limiting
 

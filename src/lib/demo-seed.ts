@@ -27,6 +27,7 @@ const examplePlans: {
   stripePriceId: string
   features: string[]
   meterEventName?: string
+  trialDays?: number
   isActive?: boolean
 }[] = [
   {
@@ -54,6 +55,7 @@ const examplePlans: {
     price: 1900,
     interval: "MONTH",
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID ?? "price_pro_placeholder",
+    trialDays: 14,
     features: [
       "Everything in Starter",
       "Unlimited projects",
@@ -154,6 +156,7 @@ export async function seedDemoData(prisma: PrismaClient): Promise<DemoSeedResult
         stripePriceId: data.stripePriceId,
         description: data.description,
         meterEventName: data.meterEventName ?? null,
+        trialDays: data.trialDays ?? null,
       },
       create: { slug, ...data },
     })
@@ -233,6 +236,9 @@ export async function seedDemoData(prisma: PrismaClient): Promise<DemoSeedResult
           currentPeriodStart: daysAgo(Math.min(fake.signedUpDaysAgo, periodDays / 2)),
           currentPeriodEnd: daysFromNow(periodDays / 2),
           cancelAtPeriodEnd: fake.subStatus === "CANCELED",
+          // During a trial Stripe ends the first period when the trial ends,
+          // so the two dates are the same one.
+          trialEndsAt: fake.subStatus === "TRIALING" ? daysFromNow(periodDays / 2) : null,
         },
       })
     }

@@ -23,6 +23,10 @@ export type PlanCardData = {
   interval: "MONTH" | "YEAR" | "ONE_TIME"
   stripePriceId: string
   features: string[]
+  // Days of free trial this visitor would actually get at checkout. The page
+  // passes null to anyone who has already had a subscription, so the card never
+  // promises a trial the checkout will not give.
+  trialDays?: number | null
 }
 
 // A "talk to sales" tier with no self-serve price: rendered as the last card,
@@ -215,6 +219,11 @@ export function PlanCards({
                       {active.interval === "YEAR" ? "billed yearly" : "billed monthly"}
                     </p>
                   )}
+                  {active.trialDays ? (
+                    <p className="mt-1 text-xs font-medium text-primary">
+                      {t("trial", { days: active.trialDays })}
+                    </p>
+                  ) : null}
                 </div>
               </CardHeader>
               <CardContent className="flex-1">

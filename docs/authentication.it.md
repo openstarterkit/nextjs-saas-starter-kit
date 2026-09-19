@@ -2,7 +2,7 @@
 title: Autenticazione
 description: OAuth, magic link, email e password, reset e collegamento degli account.
 translated_from: authentication.md
-source_checksum: d1729d4c21b0
+source_checksum: 8c6fdfdf3c3b
 ---
 
 # Autenticazione
@@ -54,7 +54,9 @@ Resta un compromesso voluto. `session.cookieCache` (60 secondi, in `src/auth.ts`
 
 Dashboard → Impostazioni elenca ogni sessione dell'account con il dispositivo, il browser e l'indirizzo IP con cui è nata, quella corrente marcata, e un bottone per chiudere una qualsiasi delle altre. È una vista su righe che c'erano già dalla 2.0, non qualcosa di nuovo da conservare.
 
-Due dettagli vale la pena conoscerli. Quello che il browser invia è l'**id della sessione** di `revokeSession`, mai il token: il token è la credenziale, e una pagina che lo stampa consegna una sessione funzionante a qualsiasi cosa sappia leggere il DOM o uno screenshot. E la riga del dispositivo è una lettura dello user agent (`src/lib/user-agent.ts`), che è una stringa scelta liberamente dal client: serve a far riconoscere a qualcuno il proprio portatile, non a dimostrare niente.
+La lista viene letta dalle tue righe `Session` con Prisma, non tramite `listSessions` di Better Auth. Quell'endpoint pretende una sessione creata da meno di `freshAge`, un giorno per impostazione predefinita, e a qualunque cosa sia più vecchia risponde «Session is not fresh», che è lo stato normale di chi ha fatto l'accesso ieri. Una card che esiste per il momento in cui sospetti che un dispositivo non sia tuo non può essere quella che smette di funzionare dopo un giorno. Chiudere una sessione passa ancora dalla libreria, che la legge dal database invece che dalla cache del cookie.
+
+Altri due dettagli vale la pena conoscerli. Quello che il browser invia è l'**id della sessione** di `revokeSession`, mai il token: il token è la credenziale, e una pagina che lo stampa consegna una sessione funzionante a qualsiasi cosa sappia leggere il DOM o uno screenshot. E la riga del dispositivo è una lettura dello user agent (`src/lib/user-agent.ts`), che è una stringa scelta liberamente dal client: serve a far riconoscere a qualcuno il proprio portatile, non a dimostrare niente.
 
 La sessione corrente non si chiude dalla lista, perché il bottone per farlo si chiama "Esci" ed esiste già.
 

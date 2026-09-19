@@ -68,6 +68,10 @@ export const envSchema = z
     STRIPE_STARTER_YEARLY_PRICE_ID: prefixed("price_", "STRIPE_STARTER_YEARLY_PRICE_ID"),
     STRIPE_METERED_PRICE_ID: prefixed("price_", "STRIPE_METERED_PRICE_ID"),
     STRIPE_LIFETIME_PRICE_ID: prefixed("price_", "STRIPE_LIFETIME_PRICE_ID"),
+    // Named after the Checkout parameter it turns on. Off unless "true".
+    STRIPE_ALLOW_PROMOTION_CODES: flag,
+    // Stripe Tax at checkout (src/lib/stripe-tax.ts). Off unless "true".
+    STRIPE_AUTOMATIC_TAX: flag,
 
     RESEND_API_KEY: prefixed("re_", "RESEND_API_KEY"),
     RESEND_AUDIENCE_ID: optional,

@@ -24,6 +24,9 @@ const PUBLIC_PAGES = [
   { path: "/blog", name: "blog" },
   { path: "/docs", name: "docs" },
   { path: "/login", name: "sign in" },
+  // An error message is red text on a red tint, which no page shows until
+  // something goes wrong, so one is asked for on purpose.
+  { path: "/login?error=credentials", name: "sign in with an error" },
   { path: "/signup", name: "sign up" },
   { path: "/contact", name: "contact" },
 ]
@@ -40,9 +43,24 @@ async function scan(page: Page, label: string) {
   // setting real users have, so the audit runs the way their browser would.
   await page.emulateMedia({ reducedMotion: "reduce" })
 
+  // Measured at the full height of the page. axe judges colour contrast from
+  // what is painted inside the viewport, and leaves everything below the first
+  // screen "incomplete": neither failed nor passed, and so never counted here.
+  // At the default size that hid real findings further down the dashboard, and
+  // on settings the same finding came and went from one run to the next.
+  await page.waitForLoadState("networkidle")
+  const viewport = page.viewportSize()
+  const height = await page.evaluate(() => document.documentElement.scrollHeight)
+  await page.setViewportSize({
+    width: viewport?.width ?? 1280,
+    height: Math.min(Math.max(height, viewport?.height ?? 720), 16_000),
+  })
+
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze()
+
+  if (viewport) await page.setViewportSize(viewport)
 
   const blocking = results.violations.filter(
     (v) => v.impact === "serious" || v.impact === "critical"

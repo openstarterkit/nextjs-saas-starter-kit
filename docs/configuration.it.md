@@ -2,7 +2,7 @@
 title: Configurazione
 description: "Ogni variabile d'ambiente spiegata: database, OAuth, Stripe, email, marchio."
 translated_from: configuration.md
-source_checksum: 83b28ed5b845
+source_checksum: 83d6ff096387
 ---
 
 # Configurazione
@@ -14,7 +14,7 @@ Ogni variabile vive in [.env.example](../.env.example) con i commenti accanto. C
 | Variabile | Note |
 |---|---|
 | `DATABASE_URL` | Stringa di connessione PostgreSQL. Con Neon, qui va quella pooled. |
-| `DIRECT_URL` | Connessione diretta, non pooled, usata dalle migrazioni Prisma. Facoltativa sui provider senza pooling. |
+| `DIRECT_URL` | Il kit non la legge. Prisma 7 prende la connessione da `DATABASE_URL` in `prisma.config.ts`, sia per l'app sia per le migrazioni: per migrare sulla connessione diretta, non pooled, imposta `DATABASE_URL` su quella per il solo comando, come mostra [Deployment](./deployment.md). |
 
 ## Nucleo dell'autenticazione
 
@@ -46,6 +46,8 @@ Entrambi i provider sono facoltativi: configura quelli che vuoi sulla pagina di 
 
 Come si prepara: apri un account su [resend.com](https://resend.com), verifica il dominio, crea una chiave API.
 
+La verifica del dominio su Resend imposta SPF e DKIM, non una politica DMARC. Aggiungi anche un record DMARC dal tuo provider DNS, un record `TXT` su `_dmarc.iltuodominio.com` come `v=DMARC1; p=quarantine; rua=mailto:tu@iltuodominio.com`: senza, alcuni provider di posta mettono le email transazionali nello spam, e nessuno dice ai server che le ricevono cosa fare con la posta che si finge spedita dal tuo dominio.
+
 ## Stripe
 
 1. Apri un account su [stripe.com](https://stripe.com) e copia la **Secret key** in `STRIPE_SECRET_KEY` (e la publishable key in `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`).
@@ -58,6 +60,13 @@ Come si prepara: apri un account su [resend.com](https://resend.com), verifica i
    ```
 
    Copia il signing secret in `STRIPE_WEBHOOK_SECRET`. I webhook di produzione sono in [Deployment](./deployment.md); come funzionano i flussi di pagamento (abbonamenti, una tantum, a consumo) è in [Pagamenti](./billing.md).
+
+Due interruttori facoltativi, spenti finché non valgono `"true"`:
+
+| Variabile | Note |
+|---|---|
+| `STRIPE_ALLOW_PROMOTION_CODES` | Mostra il campo del codice promozionale nel Checkout. Vedi [Pagamenti](./billing.md). |
+| `STRIPE_AUTOMATIC_TAX` | Attiva Stripe Tax nel Checkout. Prima attiva Stripe Tax nel pannello Stripe: con Tax non attivo il checkout funziona lo stesso e non applica nessuna tassa. Vedi [Pagamenti](./billing.md). |
 
 ## Limitazione delle richieste
 

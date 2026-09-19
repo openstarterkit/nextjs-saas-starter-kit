@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getCurrentUser } from "@/lib/auth"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
-import { CHECKOUT_BLOCKING_STATUSES } from "@/lib/billing"
+import { CHECKOUT_BLOCKING_STATUSES, trialDaysFor } from "@/lib/billing"
+import { AUTOMATIC_TAX_PARAMS, checkStripeTax } from "@/lib/stripe-tax"
 import type Stripe from "stripe"
 
 export async function POST(req: NextRequest) {
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
   // price maps to a Plan row, so an unknown price would mean "paid for nothing".
   const plan = await prisma.plan.findUnique({
     where: { stripePriceId: priceId },
-    select: { id: true, interval: true, meterEventName: true, isActive: true },
+    select: { id: true, interval: true, meterEventName: true, isActive: true, trialDays: true },
   })
   if (!plan || !plan.isActive) {
     return NextResponse.json({ error: "Invalid price" }, { status: 400 })
@@ -101,6 +102,30 @@ export async function POST(req: NextRequest) {
     params.invoice_creation = { enabled: true }
     // Metadata on the PaymentIntent too, so refund events can be traced back.
     params.payment_intent_data = { metadata }
+  }
+
+  // One free trial per customer, and only on plans that set trialDays. Any
+  // subscription row counts as having had one, a cancelled one included, which
+  // is what stops the trial from restarting on every new checkout. The card is
+  // still collected up front, as Checkout does by default: the first charge
+  // then happens when the trial ends, with no second step for the customer.
+  const trialDays = trialDaysFor(plan, user.subscription !== null)
+  if (trialDays) {
+    params.subscription_data = { trial_period_days: trialDays }
+  }
+
+  // Off unless you opt in: Checkout shows the promotion code field whether or
+  // not any code exists. Works for subscriptions and one-time payments alike.
+  if (process.env.STRIPE_ALLOW_PROMOTION_CODES === "true") {
+    params.allow_promotion_codes = true
+  }
+
+  // Stripe Tax (src/lib/stripe-tax.ts). The settings check only writes to the
+  // log: an unfinished Tax setup is the seller's to fix, and not a reason to
+  // stop a customer from paying.
+  if (process.env.STRIPE_AUTOMATIC_TAX === "true") {
+    Object.assign(params, AUTOMATIC_TAX_PARAMS)
+    await checkStripeTax()
   }
 
   const checkoutSession = await stripe.checkout.sessions.create(params)

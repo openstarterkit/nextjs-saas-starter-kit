@@ -47,7 +47,9 @@ One deliberate trade remains. `session.cookieCache` (60 seconds, in `src/auth.ts
 
 Dashboard → Settings lists every session on the account with the device, browser and IP address it was created with, the current one marked, and a button to end any of the others. This is a view of rows that were already there since 2.0, not something new to keep.
 
-Two details are worth knowing. What the browser sends is `revokeSession`'s **session id**, never the token: the token is the credential, and a page that prints it hands a working session to anything that can read the DOM or a screenshot. And the device line is a reading of the user agent (`src/lib/user-agent.ts`), which is a string a client chooses freely: it is there to help somebody recognise their own laptop, not to prove anything.
+The list is read from your own `Session` rows with Prisma, not through Better Auth's `listSessions`. That endpoint requires a session created within `freshAge` (a day by default) and answers "Session is not fresh" to anything older, which is the ordinary state of somebody who signed in yesterday. A card that exists for the moment you suspect a device is not yours cannot be the one that stops working after a day. Ending a session still goes through the library, which reads the session from the database rather than from the cookie cache.
+
+Two more details are worth knowing. What the browser sends is `revokeSession`'s **session id**, never the token: the token is the credential, and a page that prints it hands a working session to anything that can read the DOM or a screenshot. And the device line is a reading of the user agent (`src/lib/user-agent.ts`), which is a string a client chooses freely: it is there to help somebody recognise their own laptop, not to prove anything.
 
 You cannot end your own current session from the list, because the button for that is called "Sign out" and already exists.
 

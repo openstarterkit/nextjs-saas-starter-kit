@@ -1,4 +1,12 @@
 import { defineConfig, devices } from "@playwright/test"
+import { config } from "dotenv"
+
+// The test process reads the env files the app reads, as the teardown already
+// does. Without this a variable that lives only in .env.local, such as the
+// Stripe price the checkout test needs, is missing here, and that test skips
+// itself in a way that looks like a deliberate skip.
+config({ path: ".env.local" })
+config({ path: ".env" })
 
 /**
  * End-to-end tests for the two flows that cost money when they break: signing

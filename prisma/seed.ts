@@ -23,6 +23,7 @@ const examplePlans: {
   stripePriceId: string
   features: string[]
   meterEventName?: string
+  trialDays?: number
   isActive?: boolean
 }[] = [
   {
@@ -50,6 +51,9 @@ const examplePlans: {
     price: 1900,
     interval: "MONTH",
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID ?? "price_pro_placeholder",
+    // A free trial, to show the pattern: offered once per customer at checkout
+    // (docs/billing.md). Remove the line and the plan has none.
+    trialDays: 14,
     features: [
       "Everything in Starter",
       "Unlimited projects",
@@ -100,6 +104,7 @@ async function main() {
         stripePriceId: data.stripePriceId,
         description: data.description,
         meterEventName: data.meterEventName ?? null,
+        trialDays: data.trialDays ?? null,
       },
       create: { slug, ...data },
     })

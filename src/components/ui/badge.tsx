@@ -9,7 +9,8 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary/10 text-primary",
         secondary: "bg-secondary text-secondary-foreground",
-        success: "bg-green-500/10 text-green-600 dark:text-green-400",
+        // green-700 is the lightest shade that clears 4.5:1 on its own 10% tint.
+        success: "bg-green-500/10 text-green-700 dark:text-green-400",
         destructive: "bg-destructive/10 text-destructive",
         outline: "border border-border text-foreground bg-transparent",
       },

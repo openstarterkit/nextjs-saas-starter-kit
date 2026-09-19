@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 4a54c0daedf2
+source_checksum: 886cfe93cefe
 ---
 
 # Aggiornare
@@ -38,12 +38,48 @@ Poi, per ogni release che vuoi:
 git fetch upstream --tags
 git merge v1.7.0        # oppure: git rebase v1.7.0
 npm install
+npm run check:deploy    # dalla 2.3.0: cosa manca al tuo database
 npx prisma migrate deploy
 ```
 
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.3.0: pagamenti più completi, e un controllo prima di ogni migrazione
+
+Una MINOR. È anche la release che aggiunge `npm run check:deploy`, quindi da qui in poi l'ordine è merge, install, controllo, migrazione:
+
+```bash
+git fetch upstream --tags
+git merge v2.3.0
+npm install
+npm run check:deploy
+npx prisma migrate deploy
+npm run check:deploy
+```
+
+Il primo `check:deploy` nomina la migrazione che questa release aggiunge, `20260915104106_trials`, e qualunque migrazione più vecchia che al tuo database manca ancora. Il secondo deve dire *Ready*. Per controllare la produzione, imposta la sua stringa di connessione nella shell per quel solo comando: vince sui file env, e la prima riga dell'output dice quale database sta guardando. Usa la connessione diretta, non quella pooled.
+
+La migrazione aggiunge `Plan.trialDays` e `Subscription.trialEndsAt`, entrambe nullabili, quindi gira su un database popolato senza chiederti niente. I piani esistenti non offrono prove finché non imposti la colonna, e gli abbonamenti esistenti non hanno una fine prova. Non c'è nessuna nuova variabile d'ambiente obbligatoria.
+
+### Cosa cambia senza che tu faccia niente
+
+- L'email di conferma dell'abbonamento, quando un abbonamento parte con una prova, dice quando arriva il primo addebito invece di annunciare un abbonamento attivo
+- La tabella delle fatture mostra i totali nella valuta di ogni fattura, un link al PDF, e gli stati come etichette
+- Due colori del tema chiaro sono più scuri, il rosso distruttivo e il testo attenuato, e il badge di successo è di una tonalità più profonda: tutti e tre superano il contrasto AA anche sulle superfici tinte. Se hai impostato valori tuoi per `--destructive` o `--muted-foreground` in `src/app/globals.css`, controllali sulle superfici tinte oltre che sul bianco
+- `scripts/verify-auth-migration.mjs` non c'è più: `npm run check:deploy` fa i suoi controlli insieme agli altri
+- La versione dell'API di Stripe è `2026-08-26.dahlia`. Se avevi fissato la precedente di proposito, la riga è in `src/lib/stripe.ts`
+
+### Cosa puoi accendere
+
+- **Prove gratuite**: imposta `trialDays` su un piano. Se rilanci il seed, il piano Pro mensile di esempio prende 14 giorni
+- **Codici promozionali**: `STRIPE_ALLOW_PROMOTION_CODES="true"`
+- **Stripe Tax**: `STRIPE_AUTOMATIC_TAX="true"`, dopo aver attivato Stripe Tax nel pannello Stripe. Leggi prima [Pagamenti](./billing.md): con Tax non attivo il checkout continua a funzionare e non applica nessuna tassa
+
+### Se hai personalizzato il checkout o i pacchetti di Better Auth
+
+La rotta del checkout costruisce i parametri di Stripe in un solo punto, e prove, codici promozionali e tasse sono tre rami lì dentro: uniscili ai tuoi se l'hai sostituita. E aggiorna `better-auth` e `@better-auth/prisma-adapter` insieme: spostati uno alla volta, npm può lasciare nell'albero due copie di `@better-auth/core` con il build ancora verde. `npm ls @better-auth/core` deve stampare una sola versione.
 
 ## 2.2.0: autenticazione a due fattori, e niente da decidere
 
@@ -125,7 +161,7 @@ npm install
 Prima di migrare, chiedi al tuo database se può:
 
 ```bash
-node --env-file=.env scripts/verify-auth-migration.mjs
+npm run check:deploy
 ```
 
 È in sola lettura. Dice se la colonna `issuer` è ancora obbligatoria e se due
@@ -134,7 +170,7 @@ cosa che può fermare la migrazione. Poi:
 
 ```bash
 npx prisma migrate deploy
-node --env-file=.env scripts/verify-auth-migration.mjs
+npm run check:deploy
 ```
 
 La migrazione rilascia l'indice unico prima della colonna, che è l'ordine su cui
@@ -220,10 +256,10 @@ npx prisma migrate deploy
 Poi verifica il risultato contro quello che la libreria cercherebbe davvero:
 
 ```bash
-node --env-file=.env scripts/verify-auth-migration.mjs
+npm run check:deploy
 ```
 
-Lo script è di sola lettura. Leggeva l'issuer che ogni provider configurato
+Il controllo è di sola lettura. Nella 2.0.2 era uno script a sé, `scripts/verify-auth-migration.mjs`, che leggeva l'issuer che ogni provider configurato
 dichiara, lo confrontava con quello memorizzato ed elencava ogni riga che non
 sarebbe stata trovata, invece di confrontare il tuo database con un valore
 scritto dentro lo script, ed è quella distinzione la ragione per cui l'errore
@@ -280,10 +316,10 @@ per i provider OAuth semplici che la migration salta di proposito, quindi
 un'esecuzione silenziosa è l'esito normale e non il segno che tutto è stato
 classificato.
 
-Esegui `scripts/verify-auth-migration.mjs` dopo la migration. Sulla 2.0.x leggeva
+Esegui `npm run check:deploy` dopo la migration. Sulla 2.0.x lo script che ha sostituito leggeva
 la tua configurazione e riportava quello che la migration non aveva potuto
 decidere, ed era l'unica cosa che te lo diceva. Dalla 2.1.0 la colonna non c'è
-più e lo script risponde a una domanda diversa, quindi su quella versione qui non
+più e il controllo risponde a una domanda diversa, quindi su quella versione qui non
 resta niente da classificare.
 
 ### Vengono scollegati tutti

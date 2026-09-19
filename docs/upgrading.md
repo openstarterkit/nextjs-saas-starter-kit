@@ -31,12 +31,48 @@ Then, for each release you want:
 git fetch upstream --tags
 git merge v1.7.0        # or: git rebase v1.7.0
 npm install
+npm run check:deploy    # from 2.3.0: what your database is missing
 npx prisma migrate deploy
 ```
 
 Conflicts land where you edited the same lines the release did. That is the honest cost of owning the code, and it is smaller than it sounds if your own work lives where the kit expects it: your routes under `src/app`, your components in their own folders, your copy in `src/locales`. The files most likely to conflict are the ones everybody edits, starting with `src/config/site.ts`, the message files and `prisma/schema.prisma`.
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
+
+## 2.3.0: billing depth, and a check before every migration
+
+A MINOR. It is also the release that adds `npm run check:deploy`, so from here on the order is merge, install, check, migrate:
+
+```bash
+git fetch upstream --tags
+git merge v2.3.0
+npm install
+npm run check:deploy
+npx prisma migrate deploy
+npm run check:deploy
+```
+
+The first `check:deploy` names the migration this release adds, `20260915104106_trials`, and any older one your database is still missing. The second should say *Ready*. To check production, set its connection string in the shell for that one command: it wins over your env files, and the first line of the output says which database it is looking at. Use the direct connection, not the pooled one.
+
+The migration adds `Plan.trialDays` and `Subscription.trialEndsAt`, both nullable, so it runs against a populated database without asking you anything. Existing plans offer no trial until you set the column, and existing subscriptions have no trial end. There is no new required environment variable.
+
+### What changes without you doing anything
+
+- The subscription confirmation email, when a subscription starts with a trial, says when the first charge happens instead of announcing an active subscription
+- The invoice table shows totals in each invoice's currency, a link to the PDF, and statuses as labels
+- Two light theme colours are darker, the destructive red and the muted text, and the success badge is a shade deeper, so all three clear AA contrast on tinted surfaces. If you set your own `--destructive` or `--muted-foreground` in `src/app/globals.css`, check them on tinted surfaces as well as on white
+- `scripts/verify-auth-migration.mjs` is gone: `npm run check:deploy` runs its checks among the others
+- The Stripe API version is `2026-08-26.dahlia`. If you pinned the previous one on purpose, `src/lib/stripe.ts` is the line
+
+### What you can turn on
+
+- **Free trials**: set `trialDays` on a plan. If you re-run the seed, the example Pro monthly plan gets 14 days
+- **Promotion codes**: `STRIPE_ALLOW_PROMOTION_CODES="true"`
+- **Stripe Tax**: `STRIPE_AUTOMATIC_TAX="true"`, after activating Stripe Tax in the Stripe dashboard. Read [Billing](./billing.md#stripe-tax) first: with Tax not active, checkout keeps working and charges no tax
+
+### If you customised checkout or the Better Auth packages
+
+The checkout route builds its Stripe parameters in one place, and trials, promotion codes and tax are three branches there: merge them into your own if you replaced it. And upgrade `better-auth` and `@better-auth/prisma-adapter` together: moved one at a time, npm can leave two copies of `@better-auth/core` in the tree with the build still green. `npm ls @better-auth/core` should print one version.
 
 ## 2.2.0: two-factor authentication, and nothing you have to decide
 
@@ -115,7 +151,7 @@ npm install
 Before migrating, ask your database whether it can:
 
 ```bash
-node --env-file=.env scripts/verify-auth-migration.mjs
+npm run check:deploy
 ```
 
 It is read only. It reports whether the `issuer` column is still required, and
@@ -124,7 +160,7 @@ one thing that stops the migration. Then:
 
 ```bash
 npx prisma migrate deploy
-node --env-file=.env scripts/verify-auth-migration.mjs
+npm run check:deploy
 ```
 
 The migration drops the unique index before the column, which is the order
@@ -208,10 +244,10 @@ npx prisma migrate deploy
 Then check the result against what the library would actually look up:
 
 ```bash
-node --env-file=.env scripts/verify-auth-migration.mjs
+npm run check:deploy
 ```
 
-The script is read only. It compared the issuer each configured provider declares
+The check is read only. In 2.0.2 it was a separate script, `scripts/verify-auth-migration.mjs`, that compared the issuer each configured provider declares
 with what was stored, and listed every row that would not be found, rather than
 comparing your database against a value typed into the script. That distinction
 is the reason the original mistake survived our own checks: a check that compares
@@ -266,9 +302,9 @@ database, the migration raises it and the Prisma CLI prints nothing at all. The
 same is true of the plain OAuth providers the migration deliberately skips, so a
 silent run is the normal outcome and not a sign that everything was classified.
 
-Run `scripts/verify-auth-migration.mjs` after the migration. On 2.0.x it read your
+Run `npm run check:deploy` after the migration. On 2.0.x the script it replaced read your
 config and reported what the migration could not decide, and it was the only thing
-that would tell you. From 2.1.0 the column is gone and the script answers a
+that would tell you. From 2.1.0 the column is gone and the check answers a
 different question, so on that version there is nothing here left to classify.
 
 ## 2.0: the authentication library changed

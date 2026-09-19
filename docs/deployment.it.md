@@ -2,7 +2,7 @@
 title: Deployment
 description: "In produzione su Vercel: variabili, migrazioni, webhook, e come diventare amministratore."
 translated_from: deployment.md
-source_checksum: ef8e7734f8c4
+source_checksum: 44162e31b690
 ---
 
 # Deployment
@@ -23,7 +23,7 @@ vercel --prod   # deploy in produzione
 
 Imposta le variabili di [.env.example](../.env.example) nel pannello Vercel (Project → Settings → Environment Variables). Il minimo per andare in produzione:
 
-- `DATABASE_URL` (e `DIRECT_URL` se il tuo provider distingue connessione pooled e diretta)
+- `DATABASE_URL` (la stringa pooled, se il tuo provider ce l'ha: le migrazioni prendono quella diretta, vedi sotto)
 - `AUTH_SECRET` (generane uno nuovo per la produzione, non riusare quello di sviluppo)
 - `NEXT_PUBLIC_APP_URL` impostata a `https://iltuodominio.com` (le email e i link di reset si costruiscono da lì)
 - Le credenziali OAuth, con le **URL di callback di produzione** aggiunte nella console di ogni provider:
@@ -45,13 +45,34 @@ Fuori da Vercel cambia anche un'altra cosa. I form pubblici (contatti, newslette
 
 ## Migrazioni del database
 
-I build non eseguono le migrazioni. Applicale al database di produzione come passo deliberato:
+I build non eseguono le migrazioni. Applicale al database di produzione come passo deliberato, e controlla il database prima e dopo:
 
 ```bash
+npm run check:deploy        # quali migrazioni mancano a questo database
 npx prisma migrate deploy
+npm run check:deploy        # deve dire Ready
 ```
 
-Eseguilo prima del primo deploy, o subito dopo, e dopo ogni release che aggiunge una migrazione. Poi inserisci i piani una volta sola: `npx prisma db seed`.
+Quei tre girano sul database dei tuoi file env. Per lanciarli sulla produzione, **metti la stringa di connessione sulla stessa riga di ogni comando**, uno alla volta:
+
+```bash
+DATABASE_URL="postgresql://..." npm run check:deploy
+DATABASE_URL="postgresql://..." npx prisma migrate deploy
+DATABASE_URL="postgresql://..." npm run check:deploy
+```
+
+```powershell
+# PowerShell, dove altrimenti la variabile sopravvive al comando
+$env:DATABASE_URL="postgresql://..."; npx prisma migrate deploy; Remove-Item Env:DATABASE_URL
+```
+
+Ripeterla non è pignoleria. Impostarla una volta e poi lanciare tre comandi funziona finché quella shell se la tiene, e una shell che l'ha persa non fallisce: ricade sui tuoi file env e migra il database di sviluppo, dichiarando successo. Entrambi i comandi stampano il database a cui si sono collegati prima di fare qualsiasi cosa, `check:deploy` sulla prima riga e Prisma sulla riga `Datasource`. Leggi quella riga ogni volta.
+
+Usa la stringa di connessione diretta, che su Neon è l'host senza `-pooler`. Il controllo legge soltanto, e non applica mai niente.
+
+Eseguili prima del primo deploy, e prima di pubblicare ogni release che aggiunge una migrazione, a meno che le sue [note di aggiornamento](./upgrading.md) dicano altrimenti. Poi inserisci i piani una volta sola: `npx prisma db seed`.
+
+Dopo un deploy, `/api/health` riporta `schema: { aligned, pending }`, e `npm run smoke -- https://iltuodominio.com` fallisce quando il database è indietro rispetto al build.
 
 ## Webhook Stripe in produzione
 

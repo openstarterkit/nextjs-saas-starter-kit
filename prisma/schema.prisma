@@ -171,6 +171,10 @@ model Plan {
   // name that recordUsage() reports against. Metered prices must be checked
   // out without a quantity.
   meterEventName String?
+  // Days of free trial on this plan, offered only to a customer who has never
+  // had a subscription (trialDaysFor in src/lib/billing.ts). Null is no trial.
+  // Stripe accepts up to 730.
+  trialDays     Int?
   features      String[]
   isActive      Boolean         @default(true)
   subscriptions Subscription[]
@@ -188,6 +192,10 @@ model Subscription {
   currentPeriodStart   DateTime
   currentPeriodEnd     DateTime
   cancelAtPeriodEnd    Boolean            @default(false)
+  // Written from Stripe when the subscription started with a trial, and still
+  // set after the trial is over: read it together with the status, which says
+  // TRIALING only while the trial runs.
+  trialEndsAt          DateTime?
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan                 Plan               @relation(fields: [planId], references: [id])
   createdAt            DateTime           @default(now())

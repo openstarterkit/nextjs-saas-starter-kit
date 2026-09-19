@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { GetStartedChecklist } from "@/components/dashboard/get-started-checklist"
 import { CheckoutStatusToast } from "@/components/billing/checkout-status-toast"
+import { SubscriptionStatusBadge } from "@/components/billing/subscription-status-badge"
 import { isKitSite } from "@/config/kit"
 
 export default async function DashboardPage() {
@@ -89,11 +90,13 @@ export default async function DashboardPage() {
             <CardDescription>{t("status")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Badge
-              variant={lifetime || subscription?.status === "ACTIVE" ? "success" : "secondary"}
-            >
-              {lifetime ? t("statusLifetime") : subscription?.status ?? t("statusFree")}
-            </Badge>
+            {subscription ? (
+              <SubscriptionStatusBadge status={subscription.status} />
+            ) : (
+              <Badge variant={lifetime ? "success" : "secondary"}>
+                {lifetime ? t("statusLifetime") : t("statusFree")}
+              </Badge>
+            )}
           </CardContent>
         </Card>
 

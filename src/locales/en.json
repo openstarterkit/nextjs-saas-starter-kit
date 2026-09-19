@@ -281,6 +281,7 @@
       "currentPlan": "Current Plan",
       "purchasedOn": "Purchased on {date}",
       "renewsOn": "Renews on {date}",
+      "trialEndsOn": "Free trial ends on {date}",
       "onFreePlan": "You are on the free plan",
       "free": "Free",
       "lifetimeAccess": "Lifetime access",
@@ -300,7 +301,15 @@
       "colStatus": "Status",
       "colInvoice": "Invoice",
       "statusUnknown": "unknown",
-      "viewPdf": "View PDF",
+      "viewInvoice": "View",
+      "downloadPdf": "PDF",
+      "discount": "Discount: {discount} {duration}",
+      "discountPercent": "{percent}% off",
+      "discountAmount": "{amount} off",
+      "discountOnce": "on the next invoice",
+      "discountUntil": "until {date}",
+      "discountForever": "on every invoice",
+      "discountCode": "code {code}",
       "status": {
         "ACTIVE": "Active",
         "TRIALING": "Trial",
@@ -308,6 +317,13 @@
         "CANCELED": "Canceled",
         "UNPAID": "Unpaid",
         "INCOMPLETE": "Incomplete"
+      },
+      "invoiceStatus": {
+        "draft": "Draft",
+        "open": "Open",
+        "paid": "Paid",
+        "uncollectible": "Uncollectible",
+        "void": "Void"
       }
     },
     "projectDetail": {
@@ -422,12 +438,14 @@
       "current": "Current plan",
       "payOnce": "Pay once",
       "upgradeTo": "Upgrade to {plan}",
-      "get": "Get {plan}"
+      "get": "Get {plan}",
+      "trial": "{days}-day free trial"
     }
   },
   "email": {
     "welcome": "Welcome to {site}!",
     "subscriptionActive": "Your {plan} subscription is active",
+    "trialStarted": "Your {plan} free trial has started",
     "purchaseConfirmed": "Your {plan} purchase is confirmed",
     "magicLink": "Sign in to {site}",
     "passwordReset": "Reset your {site} password",
@@ -474,9 +492,11 @@
     "subscriptionBody": {
       "hello": "Hey {name} 👋",
       "intro": "Your <strong>{plan}</strong> subscription is now active. Thanks for subscribing!",
+      "introTrial": "Your <strong>{plan}</strong> free trial has started. Nothing is charged until <strong>{date}</strong>, and you can cancel before then from your billing page.",
       "labelPlan": "Plan:",
       "labelAmount": "Amount:",
       "labelRenewal": "Next renewal:",
+      "labelTrialEnd": "Trial ends:",
       "access": "You have full access to all {site} features.",
       "cta": "Manage Billing →",
       "changes": "Need to make changes? You can manage your subscription anytime from your billing page."

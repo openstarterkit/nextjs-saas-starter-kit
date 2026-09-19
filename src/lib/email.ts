@@ -49,14 +49,20 @@ export async function sendSubscriptionConfirmation(
   planName: string,
   amount: number,
   currency: string,
-  renewalDate: string
+  renewalDate: string,
+  // Set when the subscription starts with a free trial. Nothing has been
+  // charged yet, so the email says when the first charge happens instead of
+  // announcing an active subscription.
+  trialEndDate?: string
 ) {
   const resend = getInstance()
   return resend.emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: (await emailStrings())("subscriptionActive", { plan: planName }),
-    html: await subscriptionTemplate(name, planName, amount, currency, renewalDate),
+    subject: trialEndDate
+      ? (await emailStrings())("trialStarted", { plan: planName })
+      : (await emailStrings())("subscriptionActive", { plan: planName }),
+    html: await subscriptionTemplate(name, planName, amount, currency, renewalDate, trialEndDate),
   })
 }
 
@@ -211,21 +217,28 @@ async function subscriptionTemplate(
   planName: string,
   amount: number,
   currency: string,
-  renewalDate: string
+  renewalDate: string,
+  trialEndDate?: string
 ) {
   const t = await emailStrings()
   const formatted = new Intl.NumberFormat(routing.defaultLocale, {
     style: "currency",
     currency: currency.toUpperCase(),
   }).format(amount / 100)
+  const intro = trialEndDate
+    ? t.raw("subscriptionBody.introTrial").replace("{plan}", planName).replace("{date}", trialEndDate)
+    : t.raw("subscriptionBody.intro").replace("{plan}", planName)
+  const dateLine = trialEndDate
+    ? `<p><strong>${t("subscriptionBody.labelTrialEnd")}</strong> ${trialEndDate}</p>`
+    : `<p><strong>${t("subscriptionBody.labelRenewal")}</strong> ${renewalDate}</p>`
 
   return baseTemplate(`
     <p>${t("subscriptionBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
-    <p>${t.raw("subscriptionBody.intro").replace("{plan}", planName)}</p>
+    <p>${intro}</p>
     <div class="highlight">
       <p><strong>${t("subscriptionBody.labelPlan")}</strong> ${planName}</p>
       <p><strong>${t("subscriptionBody.labelAmount")}</strong> ${formatted}</p>
-      <p><strong>${t("subscriptionBody.labelRenewal")}</strong> ${renewalDate}</p>
+      ${dateLine}
     </div>
     <p>${t("subscriptionBody.access", { site: siteConfig.name })}</p>
     <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing" class="btn">${t("subscriptionBody.cta")}</a>

@@ -16,7 +16,7 @@ vercel --prod   # production deploy
 
 Set the variables from [.env.example](../.env.example) in the Vercel dashboard (Project → Settings → Environment Variables). Minimum for production:
 
-- `DATABASE_URL` (and `DIRECT_URL` if your provider distinguishes pooled/direct)
+- `DATABASE_URL` (the pooled string, if your provider has one: migrations take the direct one, see below)
 - `AUTH_SECRET` (generate a fresh one for production, do not reuse dev)
 - `NEXT_PUBLIC_APP_URL` set to `https://yourdomain.com` (emails and reset links are built from it)
 - OAuth credentials, with the **production callback URLs** added in each provider console:
@@ -38,13 +38,34 @@ One more thing changes off Vercel. The public forms (contact, newsletter) are ra
 
 ## Database migrations
 
-Builds do not run migrations. Apply them against the production database as a deliberate step:
+Builds do not run migrations. Apply them against the production database as a deliberate step, and check the database before and after:
 
 ```bash
+npm run check:deploy        # which migrations this database is missing
 npx prisma migrate deploy
+npm run check:deploy        # should say Ready
 ```
 
-Run it before (or right after) the first deploy and after every release that adds a migration. Then seed the plans once: `npx prisma db seed`.
+Those three run against the database in your env files. To run them against production, **put the connection string on the same line as each command**, one at a time:
+
+```bash
+DATABASE_URL="postgresql://..." npm run check:deploy
+DATABASE_URL="postgresql://..." npx prisma migrate deploy
+DATABASE_URL="postgresql://..." npm run check:deploy
+```
+
+```powershell
+# PowerShell, where the variable would otherwise outlive the command
+$env:DATABASE_URL="postgresql://..."; npx prisma migrate deploy; Remove-Item Env:DATABASE_URL
+```
+
+Repeating it is not pedantry. Setting it once and then running three commands works only while that shell keeps it, and a shell that has lost it does not fail: it falls back to your env files and migrates your development database instead, reporting success. Both commands print the database they connected to before doing anything, `check:deploy` on its first line and Prisma on its `Datasource` line. Read that line every time.
+
+Use the direct connection string, which on Neon is the host without `-pooler`. The check only reads, and never applies anything.
+
+Run them before the first deploy, and before deploying every release that adds a migration unless its [upgrade notes](./upgrading.md) say otherwise. Then seed the plans once: `npx prisma db seed`.
+
+After a deploy, `/api/health` reports `schema: { aligned, pending }`, and `npm run smoke -- https://yourdomain.com` fails when the database is behind the build.
 
 ## Stripe webhooks in production
 

@@ -1,13 +1,13 @@
 ---
 title: Pagamenti e abbonamenti
-description: Abbonamenti, pagamenti una tantum, consumo a metrica e diritti d'accesso.
+description: Abbonamenti, prove gratuite, pagamenti una tantum, consumo a metrica, codici promozionali, fatture e Stripe Tax.
 translated_from: billing.md
-source_checksum: c899248002a2
+source_checksum: 434ec6e4c25e
 ---
 
 # Pagamenti e abbonamenti
 
-Il kit include un'integrazione Stripe completa: abbonamenti ricorrenti, pagamenti una tantum (le offerte a vita) e un esempio a consumo. Tutto gira sul tuo account Stripe e sui tuoi prezzi; i piani inseriti dal seed sono segnaposto da sostituire col listino del tuo prodotto.
+Il kit include un'integrazione Stripe completa: abbonamenti ricorrenti con prove gratuite facoltative, pagamenti una tantum (le offerte a vita), un esempio a consumo, codici promozionali, fatture con il loro PDF, e Stripe Tax facoltativo. Tutto gira sul tuo account Stripe e sui tuoi prezzi; i piani inseriti dal seed sono segnaposto da sostituire col listino del tuo prodotto.
 
 ## Il modello dei dati
 
@@ -15,8 +15,8 @@ Tre modelli Prisma reggono la fatturazione (vedi `prisma/schema.prisma`):
 
 | Modello | Cosa contiene |
 |---|---|
-| `Plan` | L'unica fonte di verità per ogni livello vendibile: nome, prezzo, `interval` (`MONTH`, `YEAR` o `ONE_TIME`), l'ID del prezzo su Stripe, le funzioni mostrate sulle schede, e `isActive`. |
-| `Subscription` | Una riga per utente abbonato, tenuta allineata dal webhook: stato, periodo corrente, flag di disdetta. |
+| `Plan` | L'unica fonte di verità per ogni livello vendibile: nome, prezzo, `interval` (`MONTH`, `YEAR` o `ONE_TIME`), l'ID del prezzo su Stripe, le funzioni mostrate sulle schede, `isActive`, e `trialDays` quando il piano offre una prova gratuita. |
+| `Subscription` | Una riga per utente abbonato, tenuta allineata dal webhook: stato, periodo corrente, flag di disdetta, e `trialEndsAt` quando l'abbonamento è partito con una prova. |
 | `Purchase` | Una riga per pagamento una tantum, creata dal webhook. L'ID del PaymentIntent di Stripe è unico, il che rende innocui i tentativi ripetuti del webhook. |
 
 Per sapere cosa ha un utente, chiama `getEntitlement(userId)` da `src/lib/billing.ts`. Restituisce `lifetime`, `subscription` o `free` (a vita vince quando ci sono entrambi) ed è lo schema da copiare quando devi proteggere una tua funzione:
@@ -35,6 +35,24 @@ if (entitlement.kind === "free") {
 Il flusso: l'utente sceglie un piano su `/dashboard/billing`, `POST /api/checkout` valida il prezzo contro la tabella `Plan` e apre Stripe Checkout in modalità `subscription`, e il webhook (`/api/webhooks/stripe`) crea o aggiorna la riga `Subscription` quando arriva `checkout.session.completed`. Cambi di piano, disdette e metodi di pagamento li gestisce il Customer Portal di Stripe (`POST /api/billing/portal`): il kit **non** include logica di rateo dentro l'app, di proposito.
 
 Un utente con un abbonamento attivo non può avviare un secondo checkout; l'API risponde 400 e lo manda al portale.
+
+## Prove gratuite
+
+Imposta `trialDays` su un `Plan` (il piano Pro mensile del seed ne ha 14) e il checkout offre quei giorni gratis, tramite `subscription_data.trial_period_days`.
+
+- **Una prova per cliente.** `trialDaysFor()` in `src/lib/billing.ts` non dà la prova a chi ha già una riga `Subscription`, e un abbonamento disdetto la sua riga la conserva. Senza questa regola, disdire e rifare il checkout farebbe ripartire la prova ogni volta. Le schede dei piani applicano la stessa regola, quindi promettono una prova solo a chi il checkout la darà davvero
+- **La carta si inserisce subito**, che è il comportamento predefinito del Checkout. Il primo addebito arriva quando la prova finisce, senza un secondo passaggio per il cliente
+- **Durante la prova** l'abbonamento è `TRIALING`, che per `getEntitlement` vale come accesso. La pagina dei pagamenti mostra la data di fine, e l'email di conferma dice quando arriva il primo addebito
+- **Le email di promemoria prima della fine della prova le manda Stripe**: attivale nel pannello Stripe, nelle impostazioni di Billing, invece di scriverne di tue
+- I piani una tantum non hanno mai la prova
+
+## Codici promozionali
+
+Imposta `STRIPE_ALLOW_PROMOTION_CODES="true"` e il Checkout mostra il campo per il codice. Crea i coupon e i loro codici nel pannello Stripe (Product catalog → Coupons). L'interruttore è spento di default perché il campo compare anche quando non esiste nessun codice, e un campo vuoto manda i clienti a cercare uno sconto che non c'è.
+
+Uno sconto attivo compare nella pagina dei pagamenti: la percentuale o l'importo, quanto dura, e il codice che l'ha applicato. Viene letto da Stripe quando la pagina si carica, quindi un coupon che chiudi su Stripe sparisce dalla pagina senza webhook e senza migrazioni.
+
+Un coupon che dura un certo numero di mesi li conta da quando viene applicato, prova compresa: tre mesi applicati all'inizio di una prova di 14 giorni coprono circa due mesi e mezzo pagati.
 
 ## Pagamenti una tantum
 
@@ -74,6 +92,23 @@ Il kit include un esempio a metrica ridotto all'osso: un aiuto `recordUsage()`, 
 
 Il checkout gestisce i prezzi a consumo da solo (vengono inviati senza quantità). Stripe fattura il consumo accumulato alla fine di ogni periodo.
 
+## Fatture
+
+La pagina dei pagamenti elenca le ultime dieci fatture da Stripe, ognuna con il totale nella sua valuta, lo stato, un link alla fattura online e un link al PDF.
+
+## Stripe Tax
+
+Imposta `STRIPE_AUTOMATIC_TAX="true"` e il Checkout attiva il calcolo automatico delle tasse, chiede un indirizzo di fatturazione e raccoglie le partite IVA. L'indirizzo e la ragione sociale inseriti nel Checkout vengono salvati sul cliente Stripe, cosa che Stripe richiede per entrambe le funzioni.
+
+**Configura Stripe Tax prima di accenderlo**: nel pannello Stripe attiva Tax con l'indirizzo della sede e aggiungi una registrazione per ogni luogo in cui riscuoti le tasse. È la parte da leggere due volte, per come fallisce: **con Stripe Tax non attivo, Stripe non rifiuta il checkout.** Crea la sessione, raccoglie l'indirizzo e non applica nessuna tassa, e la fattura registra il motivo come `not_collecting`. Per questo al checkout il kit chiede a Stripe le impostazioni di Tax e, finché non sono attive, scrive nei log un avviso con quello che manca. Non blocca mai un pagamento.
+
+Cosa non fa:
+
+- **Non è gratis**: Stripe fa pagare Tax a transazione, in aggiunta alle sue commissioni abituali. La cifra aggiornata è sulla loro pagina dei prezzi, e vale la pena leggerla prima di accenderlo
+- **Non ti registra da nessuna parte.** Se devi registrarti, e dove, è una domanda per il tuo commercialista
+- Riscuote **solo dove hai aggiunto una registrazione**; altrove la tassa è zero
+- Se un prezzo include la tassa o la aggiunge sopra si decide sul prezzo in Stripe. **Un prezzo senza comportamento fiscale impostato viene trattato come tassa esclusa**
+
 ## Eventi del webhook
 
 Il gestore su `/api/webhooks/stripe` tratta questi eventi; selezionali quando crei l'endpoint di produzione (vedi [Deployment](./deployment.md)):
@@ -94,6 +129,8 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 Usa la carta `4242 4242 4242 4242` nel checkout. Controlli utili: compra il piano Lifetime e verifica la riga `Purchase` e la fattura nella pagina dei pagamenti; rimanda l'evento (`stripe events resend <event_id>`) e verifica che non si duplichi niente; rimborsa il pagamento dal pannello e verifica che il piano torni Free.
 
+Per vedere una prova gratuita, registrati con un account nuovo e scegli il piano Pro mensile del seed: il Checkout mostra i giorni gratis, e dopo aver pagato con la carta di test la pagina dei pagamenti mostra quando finisce la prova.
+
 ## Senza Stripe
 
-Tutto degrada con eleganza quando `STRIPE_SECRET_KEY` non è impostata: la pagina dei pagamenti rende con i pulsanti di checkout disattivati, la lista delle fatture si spiega da sola, `recordUsage()` non fa nulla, e `/api/checkout` risponde con un 503 chiaro. Anche la modalità demo (`DEMO_MODE="true"`) disattiva il checkout, così la demo pubblica può mostrare l'interfaccia dei pagamenti su dati di esempio senza un account Stripe.
+Tutto degrada con eleganza quando `STRIPE_SECRET_KEY` non è impostata: la pagina dei pagamenti rende con i pulsanti di checkout disattivati, la lista delle fatture si spiega da sola, `recordUsage()` non fa nulla, e `/api/checkout` risponde con un 503 chiaro. Gli interruttori dei codici promozionali e di Stripe Tax non hanno effetto senza una chiave. Anche la modalità demo (`DEMO_MODE="true"`) disattiva il checkout, così la demo pubblica può mostrare l'interfaccia dei pagamenti su dati di esempio senza un account Stripe.
