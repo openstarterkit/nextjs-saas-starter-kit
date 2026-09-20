@@ -39,6 +39,12 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.3.1: check:deploy runs to the end on a database from before 2.0
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to decide.
+
+Take it before the 2.0 migration if you are still on 1.x. On a database whose account table is still the Auth.js one, `npm run check:deploy` used to stop with `column "providerId" does not exist` and exit code 2, one line before the counts. It now says which shape it found and prints the user, account and session counts, which are the numbers to compare after the 2.0 migration has moved your passwords into the account table.
+
 ## 2.3.0: billing depth, and a check before every migration
 
 A MINOR. It is also the release that adds `npm run check:deploy`, so from here on the order is merge, install, check, migrate:

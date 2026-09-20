@@ -3,7 +3,8 @@ import path from "node:path"
 
 /**
  * Unit tests for the pure logic in src/lib: the rate limiter, the Markdown
- * parsers behind the blog, docs and changelog, and the small helpers.
+ * parsers behind the blog, docs and changelog, and the small helpers. Plus the
+ * pure parts of the scripts in scripts/, which run outside the build.
  *
  * Deliberately out of scope: anything that talks to an external service
  * (prisma.ts, stripe.ts, email.ts). Those need integration tests with a real
@@ -12,7 +13,10 @@ import path from "node:path"
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    // scripts/ is in here for the pure helpers the deploy checks are built on:
+    // plain ESM, because the scripts that import them run under node with no
+    // build step.
+    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs"],
     coverage: {
       provider: "v8",
       reporter: ["text-summary", "text", "html"],

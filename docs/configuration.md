@@ -13,7 +13,7 @@ Every variable lives in [.env.example](../.env.example) with inline comments. Co
 
 | Variable | Notes |
 |---|---|
-| `AUTH_SECRET` | Signs the session JWTs. Generate with `npx auth secret` (or `openssl rand -base64 32`). |
+| `AUTH_SECRET` | Signs the session cookie and encrypts two-factor backup codes. Generate with `openssl rand -base64 32`. Changing it signs everyone out, and backup codes generated with the old value stop working. |
 | `NEXT_PUBLIC_APP_URL` | Canonical URL of the app (`http://localhost:3000` in dev). Used in emails and reset links. |
 
 ## OAuth providers
@@ -80,6 +80,8 @@ Worth knowing which limit to move first, because they are not protecting the sam
 | `NEXT_PUBLIC_DEMO_URL` | On a marketing deployment, points the sign-in links at your demo instance. |
 | `CRON_SECRET` | Demo deployments only. `vercel.json` schedules a daily reseed at 04:00 UTC so shared demo data does not drift; Vercel sends this value as a bearer token and the route refuses to run when it is unset, so an empty value just leaves the reset off. The route deletes every user, and `DEMO_MODE="true"` is the guard that keeps it away from a real database. |
 | `KIT_SITE` | Leave it empty. Reserved for the deployment that sells the kit itself: `"true"` switches the landing copy, pricing (hand-written open source tiers plus a Pro waitlist instead of your `Plan` rows), FAQ, footer license links and the dashboard upsell to talk about the repository rather than about your product. See below. |
+| `WAITLIST_ENABLED` | Only means anything with `KIT_SITE`. The Pro waitlist form on the open source pricing ships disabled until this is `"true"`, so a deployment cannot start collecting addresses before its real privacy policy is live. |
+| `NEXT_PUBLIC_DISABLE_ANALYTICS` | `"true"` stops mounting Vercel Analytics. Left empty it stays on, which is the useful default on Vercel and the wrong one everywhere you would rather ship no analytics at all. |
 | `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` removes the "Built with" footer badge. Free to use, no unlock. |
 | `NEXT_PUBLIC_GITHUB_URL` | Repo link shown in the navbar/footer. |
 
@@ -130,5 +132,6 @@ Most of it is already wired, and follows your branding rather than asking to be 
 - **Canonical URLs** on the home page, `/pricing`, `/blog`, `/docs` and every post, built from `NEXT_PUBLIC_APP_URL`. **Set that variable in production**: unset, it falls back to `localhost` and every canonical points at a machine nobody can reach
 - **Structured data**: `Organization` and `FAQPage` on the home page, `Article` on each post. The FAQ markup is generated from the same questions you edit in `src/components/landing/faq.tsx`, so answering them for your product updates both at once
 - **`sitemap.xml` and `robots.txt`** generated from the code, with drafts excluded
+- **`/llms.txt`** describing the site for the machines that summarise it, from its name, description and content. `NEXT_PUBLIC_LLMS_SUMMARY` adds one sentence of your own at the top: say what you do and who for, in the words someone would use asking for it
 
 The FAQ section renders on more than one page, so the structured data is emitted only where `<FAQ withJsonLd />` is used, which is the home page by default. If you move it, move the flag with it and keep it on a single page: the same FAQ published under several URLs is worth less than under one.

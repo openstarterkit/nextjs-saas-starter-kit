@@ -9,7 +9,7 @@ The kit ships four ways to sign in, all wired to the same `User` row so any comb
 | Email + password | nothing | bcrypt-hashed, with a full reset flow |
 | Dev login | `NODE_ENV=development` | One-click admin, never active in production |
 
-On top of any of these, an account with a password can require a **second factor** — see [Two-factor authentication](#two-factor-authentication), which also says which of the four ways in ask for it and which do not.
+On top of any of these, an account with a password can require a **second factor**. See [Two-factor authentication](#two-factor-authentication), which also says which of the four ways in ask for it and which do not.
 
 A public demo deployment (`DEMO_MODE="true"`) replaces all of the above with one-click shared accounts. The signup and password reset pages stay visible as a showcase, but their forms are disabled (with a notice explaining why) and the server actions reject demo submissions too, so visitors cannot trigger emails or create accounts from your demo.
 
@@ -29,7 +29,7 @@ If `RESEND_API_KEY` is not set, the button hides itself and the provider is not 
 
 Sign-in, signup, magic link and reset requests go through a small fixed-window limiter (`src/lib/rate-limit.ts`). By default the counters live in each instance's memory, which on serverless means a request that lands on another instance starts from zero: treat that as a speed bump, not a wall, with bcrypt's cost as the real brute-force brake.
 
-Since v2.2 the wall is two environment variables away. Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` and the same counters move to Upstash Redis, shared by every instance and region. Both are optional by design — a required variable would have made this release a major one for everybody who already cloned the kit — and nothing else changes: no client library is installed, it is two commands in one pipelined `fetch`.
+Since v2.2 the wall is two environment variables away. Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` and the same counters move to Upstash Redis, shared by every instance and region. Both are optional by design, because a required variable would have made this release a major one for everybody who already cloned the kit, and nothing else changes: no client library is installed, it is two commands in one pipelined `fetch`.
 
 If the shared store is configured but unreachable, the limiter falls back to the in-memory counter rather than failing in either direction. Refusing everybody would take the site down with the Redis; letting everybody through would drop the protection exactly when something is already wrong.
 
@@ -73,24 +73,24 @@ Any account with a password can turn on a second factor from Dashboard → Setti
 |---|---|
 | Email + password | **Asked.** The password alone opens no session |
 | Magic link | **Not sent at all** to accounts that have 2FA on |
-| Google / GitHub | **Not asked** — the provider already does that better |
+| Google / GitHub | **Not asked**: the provider already does that better |
 | Dev / demo sign-in | Not asked, and the demo account cannot enable 2FA |
 
 Three of those rows are decisions rather than defaults, and each is worth a sentence.
 
-**The magic link is withheld** because it opens a session directly: for an account with 2FA it would be a way around the very thing its owner turned on. Nobody is locked out by this, since enabling 2FA requires a password in the first place. The response is identical to the normal one — same redirect, no message — so it cannot be used to ask whether an address has an account or whether that account has 2FA; what replaces the explanation is a line on the sign-in page, addressed to everyone.
+**The magic link is withheld** because it opens a session directly: for an account with 2FA it would be a way around the very thing its owner turned on. Nobody is locked out by this, since enabling 2FA requires a password in the first place. The response is identical to the normal one (same redirect, no message), so it cannot be used to ask whether an address has an account or whether that account has 2FA; what replaces the explanation is a line on the sign-in page, addressed to everyone.
 
 **Password reset is not the same hole**, and it is worth knowing why: after a reset you still sign in through email and password, which still asks for the code.
 
-**OAuth is not asked for a TOTP on top**, because a second factor on Google's side is Google's job and it does it better. But the automatic half of account linking is refused for these accounts — see below.
+**OAuth is not asked for a TOTP on top**, because a second factor on Google's side is Google's job and it does it better. But the automatic half of account linking is refused for these accounts. See below.
 
 **Dev and demo sign-ins** open a session without verifying anything, so a check there would be guarding a door with no lock. What keeps them safe is what always did: dev is refused outside development, demo only exists when `DEMO_MODE` is on. On top of that the demo account cannot turn 2FA on at all, because the nightly reset would strand the next visitor with a factor nobody holds.
 
 ### Backup codes
 
-Ten of them, each good for exactly one sign-in and spent when used. They are shown **once**, at setup, and cannot be retrieved afterwards — regenerating replaces the whole set and the old ones stop working immediately.
+Ten of them, each good for exactly one sign-in and spent when used. They are shown **once**, at setup, and cannot be retrieved afterwards: regenerating replaces the whole set and the old ones stop working immediately.
 
-They are generated upper case and without `0`, `O`, `1` or `I` (`src/lib/backup-codes.ts`), because they get written on paper and typed back in on the day the phone is gone; what a user types is forgiven for lower case, spaces and a missing dash, never for a wrong code. They are stored **encrypted** with `AUTH_SECRET`, like the TOTP secret itself — which is the one operational consequence worth knowing before rotating that variable: rotating it makes every stored secret and every backup code unreadable.
+They are generated upper case and without `0`, `O`, `1` or `I` (`src/lib/backup-codes.ts`), because they get written on paper and typed back in on the day the phone is gone; what a user types is forgiven for lower case, spaces and a missing dash, never for a wrong code. They are stored **encrypted** with `AUTH_SECRET`, like the TOTP secret itself, which is the one operational consequence worth knowing before rotating that variable: rotating it makes every stored secret and every backup code unreadable.
 
 ### If both the phone and the codes are gone
 
@@ -108,7 +108,7 @@ Verify who is asking before you run it. That query is the whole recovery path, w
 One user, several ways in:
 
 - **Automatic**: a provider that has verified the email address attaches itself to the account that already has it. Sign in with Google, later with GitHub on the same email, and both land on the same account. The magic link and the password flow match by email the same way.
-- **Except for accounts with two-factor authentication**, where the automatic half is refused. Better Auth asks for the second factor on email sign-in and nowhere else, so without this an account protected by a password and a TOTP could be entered by whoever controls a Google account with the same address: press "Continue with Google", get attached, and be signed in with no password and no code — even having never connected Google. Only the automatic half is refused: connecting the provider **yourself from Settings** still works, because that request carries your session and you are already past the second factor when you make it. The rule is four booleans in `src/lib/account-linking.ts`.
+- **Except for accounts with two-factor authentication**, where the automatic half is refused. Better Auth asks for the second factor on email sign-in and nowhere else, so without this an account protected by a password and a TOTP could be entered by whoever controls a Google account with the same address: press "Continue with Google", get attached, and be signed in with no password and no code, even having never connected Google. Only the automatic half is refused: connecting the provider **yourself from Settings** still works, because that request carries your session and you are already past the second factor when you make it. The rule is four booleans in `src/lib/account-linking.ts`.
 - **Manual**: Dashboard → Settings → **Sign-in methods** shows the connected providers with Connect / Disconnect buttons, plus a set-or-change password form. Connecting starts a normal OAuth flow while signed in, which makes the adapter attach the new account instead of creating one.
 - **Lock-out guard**: you cannot disconnect your only remaining way in. The server checks that at least one method survives (another provider, a password, or the magic link when Resend is configured).
 

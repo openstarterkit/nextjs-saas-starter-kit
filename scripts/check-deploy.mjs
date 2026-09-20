@@ -24,9 +24,9 @@
  *   1. that the database answers;
  *   2. that every folder in prisma/migrations has been applied, and that none
  *      started and never finished;
- *   3. the account table of a database upgraded from 2.0.x: the two problems
- *      the 2.1.0 migration refuses to run over. This part used to be
- *      scripts/verify-auth-migration.mjs.
+ *   3. the account table: which shape it is in, and, on a database upgraded
+ *      from 2.0.x, the two problems the 2.1.0 migration refuses to run over.
+ *      This part used to be scripts/verify-auth-migration.mjs.
  *
  * Exit code 0: ready. 1: something to fix, and the output says what. 2: the
  * check could not run, which is a different answer from "not ready".
@@ -35,6 +35,11 @@
 import { existsSync, readdirSync } from "node:fs"
 import path from "node:path"
 import pg from "pg"
+import { accountTableShape } from "./account-shape.mjs"
+
+// The migration that converts the account table. Named here so the shape and
+// the migration list do not report the same thing twice.
+const CONVERTS_ACCOUNT_TABLE = "20260828100000_better_auth"
 
 const root = path.resolve(import.meta.dirname, "..")
 const LABEL = 15
@@ -61,6 +66,21 @@ try {
 console.log(`\nChecking ${target.host} / ${target.database}\n`)
 
 const client = new pg.Client({ connectionString: url, connectionTimeoutMillis: 10_000 })
+
+// The counts, so a before-and-after comparison around a migration is possible:
+// write them down before you run one that moves data. These three tables have
+// been there since the first migration, so this answers whatever shape the
+// account table is in, which is the point of calling it from every branch.
+const reportRowCounts = async () => {
+  const {
+    rows: [counts],
+  } = await client.query(
+    `SELECT (SELECT count(*) FROM "User")::int AS users,
+            (SELECT count(*) FROM "Account")::int AS accounts,
+            (SELECT count(*) FROM "Session")::int AS sessions`,
+  )
+  line("rows", `${counts.users} users, ${counts.accounts} accounts, ${counts.sessions} sessions`)
+}
 
 try {
   await client.connect()
@@ -128,55 +148,73 @@ try {
     for (const name of elsewhere) more(`  ${name}`)
   }
 
-  // ── 3. The account table, for databases that went through 2.0.x ──────────
+  // ── 3. The account table ──────────────────────────────────────────────────
   //
   // Asked of the database rather than of the Prisma schema, because the two
   // disagreeing is exactly the situation worth catching.
+  //
+  // The shape comes first, and it is the whole reason this section is arranged
+  // this way. Before 2.0 the table is still Auth.js's, with no providerId, so
+  // the two checks below are asking about columns that do not exist: they used
+  // to end the run with "the check stopped on an unexpected error", on the
+  // databases that most needed the answer.
   let accountProblems = 0
   try {
-    const {
-      rows: [issuer],
-    } = await client.query(
-      `SELECT is_nullable, column_default FROM information_schema.columns
-        WHERE table_schema = current_schema() AND table_name = 'Account' AND column_name = 'issuer'`,
+    const { rows: columns } = await client.query(
+      `SELECT column_name, is_nullable, column_default FROM information_schema.columns
+        WHERE table_schema = current_schema() AND table_name = 'Account'`,
     )
-    if (issuer && issuer.is_nullable === "NO" && issuer.column_default === null) {
-      line("account table", 'the "issuer" column is still required, and nothing writes it:')
-      more("every sign-up and every account link fails until the 2.1.0")
-      more("migration is applied (docs/upgrading.md, 2.1.0)")
-      accountProblems++
+    const shape = accountTableShape(columns.map((c) => c.column_name))
+
+    if (shape === "absent") {
+      // A new database, covered by the migrations above.
+      line("account table", "not created yet")
+    } else if (shape === "before-2.0") {
+      line("account table", "still the shape it had before 2.0:")
+      more("provider / providerAccountId, and no providerId. The 2.0")
+      more("migration converts it, and moves every password while it")
+      more("does (docs/upgrading.md, 2.0.0). Nothing else about this")
+      more("table can be checked until then")
+      // Only when the migration list did not already say so, which it does on
+      // every database that simply has not been migrated yet.
+      if (!missing.includes(CONVERTS_ACCOUNT_TABLE)) {
+        problems.push("the account table is still the shape it had before 2.0")
+      }
+      await reportRowCounts()
+    } else {
+      const issuer = columns.find((c) => c.column_name === "issuer")
+      if (issuer && issuer.is_nullable === "NO" && issuer.column_default === null) {
+        line("account table", 'the "issuer" column is still required, and nothing writes it:')
+        more("every sign-up and every account link fails until the 2.1.0")
+        more("migration is applied (docs/upgrading.md, 2.1.0)")
+        accountProblems++
+      }
+
+      const { rows: dupes } = await client.query(
+        `SELECT "providerId", "accountId", count(*)::int AS rows FROM "Account"
+          GROUP BY "providerId", "accountId" HAVING count(*) > 1
+          ORDER BY rows DESC LIMIT 20`,
+      )
+      if (dupes.length > 0) {
+        line(accountProblems ? "" : "account table", `${dupes.length} duplicate (providerId, accountId) pair(s):`)
+        for (const d of dupes) more(`  ${d.rows} rows for ${d.providerId} / ${d.accountId}`)
+        more("decide which row survives and delete the others: the 2.1.0")
+        more("migration refuses to run over them")
+        accountProblems++
+      }
+
+      if (accountProblems === 0) line("account table", "ok")
+      else problems.push("the account table needs attention")
+
+      await reportRowCounts()
     }
-
-    const { rows: dupes } = await client.query(
-      `SELECT "providerId", "accountId", count(*)::int AS rows FROM "Account"
-        GROUP BY "providerId", "accountId" HAVING count(*) > 1
-        ORDER BY rows DESC LIMIT 20`,
-    )
-    if (dupes.length > 0) {
-      line(accountProblems ? "" : "account table", `${dupes.length} duplicate (providerId, accountId) pair(s):`)
-      for (const d of dupes) more(`  ${d.rows} rows for ${d.providerId} / ${d.accountId}`)
-      more("decide which row survives and delete the others: the 2.1.0")
-      more("migration refuses to run over them")
-      accountProblems++
-    }
-
-    if (accountProblems === 0) line("account table", "ok")
-    else problems.push("the account table needs attention")
-
-    // The counts, so a before-and-after comparison around a migration is
-    // possible: write them down before you run it.
-    const {
-      rows: [counts],
-    } = await client.query(
-      `SELECT (SELECT count(*) FROM "User")::int AS users,
-              (SELECT count(*) FROM "Account")::int AS accounts,
-              (SELECT count(*) FROM "Session")::int AS sessions`,
-    )
-    line("rows", `${counts.users} users, ${counts.accounts} accounts, ${counts.sessions} sessions`)
   } catch (error) {
-    // The tables do not exist yet: a new database, covered by the migrations above.
-    if (error.code !== "42P01") throw error
-    line("account table", "not created yet")
+    // A shape no version of this kit has produced. Say so and keep the answer
+    // above, rather than turning a useful run into "could not check".
+    if (error.code !== "42P01" && error.code !== "42703") throw error
+    line("account table", "could not be read on this database:")
+    more(error.message)
+    more("apply the migrations above, then run this again")
   }
 } catch (error) {
   console.log(`\nThe check stopped on an unexpected error: ${error.message}\n`)

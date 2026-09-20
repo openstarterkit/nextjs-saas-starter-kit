@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.3.1] - 2026-09-20
+
+🔧 **`npm run check:deploy` stopped with an error instead of an answer on a database that has not taken the 2.0 migration yet.** If you are still on 1.x, take this release before you migrate: the command now runs to the end on your database, and the numbers it prints at the end are the ones to write down before a migration that moves your passwords.
+
+### Fixed
+
+- **`npm run check:deploy` on a database from before 2.0.** The account table there is still the Auth.js one, with `provider` and `providerAccountId`, so the check for duplicate `(providerId, accountId)` pairs asked for a column that does not exist, and the run ended with `column "providerId" does not exist` and exit code 2, one line before the row counts. The command now reads the shape of the table first and names it: not created yet, the shape it had before 2.0, or current. It reaches the user, account and session counts in all three, and a column difference it has never seen no longer ends the run. On a current database the output is unchanged
+- **Two documentation lines left over from before 2.0.** `AUTH_SECRET` was described as signing session JWTs, which it has not done since sessions became rows in the database, and both [Configuration](./docs/configuration.md) and [Getting started](./docs/getting-started.md) told you to generate it with `npx auth secret`, the CLI of the library the kit no longer depends on. The variable signs the session cookie and encrypts two-factor backup codes, so changing it signs everyone out and makes existing backup codes unreadable, and `openssl rand -base64 32` is the command shown now. `.env.example` also notes that `DIRECT_URL` is not read by the kit
+- **Three environment variables shipped explained only in `.env.example`**, while the documentation index promises that every one of them is explained in [Configuration](./docs/configuration.md). `WAITLIST_ENABLED`, `NEXT_PUBLIC_DISABLE_ANALYTICS` and `NEXT_PUBLIC_LLMS_SUMMARY` are now in the guide, in both languages. The middle one is the one worth knowing: left empty, Vercel Analytics is mounted
+- **[Deployment](./docs/deployment.md) says that the host does not identify the database.** On Neon one endpoint can serve several databases, so two connection strings can differ only in the name after the last `/` and reach entirely different data. Both `npm run check:deploy` and `prisma migrate deploy` print the database next to the host, and that is the line to read before you migrate anything
+- The README said CI runs lint, tests and the build. It also runs `npm audit` as a gate, which is the step that stops a push when a runtime dependency has a high advisory
+
+### Changed
+
+- `resend` from 6.28.0 to 6.28.1
+
+---
+
 ## [2.3.0] - 2026-09-19
 
 💳 **Free trials, promotion codes, optional Stripe Tax and PDF invoices, and a command that tells you whether a database is ready for the code you are about to deploy.** This is a MINOR: `git pull`, `npm install`, `npm run check:deploy`, `npx prisma migrate deploy`. The migration adds two nullable columns, and the two new environment variables are optional and off by default.
@@ -535,6 +553,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.3.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.1
 [2.3.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.0
 [2.2.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.2.0
 [2.1.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.1.0

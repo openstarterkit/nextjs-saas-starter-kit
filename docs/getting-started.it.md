@@ -2,7 +2,7 @@
 title: Primi passi
 description: Da git clone all'app che gira, in una decina di minuti.
 translated_from: getting-started.md
-source_checksum: 0d232aab4f9b
+source_checksum: 7a794bd0ba56
 ---
 
 # Primi passi
@@ -27,7 +27,7 @@ Per il primo avvio in locale bastano due valori:
 
 ```bash title=".env.local"
 DATABASE_URL="postgresql://..."   # la stringa di connessione a Postgres
-AUTH_SECRET="..."                 # generane uno: npx auth secret
+AUTH_SECRET="..."                 # generane uno: openssl rand -base64 32
 ```
 
 Il resto (OAuth, Stripe, email) può aspettare: il kit funziona lo stesso e ogni funzione si accende quando le sue variabili sono impostate. Il riferimento completo è in [Configurazione](./configuration.md).

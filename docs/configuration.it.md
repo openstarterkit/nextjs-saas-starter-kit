@@ -2,7 +2,7 @@
 title: Configurazione
 description: "Ogni variabile d'ambiente spiegata: database, OAuth, Stripe, email, marchio."
 translated_from: configuration.md
-source_checksum: 83d6ff096387
+source_checksum: 75046c9c0973
 ---
 
 # Configurazione
@@ -20,7 +20,7 @@ Ogni variabile vive in [.env.example](../.env.example) con i commenti accanto. C
 
 | Variabile | Note |
 |---|---|
-| `AUTH_SECRET` | Firma i JWT di sessione. Generala con `npx auth secret` (oppure `openssl rand -base64 32`). |
+| `AUTH_SECRET` | Firma il cookie di sessione e cifra i codici di backup del secondo fattore. Generala con `openssl rand -base64 32`. Cambiarla fa uscire tutti, e i codici di backup generati col valore precedente smettono di funzionare. |
 | `NEXT_PUBLIC_APP_URL` | Indirizzo canonico dell'app (`http://localhost:3000` in sviluppo). Usato nelle email e nei link di reset. |
 
 ## Provider OAuth
@@ -87,6 +87,8 @@ Vale la pena sapere quale limite spostare per primo, perché non proteggono la s
 | `NEXT_PUBLIC_DEMO_URL` | Su un deploy di marketing, fa puntare i link di accesso alla tua istanza dimostrativa. |
 | `CRON_SECRET` | Solo per i deploy dimostrativi. `vercel.json` programma un ripopolamento giornaliero alle 04:00 UTC così i dati condivisi della demo non vanno alla deriva; Vercel manda questo valore come bearer token e la route si rifiuta di girare quando non è impostato, quindi lasciarlo vuoto disattiva semplicemente il ripristino. La route cancella ogni utente, e `DEMO_MODE="true"` è la guardia che la tiene lontana da un database vero. |
 | `KIT_SITE` | Lascialo vuoto. È riservato al deploy che vende il kit stesso: `"true"` cambia il copy della landing, i prezzi (livelli open source scritti a mano più una waitlist Pro al posto delle tue righe `Plan`), le FAQ, i link di licenza nel footer e l'invito nella dashboard, così parlano del repository invece che del tuo prodotto. Vedi sotto. |
+| `WAITLIST_ENABLED` | Ha senso solo insieme a `KIT_SITE`. Il form della lista d'attesa Pro sulla pagina dei prezzi open source parte **disattivato** finché questa non vale `"true"`, così nessun deploy può raccogliere indirizzi prima che la sua informativa vera sia pubblicata. |
+| `NEXT_PUBLIC_DISABLE_ANALYTICS` | `"true"` non monta Vercel Analytics. Lasciata vuota resta acceso, che è il valore utile su Vercel e quello sbagliato ovunque tu preferisca non spedire nessuna analitica. |
 | `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` toglie il badge «Built with» dal footer. È gratis, non c'è niente da sbloccare. |
 | `NEXT_PUBLIC_GITHUB_URL` | Link al repository mostrato in navbar e footer. |
 
@@ -137,5 +139,6 @@ Buona parte è già collegata, e segue il tuo marchio invece di chiedere di ripe
 - **Indirizzi canonici** sulla home, su `/pricing`, `/blog`, `/docs` e su ogni articolo, costruiti da `NEXT_PUBLIC_APP_URL`. **Imposta quella variabile in produzione**: senza, ricade su `localhost` e ogni canonico punta a una macchina che nessuno può raggiungere
 - **Dati strutturati**: `Organization` e `FAQPage` sulla home, `Article` su ogni articolo. Il markup delle FAQ è generato dalle stesse domande che modifichi in `src/components/landing/faq.tsx`, quindi rispondere per il tuo prodotto aggiorna entrambe le cose insieme
 - **`sitemap.xml` e `robots.txt`** generati dal codice, con le bozze escluse
+- **`/llms.txt`**, che descrive il sito alle macchine che lo riassumono, a partire da nome, descrizione e contenuti. `NEXT_PUBLIC_LLMS_SUMMARY` ci aggiunge in cima una frase tua: di' cosa fai e per chi, con le parole che userebbe chi lo sta cercando
 
 La sezione FAQ rende su più di una pagina, quindi i dati strutturati vengono emessi solo dove si usa `<FAQ withJsonLd />`, che di default è la home. Se la sposti, sposta anche il flag e tienilo su una pagina sola: la stessa FAQ pubblicata sotto più indirizzi vale meno che sotto uno solo.

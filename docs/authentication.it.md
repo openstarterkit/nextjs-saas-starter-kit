@@ -2,7 +2,7 @@
 title: Autenticazione
 description: OAuth, magic link, email e password, reset e collegamento degli account.
 translated_from: authentication.md
-source_checksum: 8c6fdfdf3c3b
+source_checksum: cd219032f8a5
 ---
 
 # Autenticazione
@@ -36,7 +36,7 @@ Se `RESEND_API_KEY` non è impostata, il pulsante si nasconde da solo e il provi
 
 Accesso, registrazione, magic link e richieste di reset passano da un piccolo limitatore a finestra fissa (`src/lib/rate-limit.ts`). Di default i contatori vivono nella memoria di ogni istanza, il che su serverless significa che una richiesta finita su un'altra istanza riparte da zero: consideralo un dosso e non un muro, con il costo di bcrypt come freno vero contro la forza bruta.
 
-Dalla v2.2 il muro dista due variabili d'ambiente. Imposta `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` e gli stessi contatori si spostano su Upstash Redis, condivisi fra tutte le istanze e tutte le regioni. Sono entrambe facoltative per scelta — una variabile obbligatoria avrebbe reso questa release una major per chiunque avesse già clonato il kit — e non cambia nient'altro: nessuna libreria client installata, sono due comandi in una sola `fetch`.
+Dalla v2.2 il muro dista due variabili d'ambiente. Imposta `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` e gli stessi contatori si spostano su Upstash Redis, condivisi fra tutte le istanze e tutte le regioni. Sono entrambe facoltative per scelta, perché una variabile obbligatoria avrebbe reso questa release una major per chiunque avesse già clonato il kit, e non cambia nient'altro: nessuna libreria client installata, sono due comandi in una sola `fetch`.
 
 Se l'archivio condiviso è configurato ma irraggiungibile, il limitatore ricade sul contatore in memoria invece di fallire in una delle due direzioni. Rifiutare tutti porterebbe giù il sito insieme al Redis; lasciar passare tutti toglierebbe la protezione proprio quando qualcosa è già rotto.
 
@@ -80,12 +80,12 @@ Ogni account con una password può attivare un secondo fattore da Dashboard → 
 |---|---|
 | Email e password | **Richiesto.** La password da sola non apre nessuna sessione |
 | Magic link | **Non viene proprio inviato** agli account con la verifica attiva |
-| Google / GitHub | **Non richiesto** — il provider lo fa già meglio |
+| Google / GitHub | **Non richiesto**: il provider lo fa già meglio |
 | Accesso dev / demo | Non richiesto, e l'account demo non può attivarla |
 
 Tre di queste righe sono decisioni, non impostazioni predefinite, e ognuna merita una frase.
 
-**Il magic link viene trattenuto** perché apre una sessione direttamente: per un account con la verifica attiva sarebbe un modo di girare intorno proprio alla cosa che il suo proprietario ha acceso. Nessuno resta chiuso fuori, perché per attivare la verifica serve comunque una password. La risposta è identica a quella normale — stesso reindirizzamento, nessun messaggio — così non la si può usare per chiedere se un indirizzo ha un account o se quell'account ha la verifica attiva; al posto della spiegazione c'è una riga sulla pagina di accesso, rivolta a tutti.
+**Il magic link viene trattenuto** perché apre una sessione direttamente: per un account con la verifica attiva sarebbe un modo di girare intorno proprio alla cosa che il suo proprietario ha acceso. Nessuno resta chiuso fuori, perché per attivare la verifica serve comunque una password. La risposta è identica a quella normale (stesso reindirizzamento, nessun messaggio), così non la si può usare per chiedere se un indirizzo ha un account o se quell'account ha la verifica attiva; al posto della spiegazione c'è una riga sulla pagina di accesso, rivolta a tutti.
 
 **Il reset della password non è lo stesso buco**, e vale la pena sapere perché: dopo un reset si rientra comunque da email e password, che il codice lo chiedono.
 
@@ -97,7 +97,7 @@ Tre di queste righe sono decisioni, non impostazioni predefinite, e ognuna merit
 
 Dieci, ognuno valido per un solo accesso e consumato quando lo usi. Si vedono **una volta sola**, in fase di attivazione, e non sono più recuperabili: rigenerarli sostituisce l'intera serie e i vecchi smettono di funzionare subito.
 
-Sono generati in maiuscolo e senza `0`, `O`, `1` e `I` (`src/lib/backup-codes.ts`), perché finiscono scritti su carta e vengono ridigitati il giorno in cui il telefono non c'è più; a chi li digita si perdonano minuscole, spazi e trattino mancante, mai un codice sbagliato. Sono conservati **cifrati** con `AUTH_SECRET`, come il segreto TOTP stesso — ed è l'unica conseguenza operativa da conoscere prima di ruotare quella variabile: ruotarla rende illeggibili tutti i segreti e tutti i codici di backup.
+Sono generati in maiuscolo e senza `0`, `O`, `1` e `I` (`src/lib/backup-codes.ts`), perché finiscono scritti su carta e vengono ridigitati il giorno in cui il telefono non c'è più; a chi li digita si perdonano minuscole, spazi e trattino mancante, mai un codice sbagliato. Sono conservati **cifrati** con `AUTH_SECRET`, come il segreto TOTP stesso, ed è l'unica conseguenza operativa da conoscere prima di ruotare quella variabile: ruotarla rende illeggibili tutti i segreti e tutti i codici di backup.
 
 ### Se sono spariti sia il telefono sia i codici
 
@@ -115,7 +115,7 @@ Verifica chi te lo sta chiedendo prima di eseguirla. Quella query è l'intero pe
 Un utente, più modi per entrare:
 
 - **Automatico**: un provider che ha verificato l'indirizzo si aggancia all'account che ce l'ha già. Entra con Google, più avanti con GitHub sullo stesso indirizzo, e finisci sullo stesso account. Il magic link e il flusso con password fanno corrispondere l'email allo stesso modo.
-- **Tranne che per gli account con la verifica in due passaggi**, dove la metà automatica viene rifiutata. Better Auth chiede il secondo fattore all'accesso con email e da nessun'altra parte, quindi senza questo un account protetto da password e TOTP potrebbe essere aperto da chiunque controlli un account Google con lo stesso indirizzo: preme «Continue with Google», viene agganciato, ed entra senza password e senza codice — anche non avendo mai collegato Google. Viene rifiutata solo la metà automatica: collegare il provider **tu stesso da Settings** continua a funzionare, perché quella richiesta porta con sé la tua sessione e quando la fai sei già passato dal secondo fattore. La regola sta in quattro booleani, in `src/lib/account-linking.ts`.
+- **Tranne che per gli account con la verifica in due passaggi**, dove la metà automatica viene rifiutata. Better Auth chiede il secondo fattore all'accesso con email e da nessun'altra parte, quindi senza questo un account protetto da password e TOTP potrebbe essere aperto da chiunque controlli un account Google con lo stesso indirizzo: preme «Continue with Google», viene agganciato, ed entra senza password e senza codice, anche non avendo mai collegato Google. Viene rifiutata solo la metà automatica: collegare il provider **tu stesso da Settings** continua a funzionare, perché quella richiesta porta con sé la tua sessione e quando la fai sei già passato dal secondo fattore. La regola sta in quattro booleani, in `src/lib/account-linking.ts`.
 - **Manuale**: Dashboard → Settings → **Sign-in methods** mostra i provider collegati con i pulsanti Connect e Disconnect, più un modulo per impostare o cambiare la password. Collegarne uno avvia un normale flusso OAuth mentre sei già dentro, e questo fa sì che l'adapter agganci il nuovo account invece di crearne uno.
 - **Protezione dall'autoesclusione**: non puoi scollegare l'unico modo che ti resta per entrare. Il server verifica che sopravviva almeno un metodo: un altro provider, una password, oppure il magic link quando Resend è configurato.
 

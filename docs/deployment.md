@@ -63,6 +63,8 @@ Repeating it is not pedantry. Setting it once and then running three commands wo
 
 Use the direct connection string, which on Neon is the host without `-pooler`. The check only reads, and never applies anything.
 
+**The host does not identify the database.** On Neon a single endpoint can serve several databases, so two connection strings can differ only in the name after the last `/` and reach completely different data. The check prints both on its first line, `Checking <host> / <database>`, and `prisma migrate deploy` prints them on its `Datasource` line. Read the whole line, not the host.
+
 Run them before the first deploy, and before deploying every release that adds a migration unless its [upgrade notes](./upgrading.md) say otherwise. Then seed the plans once: `npx prisma db seed`.
 
 After a deploy, `/api/health` reports `schema: { aligned, pending }`, and `npm run smoke -- https://yourdomain.com` fails when the database is behind the build.

@@ -2,7 +2,7 @@
 title: Deployment
 description: "In produzione su Vercel: variabili, migrazioni, webhook, e come diventare amministratore."
 translated_from: deployment.md
-source_checksum: 44162e31b690
+source_checksum: bfaa1da69543
 ---
 
 # Deployment
@@ -69,6 +69,8 @@ $env:DATABASE_URL="postgresql://..."; npx prisma migrate deploy; Remove-Item Env
 Ripeterla non è pignoleria. Impostarla una volta e poi lanciare tre comandi funziona finché quella shell se la tiene, e una shell che l'ha persa non fallisce: ricade sui tuoi file env e migra il database di sviluppo, dichiarando successo. Entrambi i comandi stampano il database a cui si sono collegati prima di fare qualsiasi cosa, `check:deploy` sulla prima riga e Prisma sulla riga `Datasource`. Leggi quella riga ogni volta.
 
 Usa la stringa di connessione diretta, che su Neon è l'host senza `-pooler`. Il controllo legge soltanto, e non applica mai niente.
+
+**L'host non identifica il database.** Su Neon un solo endpoint può servire più database, quindi due stringhe di connessione possono differire solo nel nome dopo l'ultimo `/` e finire su dati completamente diversi. Il controllo li stampa entrambi sulla prima riga, `Checking <host> / <database>`, e `prisma migrate deploy` li stampa sulla riga `Datasource`. Leggi la riga intera, non l'host.
 
 Eseguili prima del primo deploy, e prima di pubblicare ogni release che aggiunge una migrazione, a meno che le sue [note di aggiornamento](./upgrading.md) dicano altrimenti. Poi inserisci i piani una volta sola: `npx prisma db seed`.
 

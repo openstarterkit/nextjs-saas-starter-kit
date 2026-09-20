@@ -20,7 +20,7 @@ For the first local run you only need two values:
 
 ```bash title=".env.local"
 DATABASE_URL="postgresql://..."   # your Postgres connection string
-AUTH_SECRET="..."                 # generate one: npx auth secret
+AUTH_SECRET="..."                 # generate one: openssl rand -base64 32
 ```
 
 Everything else (OAuth, Stripe, email) can wait: the kit degrades gracefully and each feature turns on when its variables are set. The full reference is in [Configuration](./configuration.md).

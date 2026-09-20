@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 886cfe93cefe
+source_checksum: df269813d7aa
 ---
 
 # Aggiornare
@@ -45,6 +45,12 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.3.1: check:deploy arriva in fondo anche su un database precedente alla 2.0
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare, niente da decidere.
+
+Prendila prima della migrazione 2.0, se sei ancora sulla 1.x. Su un database la cui tabella account è ancora quella di Auth.js, `npm run check:deploy` si fermava con `column "providerId" does not exist` e codice di uscita 2, una riga prima dei conteggi. Ora dice quale forma ha trovato e stampa i conteggi di utenti, account e sessioni, che sono i numeri da confrontare dopo che la migrazione 2.0 ha spostato le password dentro la tabella account.
 
 ## 2.3.0: pagamenti più completi, e un controllo prima di ogni migrazione
 
