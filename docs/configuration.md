@@ -41,6 +41,10 @@ Setup: create an account at [resend.com](https://resend.com), verify your domain
 
 Verifying the domain in Resend sets up SPF and DKIM, not a DMARC policy. Add a DMARC record at your DNS provider as well, a `TXT` record on `_dmarc.yourdomain.com` such as `v=DMARC1; p=quarantine; rua=mailto:you@yourdomain.com`: without one, some mailbox providers file transactional email as spam, and nothing tells receiving servers what to do with mail that fakes your domain.
 
+**When an email does not arrive, look in the logs.** Resend can refuse a message the kit handed it: the sending domain is not verified yet, the plan's daily quota is spent, or the recipient is on Resend's suppression list. Every refusal is logged as `[email] <kind> rejected by Resend`, with Resend's reason and status, and never with the recipient's address. The contact form tells the visitor when their message did not go. The password reset, magic link, change of email and newsletter signup deliberately do not: they answer the same way whether or not an address is registered, so that nobody can use them to find out who has an account, and a visible error on failure would undo that. On an unverified domain every email is refused from the first one, which makes it the most likely cause on a new deployment.
+
+*One case needs a person rather than a fix:* a contact who unsubscribes is removed from the Resend audience too, and if Resend refuses that removal the log line says so, because a broadcast sent from Resend would still reach them. Remove them by hand before the next one.
+
 ## Stripe
 
 1. Create an account at [stripe.com](https://stripe.com) and copy the **Secret key** into `STRIPE_SECRET_KEY` (and the publishable key into `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`).

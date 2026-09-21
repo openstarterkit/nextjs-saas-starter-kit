@@ -46,14 +46,19 @@ export async function sendContactRequest(_prev: ContactState, formData: FormData
     return { status: "error", error: t("tooManyMessages") }
   }
 
+  // "sent" only when Resend accepted it. A refused send does not throw, so
+  // until 2.3.2 this form said "sent" for a message that was lost; the refusal
+  // is logged inside sendContactMessage, and the visitor gets the address to
+  // write to instead.
   try {
-    await sendContactMessage(parsed.data.email, parsed.data.name, parsed.data.message)
-    return { status: "sent" }
+    if (await sendContactMessage(parsed.data.email, parsed.data.name, parsed.data.message)) {
+      return { status: "sent" }
+    }
   } catch (error) {
     console.error("[contact] send failed:", error)
-    return {
-      status: "error",
-      error: t("contactSendFailed", { email: siteConfig.contactEmail }),
-    }
+  }
+  return {
+    status: "error",
+    error: t("contactSendFailed", { email: siteConfig.contactEmail }),
   }
 }

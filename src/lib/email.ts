@@ -3,6 +3,7 @@ import { siteConfig } from "@/config/site"
 import { emailAccent } from "@/config/brand"
 import { getTranslations } from "next-intl/server"
 import { routing } from "@/i18n/routing"
+import { deliver } from "@/lib/email-delivery"
 
 /**
  * Subjects for the transactional emails.
@@ -35,12 +36,14 @@ const FROM_ADDRESS = process.env.EMAIL_FROM ?? `${siteConfig.name} <${siteConfig
 
 export async function sendWelcomeEmail(to: string, name: string) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: (await emailStrings())("welcome", { site: siteConfig.name }),
-    html: await welcomeTemplate(name),
-  })
+  return deliver("welcome", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: (await emailStrings())("welcome", { site: siteConfig.name }),
+      html: await welcomeTemplate(name),
+    }),
+  )
 }
 
 export async function sendSubscriptionConfirmation(
@@ -56,14 +59,16 @@ export async function sendSubscriptionConfirmation(
   trialEndDate?: string
 ) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: trialEndDate
-      ? (await emailStrings())("trialStarted", { plan: planName })
-      : (await emailStrings())("subscriptionActive", { plan: planName }),
-    html: await subscriptionTemplate(name, planName, amount, currency, renewalDate, trialEndDate),
-  })
+  return deliver("subscription-confirmation", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: trialEndDate
+        ? (await emailStrings())("trialStarted", { plan: planName })
+        : (await emailStrings())("subscriptionActive", { plan: planName }),
+      html: await subscriptionTemplate(name, planName, amount, currency, renewalDate, trialEndDate),
+    }),
+  )
 }
 
 export async function sendPurchaseConfirmation(
@@ -74,52 +79,62 @@ export async function sendPurchaseConfirmation(
   currency: string
 ) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: (await emailStrings())("purchaseConfirmed", { plan: planName }),
-    html: await purchaseTemplate(name, planName, amount, currency),
-  })
+  return deliver("purchase-confirmation", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: (await emailStrings())("purchaseConfirmed", { plan: planName }),
+      html: await purchaseTemplate(name, planName, amount, currency),
+    }),
+  )
 }
 
 export async function sendMagicLinkEmail(to: string, url: string) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: (await emailStrings())("magicLink", { site: siteConfig.name }),
-    html: await magicLinkTemplate(url),
-  })
+  return deliver("magic-link", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: (await emailStrings())("magicLink", { site: siteConfig.name }),
+      html: await magicLinkTemplate(url),
+    }),
+  )
 }
 
 export async function sendPasswordResetEmail(to: string, url: string) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: (await emailStrings())("passwordReset", { site: siteConfig.name }),
-    html: await passwordResetTemplate(url),
-  })
+  return deliver("password-reset", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: (await emailStrings())("passwordReset", { site: siteConfig.name }),
+      html: await passwordResetTemplate(url),
+    }),
+  )
 }
 
 export async function sendChangeEmailConfirmation(to: string, newEmail: string, url: string) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: (await emailStrings())("changeEmail", { site: siteConfig.name }),
-    html: await changeEmailTemplate(newEmail, url),
-  })
+  return deliver("change-email", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: (await emailStrings())("changeEmail", { site: siteConfig.name }),
+      html: await changeEmailTemplate(newEmail, url),
+    }),
+  )
 }
 
 export async function sendSubscriptionCancelledEmail(to: string, name: string, endDate: string) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: (await emailStrings())("subscriptionCancelled", { site: siteConfig.name }),
-    html: await cancellationTemplate(name, endDate),
-  })
+  return deliver("subscription-cancelled", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: (await emailStrings())("subscriptionCancelled", { site: siteConfig.name }),
+      html: await cancellationTemplate(name, endDate),
+    }),
+  )
 }
 
 function baseTemplate(content: string) {
@@ -290,13 +305,15 @@ async function cancellationTemplate(name: string, endDate: string) {
  */
 export async function sendContactMessage(fromEmail: string, name: string | undefined, message: string) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to: siteConfig.contactEmail,
-    replyTo: fromEmail,
-    subject: (await emailStrings())("contact", { from: name || fromEmail }),
-    html: contactTemplate(escapeHtml(fromEmail), name ? escapeHtml(name) : undefined, escapeHtml(message)),
-  })
+  return deliver("contact-message", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to: siteConfig.contactEmail,
+      replyTo: fromEmail,
+      subject: (await emailStrings())("contact", { from: name || fromEmail }),
+      html: contactTemplate(escapeHtml(fromEmail), name ? escapeHtml(name) : undefined, escapeHtml(message)),
+    }),
+  )
 }
 
 function escapeHtml(value: string): string {
@@ -323,22 +340,26 @@ function contactTemplate(email: string, name: string | undefined, message: strin
 
 export async function sendNewsletterConfirmEmail(to: string, confirmUrl: string) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: (await emailStrings())("newsletterConfirm", { site: siteConfig.name }),
-    html: await newsletterConfirmTemplate(confirmUrl),
-  })
+  return deliver("newsletter-confirm", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: (await emailStrings())("newsletterConfirm", { site: siteConfig.name }),
+      html: await newsletterConfirmTemplate(confirmUrl),
+    }),
+  )
 }
 
 export async function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: string) {
   const resend = getInstance()
-  return resend.emails.send({
-    from: FROM_ADDRESS,
-    to,
-    subject: (await emailStrings())("newsletterWelcome"),
-    html: await newsletterWelcomeTemplate(unsubscribeUrl),
-  })
+  return deliver("newsletter-welcome", async () =>
+    resend.emails.send({
+      from: FROM_ADDRESS,
+      to,
+      subject: (await emailStrings())("newsletterWelcome"),
+      html: await newsletterWelcomeTemplate(unsubscribeUrl),
+    }),
+  )
 }
 
 /**
@@ -350,14 +371,20 @@ export async function syncNewsletterContact(email: string) {
   const audienceId = process.env.RESEND_AUDIENCE_ID
   if (!audienceId) return
   const resend = getInstance()
-  await resend.contacts.create({ email, audienceId, unsubscribed: false })
+  await deliver("audience-add", () => resend.contacts.create({ email, audienceId, unsubscribed: false }))
 }
 
 export async function removeNewsletterContact(email: string) {
   const audienceId = process.env.RESEND_AUDIENCE_ID
   if (!audienceId) return
   const resend = getInstance()
-  await resend.contacts.remove({ email, audienceId })
+  await deliver(
+    "audience-remove",
+    () => resend.contacts.remove({ email, audienceId }),
+    // The one refusal that needs a person: this contact unsubscribed, and a
+    // broadcast sent from Resend would still reach them.
+    "this person unsubscribed: remove the contact from the Resend audience by hand before the next broadcast",
+  )
 }
 
 async function newsletterConfirmTemplate(confirmUrl: string) {

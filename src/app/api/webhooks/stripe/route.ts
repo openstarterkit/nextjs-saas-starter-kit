@@ -123,7 +123,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   })
   if (isNewSubscription && user && process.env.RESEND_API_KEY) {
     const { sendSubscriptionConfirmation } = await import("@/lib/email")
-    sendSubscriptionConfirmation(
+    // Awaited: a promise left running after the response has no guarantee of
+    // finishing on a serverless platform. It cannot fail the webhook, because a
+    // refusal is reported and logged rather than thrown.
+    await sendSubscriptionConfirmation(
       user.email,
       user.name ?? "",
       plan.name,
@@ -180,7 +183,7 @@ async function handleOneTimeCheckout(session: Stripe.Checkout.Session) {
     })
     if (user) {
       const { sendPurchaseConfirmation } = await import("@/lib/email")
-      sendPurchaseConfirmation(
+      await sendPurchaseConfirmation(
         user.email,
         user.name ?? "",
         plan.name,
@@ -225,7 +228,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     })
     if (user && process.env.RESEND_API_KEY) {
       const { sendSubscriptionCancelledEmail } = await import("@/lib/email")
-      sendSubscriptionCancelledEmail(user.email, user.name ?? "", longDate(currentPeriodEnd)).catch(
+      await sendSubscriptionCancelledEmail(user.email, user.name ?? "", longDate(currentPeriodEnd)).catch(
         console.error
       )
     }

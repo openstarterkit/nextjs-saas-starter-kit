@@ -19,17 +19,20 @@ const SECRET = "whsec_test_secret"
 const prismaMock = {
   user: { findUnique: vi.fn(), update: vi.fn() },
   subscription: { upsert: vi.fn(), update: vi.fn(), updateMany: vi.fn(), findFirst: vi.fn() },
-  purchase: { create: vi.fn(), findFirst: vi.fn() },
+  purchase: { create: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), upsert: vi.fn() },
   plan: { findFirst: vi.fn(), findUnique: vi.fn() },
 }
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }))
-vi.mock("@/lib/email", () => ({
-  sendSubscriptionWelcomeEmail: vi.fn(),
-  sendPurchaseReceiptEmail: vi.fn(),
+// The names the route actually imports. Until 2.3.2 this mocked three
+// functions that no longer existed, which went unnoticed because no test here
+// reached a handler: they all stopped at the signature gate.
+const emailMock = {
+  sendSubscriptionConfirmation: vi.fn(),
+  sendPurchaseConfirmation: vi.fn(),
   sendSubscriptionCancelledEmail: vi.fn(),
-  sendPaymentFailedEmail: vi.fn(),
-}))
+}
+vi.mock("@/lib/email", () => emailMock)
 
 const { POST } = await import("./route")
 
@@ -121,5 +124,48 @@ describe("POST /api/webhooks/stripe: signature gate", () => {
     expect(prismaMock.user.update).not.toHaveBeenCalled()
     expect(prismaMock.subscription.upsert).not.toHaveBeenCalled()
     expect(prismaMock.purchase.create).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * Past the gate, for the one thing 2.3.2 changes here: the confirmation email
+ * is now awaited, and a refusal from Resend comes back as `false` instead of
+ * an exception. A payment that was taken must be acknowledged either way,
+ * because a 500 makes Stripe deliver the same event again.
+ */
+describe("POST /api/webhooks/stripe: a refused email never fails the payment", () => {
+  const paidOnce = () =>
+    event("checkout.session.completed", {
+      id: "cs_1",
+      mode: "payment",
+      payment_intent: "pi_1",
+      amount_total: 9900,
+      currency: "usd",
+      metadata: { userId: "user_1", planId: "plan_1" },
+    })
+
+  beforeEach(() => {
+    process.env.RESEND_API_KEY = "re_placeholder"
+    prismaMock.plan.findUnique.mockResolvedValue({ id: "plan_1", name: "Lifetime", price: 9900 })
+    prismaMock.purchase.findUnique.mockResolvedValue(null)
+    prismaMock.purchase.upsert.mockResolvedValue({ id: "purchase_1" })
+    prismaMock.user.findUnique.mockResolvedValue({ email: "buyer@example.com", name: "Buyer" })
+  })
+
+  it("records the purchase and answers 200 when Resend refuses the receipt", async () => {
+    emailMock.sendPurchaseConfirmation.mockResolvedValue(false)
+    const response = await POST(signed(paidOnce()) as never)
+    expect(response.status).toBe(200)
+    expect(prismaMock.purchase.upsert).toHaveBeenCalledOnce()
+    expect(emailMock.sendPurchaseConfirmation).toHaveBeenCalledOnce()
+  })
+
+  it("answers 200 even when the send throws, for example with no API key", async () => {
+    emailMock.sendPurchaseConfirmation.mockRejectedValue(new Error("RESEND_API_KEY is not set"))
+    const log = vi.spyOn(console, "error").mockImplementation(() => {})
+    const response = await POST(signed(paidOnce()) as never)
+    expect(response.status).toBe(200)
+    expect(prismaMock.purchase.upsert).toHaveBeenCalledOnce()
+    log.mockRestore()
   })
 })

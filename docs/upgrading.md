@@ -39,6 +39,14 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.3.2: refused emails are logged, and the contact form tells the truth
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to decide.
+
+A message Resend refuses (unverified sending domain, spent quota, suppressed recipient) now appears in your logs as `[email] <kind> rejected by Resend`. Until now it left no trace in production. The contact form tells the visitor; the sign-in and signup flows keep answering as they did, so that they reveal nothing about who has an account.
+
+If you added your own sending code next to `src/lib/email.ts`, pass the Resend call through `deliver()` from `src/lib/email-delivery.ts` the same way, or it keeps the old silence. The kit's send functions now return `true` or `false` instead of Resend's response.
+
 ## 2.3.1: check:deploy runs to the end on a database from before 2.0
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to decide.

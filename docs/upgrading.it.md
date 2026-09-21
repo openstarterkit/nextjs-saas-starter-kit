@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: df269813d7aa
+source_checksum: 65501a153325
 ---
 
 # Aggiornare
@@ -45,6 +45,14 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.3.2: le email rifiutate finiscono nei log, e il modulo contatti dice la verità
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare, niente da decidere.
+
+Un messaggio che Resend rifiuta (dominio mittente non verificato, quota esaurita, destinatario soppresso) ora compare nei log come `[email] <tipo> rejected by Resend`. Finora in produzione non lasciava traccia. Il modulo contatti avvisa il visitatore; i flussi di accesso e di iscrizione rispondono come prima, così non rivelano niente su chi ha un account.
+
+Se hai aggiunto codice tuo che spedisce email accanto a `src/lib/email.ts`, fai passare la chiamata a Resend da `deliver()` di `src/lib/email-delivery.ts` allo stesso modo, altrimenti resta muta come prima. Le funzioni di invio del kit ora restituiscono `true` o `false` invece della risposta di Resend.
 
 ## 2.3.1: check:deploy arriva in fondo anche su un database precedente alla 2.0
 

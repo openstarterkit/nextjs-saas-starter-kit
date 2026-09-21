@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.3.2] - 2026-09-21
+
+📬 **An email that Resend refused left no trace, and the contact form said it had been sent.** The Resend SDK does not throw when it refuses a message: it returns the error, and its own logging is switched off in production. None of the kit's calls looked at it, so a deployment on an unverified sending domain lost every email from the first one, sign-in and password reset included, with nothing in the logs. This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
+
+### Fixed
+
+- **Every email the kit sends, and the two audience operations behind the newsletter, now go through one check** that reads what Resend returns. A refusal is logged as `[email] <kind> rejected by Resend`, with Resend's reason and status and never with the recipient's address, which is masked even when Resend's own message quotes it back
+- **The contact form says when a message did not go**, with the address to write to instead. It used to answer "sent"
+- **The password reset, magic link, change of email and newsletter signup answer exactly as before**, on purpose: they answer the same way whether or not an address is registered, and an error on failure would tell a caller who has an account. The refusal is in the logs instead
+- **An unsubscribe that Resend refuses to pass on is logged with what to do.** The contact is still in the Resend audience, so a broadcast sent from there would reach someone who asked not to be written to
+- **The emails sent from the Stripe webhook, and the welcome email, are awaited** instead of being left running after the response, which a serverless platform does not guarantee to finish. They cannot fail the webhook: a refusal is reported, not thrown
+- [Configuration](./docs/configuration.md) says where to look when an email does not arrive, and the three usual reasons
+
+### Changed
+
+- The send functions in `src/lib/email.ts` return `true` or `false` instead of Resend's response. The kit never read that response; if your own code did, TypeScript points at the line
+
+---
+
 ## [2.3.1] - 2026-09-20
 
 🔧 **`npm run check:deploy` stopped with an error instead of an answer on a database that has not taken the 2.0 migration yet.** If you are still on 1.x, take this release before you migrate: the command now runs to the end on your database, and the numbers it prints at the end are the ones to write down before a migration that moves your passwords.
@@ -553,6 +572,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.3.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.2
 [2.3.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.1
 [2.3.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.0
 [2.2.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.2.0

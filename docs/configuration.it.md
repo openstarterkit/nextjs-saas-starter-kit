@@ -2,7 +2,7 @@
 title: Configurazione
 description: "Ogni variabile d'ambiente spiegata: database, OAuth, Stripe, email, marchio."
 translated_from: configuration.md
-source_checksum: 75046c9c0973
+source_checksum: bc249b8dfb06
 ---
 
 # Configurazione
@@ -47,6 +47,10 @@ Entrambi i provider sono facoltativi: configura quelli che vuoi sulla pagina di 
 Come si prepara: apri un account su [resend.com](https://resend.com), verifica il dominio, crea una chiave API.
 
 La verifica del dominio su Resend imposta SPF e DKIM, non una politica DMARC. Aggiungi anche un record DMARC dal tuo provider DNS, un record `TXT` su `_dmarc.iltuodominio.com` come `v=DMARC1; p=quarantine; rua=mailto:tu@iltuodominio.com`: senza, alcuni provider di posta mettono le email transazionali nello spam, e nessuno dice ai server che le ricevono cosa fare con la posta che si finge spedita dal tuo dominio.
+
+**Quando un'email non arriva, guarda nei log.** Resend può rifiutare un messaggio che il kit gli ha passato: il dominio mittente non è ancora verificato, la quota giornaliera del piano è finita, oppure il destinatario è nella lista di soppressione di Resend. Ogni rifiuto viene scritto nei log come `[email] <tipo> rejected by Resend`, con il motivo e il codice di Resend, e mai con l'indirizzo del destinatario. Il modulo contatti avvisa il visitatore quando il suo messaggio non è partito. Il reset della password, il link magico, il cambio email e l'iscrizione alla newsletter invece no, di proposito: rispondono allo stesso modo che un indirizzo sia registrato o no, così nessuno li può usare per scoprire chi ha un account, e un errore visibile in caso di rifiuto annullerebbe questa protezione. Con un dominio non verificato viene rifiutata ogni email fin dalla prima, ed è quindi la causa più probabile su un deploy nuovo.
+
+*Un caso richiede una persona invece di una correzione:* un contatto che si disiscrive viene tolto anche dall'audience di Resend, e se Resend rifiuta la rimozione la riga di log lo dice, perché un broadcast spedito da Resend lo raggiungerebbe lo stesso. Toglilo a mano prima del prossimo invio.
 
 ## Stripe
 

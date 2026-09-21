@@ -323,7 +323,9 @@ export const auth = betterAuth({
         after: async (user) => {
           if (user.email && process.env.RESEND_API_KEY) {
             const { sendWelcomeEmail } = await import("@/lib/email")
-            sendWelcomeEmail(user.email, user.name ?? "").catch(console.error)
+            // Awaited for the same reason as the webhook emails: nothing
+            // guarantees a promise left running after the response finishes.
+            await sendWelcomeEmail(user.email, user.name ?? "").catch(console.error)
           }
         },
       },
