@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 - **The Quick start in the README is the same first run as [Getting started](./docs/getting-started.md)**: prerequisites, clone and install, `npm run dev`, database, tables, sign in. The setup of each provider (Google, GitHub, Stripe, Resend) stays in [Configuration](./docs/configuration.md), which had it all along
 - **One command to generate `AUTH_SECRET`**, the `node` one, which works in PowerShell too. The guide used `openssl`, which Windows does not ship
 - **The guides create the database before asking for its connection string**, which is the order you do it in, and say that the seed writes six example plans, one of them inactive, not two
+- **Dependencies**: `lucide-react` 1.48, `vitest` and `@vitest/coverage-v8` 5, `@types/node` 26, `dotenv` 18. The kit's own tests, build and audit run green on all of them
 
 ### If you keep two different databases in `.env` and `.env.local`
 
