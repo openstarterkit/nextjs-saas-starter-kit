@@ -7,6 +7,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.3.3] - 2026-09-26
+
+🚀 **A fresh clone now reaches the dashboard by following the guide.** The guides put your variables in `.env.local`, the Prisma commands read only `.env`, so `npx prisma migrate deploy` stopped at *"The datasource.url property is required in your Prisma config file"* on a first run. And before a database exists the landing page had no plans to show, and failed. This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
+
+### Fixed
+
+- **`npx prisma migrate deploy`, `npx prisma db seed` and `npx prisma studio` read `.env.local` first and `.env` after it**, the order Next.js already used, so the commands in the guide and `npm run dev` open the same database. A variable set in the shell still wins over both files, which is what the production migration in [Deployment](./docs/deployment.md) relies on
+- **A seed that fails exits with an error.** It used to print the error and exit 0, and Prisma signed off with "The seed command has been executed"
+- **Without a database, the landing and pricing pages show the steps left** instead of failing: the one you are on is marked, and the full guide is one link away. Development only, and only until the database is ready
+
+### Changed
+
+- **The Quick start in the README is the same first run as [Getting started](./docs/getting-started.md)**: prerequisites, clone and install, `npm run dev`, database, tables, sign in. The setup of each provider (Google, GitHub, Stripe, Resend) stays in [Configuration](./docs/configuration.md), which had it all along
+- **One command to generate `AUTH_SECRET`**, the `node` one, which works in PowerShell too. The guide used `openssl`, which Windows does not ship
+- **The guides create the database before asking for its connection string**, which is the order you do it in, and say that the seed writes six example plans, one of them inactive, not two
+
+### If you keep two different databases in `.env` and `.env.local`
+
+The Prisma commands used to act on the one in `.env` and now act on the one in `.env.local`, the same one the app opens. Everything else is unchanged: see [Upgrading](./docs/upgrading.md).
+
+---
+
 ## [2.3.2] - 2026-09-21
 
 📬 **An email that Resend refused left no trace, and the contact form said it had been sent.** The Resend SDK does not throw when it refuses a message: it returns the error, and its own logging is switched off in production. None of the kit's calls looked at it, so a deployment on an unverified sending domain lost every email from the first one, sign-in and password reset included, with nothing in the logs. This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.

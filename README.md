@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.3.2-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.3.3-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -120,6 +120,8 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 
 > 📚 Prefer step-by-step guides? The full documentation lives in [docs/](./docs/README.md) and is rendered at [openstarterkit.dev/docs](https://openstarterkit.dev/docs): getting started, configuration, authentication, deployment.
 
+**You need:** Node 24 or newer, git, and a PostgreSQL database ([Neon](https://neon.tech) has a free tier).
+
 ### 1. Clone and install
 
 ```bash
@@ -128,63 +130,55 @@ cd nextjs-saas-starter-kit
 npm install
 ```
 
-### 2. Environment variables
-
-```bash
-cp .env.example .env.local
-```
-
-Fill in all variables: see [.env.example](.env.example) for the full list with comments.
-
-### 3. Database setup
-
-Create a PostgreSQL database (Neon recommended, free tier available at [neon.tech](https://neon.tech)), then apply the committed migrations and seed the example data:
-
-```bash
-npx prisma migrate deploy   # applies the committed migrations
-npx prisma generate         # generates the Prisma client
-npx prisma db seed          # seeds two example plans (edit prisma/seed.ts for your own)
-```
-
-### 4. OAuth credentials
-
-**Google:** [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → OAuth 2.0 Client ID
-- Authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
-
-**GitHub:** [github.com/settings/developers](https://github.com/settings/developers) → OAuth Apps → New OAuth App
-- Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
-
-### 5. Stripe setup
-
-1. Create an account at [stripe.com](https://stripe.com)
-2. Copy your **Secret key** → `STRIPE_SECRET_KEY`
-3. Create your product(s) in the Stripe dashboard. The seed ships two **example**
-   recurring prices (monthly + yearly) just so the checkout flow works out of the
-   box; replace them with your own product's plans.
-4. Copy your **Price IDs** → set `STRIPE_PRO_PRICE_ID` / `STRIPE_PRO_YEARLY_PRICE_ID`
-   (or edit `prisma/seed.ts` directly), then run `npx prisma db seed`
-5. For webhooks locally, install [Stripe CLI](https://stripe.com/docs/stripe-cli):
-   ```bash
-   stripe listen --forward-to localhost:3000/api/webhooks/stripe
-   ```
-   Copy the webhook signing secret → `STRIPE_WEBHOOK_SECRET`
-
-### 6. Resend (email, optional)
-
-1. Create account at [resend.com](https://resend.com)
-2. Add and verify your domain
-3. Create API key → `RESEND_API_KEY`
-4. Set `EMAIL_FROM` to `"OpenStarterKit <hello@yourdomain.com>"`
-
-### 7. Run
+### 2. Start it
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). 🎉
+Open [http://localhost:3000](http://localhost:3000). There is no database yet, so the page lists the steps left and marks the one you are on. It appears in development only, until the database is ready.
 
-### 8. Make it yours
+### 3. Create a database, then fill `.env.local`
+
+Create a PostgreSQL database and copy the connection string it gives you. On Neon that is the pooled one, and it ends with `?sslmode=require`: change that to `?sslmode=verify-full`, the stricter mode, or Node prints an SSL warning at every start.
+
+```bash
+cp .env.example .env.local      # Command Prompt on Windows: copy .env.example .env.local
+```
+
+Two values are enough for the first run:
+
+```bash title=".env.local"
+DATABASE_URL="postgresql://..."   # the connection string from your database
+AUTH_SECRET="..."                 # any random value; generate one with the command below
+```
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+Paste what it prints between the quotes of `AUTH_SECRET`.
+
+Leave `DIRECT_URL` as it is: the kit does not read it, and it ships in the example only because some hosts set it for you.
+
+Everything else (sign-in providers, Stripe, email) can wait: each feature turns on when its variables are set, and stays quietly off when they are not. Every variable is listed with its comment in [.env.example](.env.example) and explained in [Configuration](./docs/configuration.md).
+
+### 4. Create the tables
+
+```bash
+npx prisma migrate deploy   # applies the committed migrations
+npx prisma db seed          # six example plans, one inactive (edit prisma/seed.ts later)
+```
+
+Both read `.env.local`, the same file the app reads.
+
+### 5. Sign in
+
+Restart `npm run dev` and open the site again. Click **Sign in**: in development the login page has a **Dev Login (Admin)** button, which needs no OAuth app and lands you in the dashboard as an admin. 🎉
+
+**Next:** sign-in providers, Stripe and email each have their setup in [Configuration](./docs/configuration.md), and the same five steps with more detail are in [Getting started](./docs/getting-started.md).
+
+### 6. Make it yours
 
 Your brand lives in **two files**. Swap them and the whole app follows:
 
@@ -334,7 +328,7 @@ Your environment is validated at boot (`src/instrumentation.ts`): a configuratio
 
 ```bash
 npm run smoke -- https://your-app.com
-npm run smoke -- https://your-app.com --expect-version 2.3.2
+npm run smoke -- https://your-app.com --expect-version 2.3.3
 ```
 
 Checks a running deployment from the outside: `/api/health` (including whether the database has every migration the build ships), home, blog index, feed, a real post, the SEO surfaces, and two routing guards (an unknown path is a 404, `/dashboard` redirects to sign in). With `--expect-version` it also compares the version the site reports with the one you are releasing, which is how you catch a deploy that succeeded while still serving the previous build.

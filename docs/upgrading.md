@@ -39,6 +39,16 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.3.3: the Prisma commands read `.env.local`, like the app
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to decide.
+
+`npx prisma migrate deploy`, `npx prisma db seed` and `npx prisma studio` now read `.env.local` first and `.env` after it, the order Next.js already used. Until now they read only `.env`, so a clone that followed the guide and put `DATABASE_URL` in `.env.local` stopped at *"The datasource.url property is required in your Prisma config file"*.
+
+**Read this if you keep two different databases in the two files.** The Prisma commands used to act on the one in `.env`; from 2.3.3 they act on the one in `.env.local`, the same one the app opens. A variable set in the shell still wins over both files, so `DATABASE_URL="...direct..." npx prisma migrate deploy` from [Deployment](./deployment.md) is unchanged.
+
+A seed that fails now exits with an error instead of exit code 0, so a script that runs it stops instead of carrying on against an empty database.
+
 ## 2.3.2: refused emails are logged, and the contact form tells the truth
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to decide.

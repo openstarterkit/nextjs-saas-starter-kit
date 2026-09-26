@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 65501a153325
+source_checksum: fb7a28eef304
 ---
 
 # Aggiornare
@@ -45,6 +45,16 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.3.3: i comandi di Prisma leggono `.env.local`, come l'app
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare, niente da decidere.
+
+`npx prisma migrate deploy`, `npx prisma db seed` e `npx prisma studio` ora leggono prima `.env.local` e poi `.env`, lo stesso ordine che Next.js usava già. Finora leggevano solo `.env`, quindi chi seguiva la guida e metteva `DATABASE_URL` in `.env.local` si fermava su *«The datasource.url property is required in your Prisma config file»*.
+
+**Leggi qui se tieni due database diversi nei due file.** I comandi di Prisma agivano su quello di `.env`; dalla 2.3.3 agiscono su quello di `.env.local`, cioè lo stesso che apre l'app. Una variabile impostata nella shell vince ancora su tutti e due i file, quindi `DATABASE_URL="...diretta..." npx prisma migrate deploy` di [Deployment](./deployment.md) non cambia.
+
+Un seed che fallisce ora esce con un errore invece che con codice 0, così uno script che lo lancia si ferma invece di proseguire su un database vuoto.
 
 ## 2.3.2: le email rifiutate finiscono nei log, e il modulo contatti dice la verità
 

@@ -800,6 +800,21 @@
       "subtitle": "Start free and upgrade when you need more. Every plan below comes straight from your database, so your pricing changes without a deploy."
     }
   },
+  "setup": {
+    "title": "Almost there",
+    "subtitle": "The app is running. It needs a database before it can show anything else.",
+    "step1Title": "Create a database and fill .env.local",
+    "step1Body": "First create a PostgreSQL database (Neon has a free tier). Then copy .env.example to .env.local next to this project: .env.local is the file you edit, the example stays as it is. Put the connection string in DATABASE_URL, and fill AUTH_SECRET with what this command prints.",
+    "step1Note": "Every time you change .env.local, stop the dev server (Ctrl+C) and start it again: the values are read when it boots.",
+    "step1Unreachable": "DATABASE_URL is set, but the database did not answer. Check the connection string in .env.local: the host, the password, and that the database still exists.",
+    "step2Title": "Apply the migrations",
+    "step2Body": "The first creates the tables, the second adds the example plans.",
+    "step2Note": "Seeing an SSL warning in the terminal? The string Neon gives you ends with sslmode=require: change it to sslmode=verify-full in .env.local.",
+    "step3Title": "Restart",
+    "step3Body": "Stop the dev server and start it again. The landing page comes back, and Sign in has a Dev Login (Admin) button that needs no OAuth app.",
+    "guideCta": "Read the full guide",
+    "devOnly": "This page only appears in development, while the database is not ready."
+  },
   "waitlist": {
     "cta": "Join the waitlist",
     "note": "One short email when there is something worth telling you. Unsubscribe anytime, one click.",

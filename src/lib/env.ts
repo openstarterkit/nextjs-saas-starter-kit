@@ -136,8 +136,30 @@ export function parseEnv(source: EnvSource = process.env): Env {
   throw new Error(`Invalid environment configuration:\n${lines.join("\n")}`)
 }
 
-/** Called at boot. A no-op when SKIP_ENV_VALIDATION is set. */
+/**
+ * Called at boot. A no-op when SKIP_ENV_VALIDATION is set.
+ *
+ * A clone that has just been installed has no `DATABASE_URL` yet, and in
+ * development that is exactly the state the page at `/` exists to explain.
+ * Stopping the boot would replace that page with a stack trace at the second
+ * command of the guide, so the missing database is reported and the server
+ * starts.
+ *
+ * Everything else still stops the boot: a half-configured Stripe or Resend is
+ * the failure this check is for. And in production a missing database stops
+ * the boot as it always did.
+ */
 export function validateEnv(source: EnvSource = process.env): void {
   if (source.SKIP_ENV_VALIDATION === "true") return
+
+  if (source.NODE_ENV !== "production" && !source.DATABASE_URL) {
+    // Checked with a placeholder in its place, so every other rule still runs.
+    parseEnv({ ...source, DATABASE_URL: "postgresql://unset" })
+    console.warn(
+      "[env] DATABASE_URL is not set. Starting anyway: open the app and the page lists the steps left (docs/getting-started.md).",
+    )
+    return
+  }
+
   parseEnv(source)
 }

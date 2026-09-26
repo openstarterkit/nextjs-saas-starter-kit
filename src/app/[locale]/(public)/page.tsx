@@ -8,6 +8,8 @@ import { siteConfig } from "@/config/site"
 import { pageMetadata } from "@/lib/metadata"
 import { isKitSite } from "@/config/kit"
 import { jsonLdScript } from "@/lib/json-ld"
+import { pendingSetup } from "@/lib/setup-status"
+import { SetupGuide } from "@/components/setup-guide"
 
 export const metadata: Metadata = pageMetadata({
   title: siteConfig.seoTitle ?? `${siteConfig.name} | ${siteConfig.tagline}`,
@@ -30,7 +32,13 @@ const organizationJsonLd = {
   sameAs: [siteConfig.links.githubOrg, siteConfig.links.x].filter(Boolean),
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // A fresh clone has no database yet, and the plans below come from one: this
+  // page used to open on a stack trace. Development only, and not on the kit's
+  // own site, whose tiers are hand-written and need no database.
+  const setup = isKitSite ? null : await pendingSetup()
+  if (setup) return <SetupGuide step={setup} />
+
   // Pricing comes from your Plan rows. The kit's own site (KIT_SITE="true")
   // swaps in the hand-written open source tiers instead: a free one plus a
   // waitlist for a paid one.

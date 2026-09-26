@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import { parseEnv, validateEnv } from "@/lib/env"
 
 const DB = "postgresql://user:pass@localhost:5432/db"
@@ -151,10 +151,33 @@ describe("flags", () => {
 
 describe("validateEnv", () => {
   it("throws on an invalid environment", () => {
-    expect(() => validateEnv({})).toThrow()
+    expect(() => validateEnv(base({ STRIPE_SECRET_KEY: "sk_test_x" }))).toThrow()
   })
 
   it("is a no-op when SKIP_ENV_VALIDATION is set, for CI steps with no secrets", () => {
     expect(() => validateEnv({ SKIP_ENV_VALIDATION: "true" })).not.toThrow()
+  })
+
+  /**
+   * The second command of the guide is `npm run dev`, before there is any
+   * database: the page that lists the steps left cannot appear if the boot
+   * stops first. It is the one exception, and only outside production.
+   */
+  it("starts in development without a database, and says which step is missing", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    expect(() => validateEnv({ NODE_ENV: "development" })).not.toThrow()
+    expect(warn).toHaveBeenCalledOnce()
+    expect(String(warn.mock.calls[0][0])).toContain("DATABASE_URL")
+    warn.mockRestore()
+  })
+
+  it("still stops the boot in production without a database", () => {
+    expect(() => validateEnv({ NODE_ENV: "production" })).toThrow(/DATABASE_URL/)
+  })
+
+  it("still stops the boot for a half-configured service, database or not", () => {
+    expect(() =>
+      validateEnv({ NODE_ENV: "development", STRIPE_SECRET_KEY: "sk_test_x" }),
+    ).toThrow(/STRIPE_WEBHOOK_SECRET/)
   })
 })

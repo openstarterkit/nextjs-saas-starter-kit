@@ -4,6 +4,8 @@ import { FAQ } from "@/components/landing/faq"
 import { siteConfig } from "@/config/site"
 import { pageMetadata } from "@/lib/metadata"
 import { isKitSite } from "@/config/kit"
+import { pendingSetup } from "@/lib/setup-status"
+import { SetupGuide } from "@/components/setup-guide"
 
 export const metadata = pageMetadata({
   title: `Pricing | ${siteConfig.name}`,
@@ -13,7 +15,13 @@ export const metadata = pageMetadata({
   path: "/pricing",
 })
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  // The plans on this page come from the database, so before one is ready it
+  // says what to do instead of failing. Development only, and not on the kit's
+  // own site, where the tiers are hand-written and need no database.
+  const setup = isKitSite ? null : await pendingSetup()
+  if (setup) return <SetupGuide step={setup} />
+
   // Same swap as the landing page: plans from the database, unless this
   // deployment is the kit's own site (KIT_SITE="true"). Here the pricing
   // section is the page's own heading, so it renders as the h1 this page was

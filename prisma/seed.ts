@@ -14,6 +14,15 @@ const prisma = new PrismaClient({ adapter })
 // seeded inactive: see docs/billing.md to enable it).
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * `.env.example` ships every unused variable as VAR="", so an empty string has
+ * to mean "not configured" here too. With `??` it reached the database, and six
+ * plans sharing one empty price ID break the unique index on the second upsert:
+ * the seed failed for anyone who copied the example file, which is what the
+ * guide tells you to do.
+ */
+const priceId = (value: string | undefined, placeholder: string) => value?.trim() || placeholder
+
 const examplePlans: {
   slug: string
   name: string
@@ -32,7 +41,7 @@ const examplePlans: {
     description: "Example entry plan: replace with your own",
     price: 900,
     interval: "MONTH",
-    stripePriceId: process.env.STRIPE_STARTER_PRICE_ID ?? "price_starter_placeholder",
+    stripePriceId: priceId(process.env.STRIPE_STARTER_PRICE_ID, "price_starter_placeholder"),
     features: ["Up to 3 projects", "Basic analytics", "Community support"],
   },
   {
@@ -41,7 +50,7 @@ const examplePlans: {
     description: "Example annual plan: save 2 months",
     price: 9000,
     interval: "YEAR",
-    stripePriceId: process.env.STRIPE_STARTER_YEARLY_PRICE_ID ?? "price_starter_yearly_placeholder",
+    stripePriceId: priceId(process.env.STRIPE_STARTER_YEARLY_PRICE_ID, "price_starter_yearly_placeholder"),
     features: ["Up to 3 projects", "Basic analytics", "2 months free"],
   },
   {
@@ -50,7 +59,7 @@ const examplePlans: {
     description: "Example paid plan: replace with your own",
     price: 1900,
     interval: "MONTH",
-    stripePriceId: process.env.STRIPE_PRO_PRICE_ID ?? "price_pro_placeholder",
+    stripePriceId: priceId(process.env.STRIPE_PRO_PRICE_ID, "price_pro_placeholder"),
     // A free trial, to show the pattern: offered once per customer at checkout
     // (docs/billing.md). Remove the line and the plan has none.
     trialDays: 14,
@@ -67,7 +76,7 @@ const examplePlans: {
     description: "Example annual plan: save 2 months",
     price: 19000,
     interval: "YEAR",
-    stripePriceId: process.env.STRIPE_PRO_YEARLY_PRICE_ID ?? "price_pro_yearly_placeholder",
+    stripePriceId: priceId(process.env.STRIPE_PRO_YEARLY_PRICE_ID, "price_pro_yearly_placeholder"),
     features: ["Everything in Pro", "2 months free", "Priority support"],
   },
   {
@@ -76,7 +85,7 @@ const examplePlans: {
     description: "Example one-time purchase: pay once, keep it forever",
     price: 29900,
     interval: "ONE_TIME",
-    stripePriceId: process.env.STRIPE_LIFETIME_PRICE_ID ?? "price_lifetime_placeholder",
+    stripePriceId: priceId(process.env.STRIPE_LIFETIME_PRICE_ID, "price_lifetime_placeholder"),
     features: ["Everything in Pro", "All future updates", "No recurring billing"],
   },
   {
@@ -87,7 +96,7 @@ const examplePlans: {
     description: "Example usage-based plan billed per API request",
     price: 0,
     interval: "MONTH",
-    stripePriceId: process.env.STRIPE_METERED_PRICE_ID ?? "price_metered_placeholder",
+    stripePriceId: priceId(process.env.STRIPE_METERED_PRICE_ID, "price_metered_placeholder"),
     features: ["Billed per API request", "No monthly minimum"],
     meterEventName: "api_request",
     isActive: false,
@@ -114,5 +123,10 @@ async function main() {
 }
 
 main()
-  .catch(console.error)
+  .catch((error) => {
+    console.error(error)
+    // Without this the process exits 0, and Prisma signs off with "The seed
+    // command has been executed" after a seed that did nothing.
+    process.exitCode = 1
+  })
   .finally(() => prisma.$disconnect())

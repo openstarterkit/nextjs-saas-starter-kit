@@ -35,7 +35,9 @@ function FileIcon({ filename }: { filename: string }) {
   if (/\.json$/.test(filename)) return <FileJson className={className} aria-hidden="true" />
   if (/\.(css|scss)$/.test(filename)) return <Palette className={className} aria-hidden="true" />
   if (/\.(md|mdx|txt)$/.test(filename)) return <FileText className={className} aria-hidden="true" />
-  if (/\.(sh|bash|zsh)$|^\.env|^Dockerfile/.test(filename))
+  // "terminal" is not a file, and it is the honest label for a block you are
+  // meant to run rather than save: the setup guide uses it.
+  if (/\.(sh|bash|zsh)$|^\.env|^Dockerfile|^terminal$/.test(filename))
     return <Terminal className={className} aria-hidden="true" />
   return <FileCode className={className} aria-hidden="true" />
 }
