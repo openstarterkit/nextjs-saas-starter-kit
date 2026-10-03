@@ -7,6 +7,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.3.4] - 2026-10-03
+
+🔐 **Security: update now if you use the magic link together with Google or GitHub sign-in.** Better Auth 1.7.7 fixes a critical vulnerability ([GHSA-965c-763c-88jm](https://github.com/better-auth/better-auth/security/advisories/GHSA-965c-763c-88jm)): the state of an OAuth sign-in was accepted as a magic link token, so anyone who knew a user's email could sign in as them without access to the mailbox. The kit is affected when `RESEND_API_KEY` is set and at least one social provider has credentials. This is a PATCH: `git pull`, `npm install`. Nothing to migrate.
+
+### Security
+
+- **Better Auth 1.7.7** and its Prisma adapter. Magic links sent before the update stop working: ask for a new one
+- **Magic link tokens are stored hashed** (`storeToken: "hashed"` in `src/auth.ts`): a copy of the database no longer holds a working link
+- **Next.js 16.3.8**: seven advisories, among them a server-side request forgery in image optimization and cache poisoning on self-hosted static pages
+
+### Changed
+
+- **Authentication and Billing say what the kit is built for**: one person running their product, and three ways to add teams if you need them
+- **Dependencies**: `next-intl` 4.14.9, `resend` 6.32, `@stripe/stripe-js` 9.17. Production dependencies audit at zero
+- **The `next dev` indicator sits bottom right**, out of the way of the account menu
+
+### Fixed
+
+- **Every heading in the guides has its own anchor.** Upgrading had "What to do" twice, so the second link in its outline led to the first section. A test now fails on two headings with the same anchor in any guide, in any language
+
 ## [2.3.3] - 2026-09-26
 
 🚀 **A fresh clone now reaches the dashboard by following the guide.** The guides put your variables in `.env.local`, the Prisma commands read only `.env`, so `npx prisma migrate deploy` stopped at *"The datasource.url property is required in your Prisma config file"* on a first run. And before a database exists the landing page had no plans to show, and failed. This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
@@ -595,6 +615,8 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.3.4]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.4
+[2.3.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.3
 [2.3.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.2
 [2.3.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.1
 [2.3.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.0

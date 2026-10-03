@@ -118,3 +118,11 @@ One user, several ways in:
 2. Add its credentials to `.env.example` and your env files.
 3. Add a button on `src/app/(auth)/login/page.tsx` (copy one of the existing OAuth forms).
 4. Optionally list it in `PROVIDER_LABELS` in `src/app/(dashboard)/dashboard/settings/page.tsx` so it appears under Sign-in methods.
+
+## Teams and organizations
+
+OpenStarterKit is built for one person running their product: every account, subscription and project belongs to a user, and the roles are `USER` and `ADMIN`. If your app needs teams, you have three options:
+
+- **Build organizations yourself**, on top of the `User` model and the `@/lib/auth` boundary.
+- **Use the [organization plugin](https://www.better-auth.com/docs/plugins/organization)** that ships with Better Auth: organizations, members, invitations and roles, with the interface and the billing left to you.
+- **Use [OSK Pro](https://openstarterkit.dev/pricing)**, which adds teams, roles, invitations and team billing on top of this kit. Pro arrives on November 19. Join the list for a reserved price.

@@ -25,6 +25,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // The indicator `next dev` draws in a corner of the page. Bottom left, its
+  // default, puts it on top of the dashboard's account menu, where it reads as
+  // part of the app. Development only: production builds never show it.
+  devIndicators: { position: "bottom-right" },
   // The /docs pages render the repo's docs/*.md at request time (the navbar
   // session check makes them dynamic), so the files must ship with the
   // serverless bundle.

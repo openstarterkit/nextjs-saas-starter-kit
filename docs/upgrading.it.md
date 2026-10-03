@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: fb7a28eef304
+source_checksum: cb6bf3055ec1
 ---
 
 # Aggiornare
@@ -45,6 +45,14 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.3.4: un aggiornamento di sicurezza per il magic link
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare.
+
+**Aggiorna subito se `RESEND_API_KEY` è impostata e l'accesso con Google o GitHub ha le credenziali.** Better Auth 1.7.7 corregge [GHSA-965c-763c-88jm](https://github.com/better-auth/better-auth/security/advisories/GHSA-965c-763c-88jm), dove lo state di un accesso OAuth veniva accettato come token di un magic link. I magic link inviati prima dell'aggiornamento, e gli accessi OAuth in corso in quel momento, non si completano: chiedi un link nuovo o ricomincia.
+
+I token del magic link ora sono salvati cifrati. Se la tua configurazione imposta `verification.storeIdentifier` a `"hashed"`, leggi l'avviso prima di contarci.
 
 ## 2.3.3: i comandi di Prisma leggono `.env.local`, come l'app
 
@@ -174,7 +182,7 @@ Il tuo lockfile è fermo alla 1.7.2, quindi finché non aggiorni le dipendenze n
 si rompe niente. Ed è proprio lì il rischio: il cambiamento arriva vestito da
 numero di patch.
 
-### Cosa fare
+### Cosa fare per la tabella account
 
 ```bash
 git fetch upstream --tags
@@ -263,7 +271,7 @@ ricava `emailVerified` dal fatto che il timestamp di Auth.js fosse valorizzato,
 e Auth.js lo lascia nullo per quasi tutti gli account creati via OAuth. Quegli
 utenti ricevono `account not linked` e non entrano affatto.
 
-### Cosa fare
+### Cosa fare per l'issuer
 
 Prendi la release ed esegui la migration. È un file nuovo e non una correzione
 di quello della 2.0, perché una migration applicata non viene mai rieseguita:

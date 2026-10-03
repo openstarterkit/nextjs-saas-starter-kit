@@ -2,7 +2,7 @@
 title: Autenticazione
 description: OAuth, magic link, email e password, reset e collegamento degli account.
 translated_from: authentication.md
-source_checksum: cd219032f8a5
+source_checksum: 7944361e4f54
 ---
 
 # Autenticazione
@@ -125,3 +125,11 @@ Un utente, più modi per entrare:
 2. Aggiungi le sue credenziali a `.env.example` e ai tuoi file di ambiente.
 3. Aggiungi un pulsante in `src/app/(auth)/login/page.tsx`, copiando uno dei moduli OAuth già presenti.
 4. Se vuoi, elencalo in `PROVIDER_LABELS` dentro `src/app/(dashboard)/dashboard/settings/page.tsx`, così compare sotto Sign-in methods.
+
+## Team e organizzazioni
+
+OpenStarterKit è pensato per una persona che gestisce il proprio prodotto: ogni account, abbonamento e progetto appartiene a un utente, e i ruoli sono `USER` e `ADMIN`. Se la tua app ha bisogno dei team, hai tre strade:
+
+- **Costruire le organizzazioni da te**, sopra il modello `User` e il confine `@/lib/auth`.
+- **Usare il [plugin organization](https://www.better-auth.com/docs/plugins/organization)** che arriva con Better Auth: organizzazioni, membri, inviti e ruoli, con l'interfaccia e il billing lasciati a te.
+- **Usare [OSK Pro](https://openstarterkit.dev/pricing)**, che aggiunge team, ruoli, inviti e billing del team sopra questo kit. Pro arriva il 19 novembre. Iscriviti alla lista per un prezzo riservato.

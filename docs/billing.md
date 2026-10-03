@@ -23,6 +23,8 @@ if (entitlement.kind === "free") {
 }
 ```
 
+Every subscription and purchase belongs to one user: the kit has no organizations. If your product sells to teams, see [Teams and organizations](./authentication.md#teams-and-organizations).
+
 ## Subscriptions
 
 The flow: the user picks a plan on `/dashboard/billing`, `POST /api/checkout` validates the price against the `Plan` table and opens Stripe Checkout in `subscription` mode, and the webhook (`/api/webhooks/stripe`) upserts the `Subscription` row when `checkout.session.completed` arrives. Plan changes, cancellations and payment methods are handled by the Stripe Customer Portal (`POST /api/billing/portal`): the kit deliberately ships no in-app proration logic.

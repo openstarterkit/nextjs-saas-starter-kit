@@ -112,12 +112,27 @@ Billing that goes past a single checkout, and a check that stops a deploy from g
 
 *Two items announced here are not part of it: plan changes with proration stay in the Stripe Customer Portal, which already prorates, and profile photo upload is not in this release.*
 
-## 🎯 Pro - Teams & scale *(paid, coming)*
-The paid tier, built for teams. The waitlist is open: subscribers get build updates when there is real news, and an early adopter discount at launch. Everything in the free kit, plus:
-- Multi-tenancy / teams & organizations
-- Role-based permissions (beyond USER/ADMIN)
-- Team billing & seat management
-- Get paid your way: extra payment methods and alternative providers, merchant of record included
+## 🎯 Pro & Pro Studio - Teams *(paid, launching November 19)*
+The paid tier, built on this kit for products where people work together. A one-time purchase with updates for life.
+
+**Dates**
+- **October 31**: the launch price for the waitlist is announced.
+- **November 19**: Pro and Pro Studio launch for the waitlist, at the launch price.
+- **November 27**: last day of the launch price. Anyone who joins the waitlist by then gets it.
+- **November 28**: open sale at the full price.
+
+**Included at launch**
+- Teams and organizations, next to the personal space every user keeps
+- Member invitations by email, and ownership transfer
+- Roles beyond USER/ADMIN: owner, admin, member, and your own roles in code
+- Team billing with seats, with the team's own Stripe customer and portal
+- Email support and private Discord access, for Pro and Pro Studio
+
+More is planned after launch, and everything that joins the Pro later is included.
+
+**Pro** is for one person and their own products. **Pro Studio** is for an organization, client work included, with up to five people on the repository.
+
+Join the waitlist on [openstarterkit.dev/pricing](https://openstarterkit.dev/pricing).
 
 ---
 

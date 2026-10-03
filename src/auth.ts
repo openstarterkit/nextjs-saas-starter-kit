@@ -341,6 +341,14 @@ export const auth = betterAuth({
       ? [
           magicLink({
             expiresIn: 15 * 60, // link valid for 15 minutes
+            // Stored as a hash, not as the token itself. Whoever reads the
+            // database, from a leaked backup to a bug elsewhere, finds nothing
+            // that opens an account. It is also one of the mitigations named by
+            // GHSA-965c-763c-88jm, fixed in Better Auth 1.7.7, where an OAuth
+            // state value was accepted as a magic link token: with tokens
+            // hashed, the two can no longer meet in storage. Keep the global
+            // `verification.storeIdentifier` unset (or "plain") for that to hold.
+            storeToken: "hashed",
             sendMagicLink: async ({ email, url }) => {
               const { sendMagicLinkEmail } = await import("@/lib/email")
               await sendMagicLinkEmail(email, url)

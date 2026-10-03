@@ -39,6 +39,14 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.3.4: a security update for the magic link
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate.
+
+**Update now if `RESEND_API_KEY` is set and Google or GitHub sign-in has credentials.** Better Auth 1.7.7 fixes [GHSA-965c-763c-88jm](https://github.com/better-auth/better-auth/security/advisories/GHSA-965c-763c-88jm), where the state of an OAuth sign-in was accepted as a magic link token. Magic links sent before the update, and OAuth sign-ins in progress at that moment, cannot complete: ask for a new link or start again.
+
+Magic link tokens are now stored hashed. If your own configuration sets `verification.storeIdentifier` to `"hashed"`, read the advisory before relying on that.
+
 ## 2.3.3: the Prisma commands read `.env.local`, like the app
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to decide.
@@ -164,7 +172,7 @@ at a time.
 Your lockfile pins 1.7.2, so nothing breaks until a dependency update moves you.
 That is the actual risk here: the change arrives wearing a patch number.
 
-### What to do
+### What to do about the account table
 
 ```bash
 git fetch upstream --tags
@@ -251,7 +259,7 @@ The 2.0 migration derives `emailVerified` from whether the Auth.js timestamp was
 set, and Auth.js leaves it null for most accounts created through OAuth. Those
 users get `account not linked` and cannot sign in at all.
 
-### What to do
+### What to do about the issuer
 
 Take the release and run the migration. It is a new file rather than a fix to
 the 2.0 one, because an applied migration is never run again: editing the 2.0

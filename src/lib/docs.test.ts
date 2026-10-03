@@ -92,6 +92,38 @@ describe("the frontmatter of every translation", () => {
   })
 })
 
+describe("heading anchors in every guide", () => {
+  // Two headings with the same title in one page get the same id, because the
+  // page derives each id from its own text. The outline then has two links to
+  // the first section, and a reader following the second one lands on the
+  // wrong instructions. Upgrading had "What to do" twice, under 2.1.0 and
+  // 2.0.2, for exactly that reader: somebody in the middle of a migration.
+  // Every guide, both folders, every language: h2 to h4, the levels the page
+  // gives ids to.
+  const files = ["docs", path.join("content", "docs")].flatMap((dir) =>
+    fs
+      .readdirSync(path.join(ROOT, dir))
+      .filter((f) => f.endsWith(".md") && f !== "README.md")
+      .map((f) => path.join(dir, f))
+  )
+
+  it.each(files)("%s has no two headings with the same anchor", (file) => {
+    const seen = new Map<string, number>()
+    let inFence = false
+    for (const line of fs.readFileSync(path.join(ROOT, file), "utf8").split(/\r?\n/)) {
+      if (line.startsWith("```")) inFence = !inFence
+      if (inFence) continue
+      const match = /^#{2,4}\s+(.+?)\s*#*$/.exec(line)
+      if (match) {
+        const slug = slugify(match[1])
+        seen.set(slug, (seen.get(slug) ?? 0) + 1)
+      }
+    }
+    const repeated = [...seen].filter(([, n]) => n > 1).map(([slug]) => slug)
+    expect(repeated, `rename one of the headings behind: ${repeated.join(", ")}`).toEqual([])
+  })
+})
+
 describe("slugify", () => {
   it("lowercases and joins words with hyphens", () => {
     expect(slugify("Getting Started")).toBe("getting-started")

@@ -2,7 +2,7 @@
 title: Pagamenti e abbonamenti
 description: Abbonamenti, prove gratuite, pagamenti una tantum, consumo a metrica, codici promozionali, fatture e Stripe Tax.
 translated_from: billing.md
-source_checksum: 434ec6e4c25e
+source_checksum: e3b34e74f8e4
 ---
 
 # Pagamenti e abbonamenti
@@ -29,6 +29,8 @@ if (entitlement.kind === "free") {
   // mostra l'invito a passare a un piano
 }
 ```
+
+Ogni abbonamento e acquisto appartiene a un utente: il kit non ha organizzazioni. Se il tuo prodotto vende a team, vedi [Team e organizzazioni](./authentication.md#team-e-organizzazioni).
 
 ## Abbonamenti
 
