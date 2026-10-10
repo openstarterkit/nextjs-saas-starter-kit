@@ -539,12 +539,11 @@
   },
   "hero": {
     "$kit": {
-      "headlineHead": "Ship your SaaS",
-      "headlineAccent": "this weekend.",
-      "subtitle": "Production-ready boilerplate with auth, payments, dashboard, and admin panel. It is plain Next.js: no compiler, no config layer, nothing new to learn before you can change a line.",
+      "headlineHead": "Your Next.js SaaS Starter Kit.",
+      "headlineAccent": "Production-ready. Free.",
+      "subtitle": "Auth, payments, dashboard and admin panel, ready for production and free for life. It is plain Next.js: no compiler, no config layer, nothing new to learn before you can change a line.",
       "cta": "Start free",
-      "trust": "Free & open source · No credit card required · Pro (teams) coming soon",
-      "pill": "Now open source & free"
+      "pill": "Open Source & Free · Pro and Pro Studio on November 19"
     },
     "$product": {
       "headlineHead": "",
@@ -656,7 +655,20 @@
     "terms": "Terms of Service",
     "cookies": "Cookie Policy",
     "copyright": "© {year} {site}. All rights reserved.",
-    "license": "MIT License · Built with Next.js"
+    "license": "MIT License · Built with Next.js",
+    "signup": {
+      "$kit": {
+        "title": "Pro launches November 19.",
+        "cta": "Join",
+        "disabledNote": "The waitlist opens shortly."
+      },
+      "$product": {
+        "title": "Get product updates by email.",
+        "cta": "Subscribe",
+        "disabledNote": "Forms are disabled in the live demo."
+      },
+      "sent": "Almost there: check your inbox to confirm."
+    }
   },
   "about": {
     "$kit": {
@@ -734,7 +746,7 @@
           "answer": "You get a production-ready Next.js 16 codebase with Better Auth, Stripe, Prisma, and Tailwind pre-configured. Clone the repo, set your env variables, and deploy. Everything works out of the box."
         },
         {
-          "question": "Why not ShipFast or Makerkit?",
+          "question": "Why {site} instead of other starter kits?",
           "answer": "{site} uses a best-of-breed stack where every component is independent. No Supabase lock-in, no proprietary auth layer. If a dependency releases a breaking change, you update one package, not the entire stack."
         },
         {
@@ -752,6 +764,10 @@
         {
           "question": "What if I need help or find a bug?",
           "answer": "Open an issue on GitHub. It's open source, so you get every update and bug fix by pulling the latest main. For direct support, reach out via email."
+        },
+        {
+          "question": "What are Pro and Pro Studio, and when do they launch?",
+          "answer": "The paid tier, built on this kit for products where people work together: teams, invitations, roles and team billing. A one-time purchase with updates for life. Pro is for one person and their own products; Pro Studio is for an organization, client work included, with up to five people on the repository. On October 31 the launch price for the waitlist is announced. On November 19 both launch for the waitlist at that price, until November 27. From November 28 they are on sale to everyone at the full price."
         }
       ]
     }
@@ -759,17 +775,18 @@
   "pricing": {
     "$kit": {
       "title": "Start free, scale when you grow",
-      "subtitle": "Open source and free forever: auth, payments, admin and emails included. Teams & multi-tenancy are coming as Pro.",
+      "subtitle": "Open source and free forever: auth, payments, admin and emails included. Teams arrive with Pro on November 19.",
       "freeTitle": "Free",
       "freeDescription": "Open source, the complete core",
       "forever": "forever",
       "getOnGithub": "Get it on GitHub",
       "noSignup": "Clone, star, and ship. No signup required",
-      "proTitle": "Pro · Teams",
-      "comingSoon": "Coming soon",
-      "proDescription": "For teams that scale. Help us shape it",
-      "youTellUs": "You tell us the price",
-      "waitlistCta": "Join the Pro waitlist",
+      "proTitle": "Pro · Pro Studio · Teams",
+      "statusBadge": "Waitlist open",
+      "proDescription": "For apps that need teams, and for studios that build them.",
+      "launchDate": "November 19",
+      "launchOffer": "Launch day, with a discount for the waitlist: the discounted price is announced on October 31.",
+      "waitlistCta": "Join the Pro & Pro Studio waitlist",
       "waitlistNote": "One short email when there is real news. Early adopters get a launch discount. Unsubscribe anytime, one click.",
       "formsDisabled": "Forms are disabled in the live demo.",
       "freeFeatures": [
@@ -780,16 +797,18 @@
         "Admin panel (users, metrics, roles)",
         "Transactional emails (Resend)",
         "Dashboard, dark mode, route protection",
-        "1-click Vercel deploy + demo mode",
+        "1-click Vercel deploy",
+        "Demo mode: one-click sign-in, sample data, reset",
         "MIT license, use in client projects"
       ],
       "proFeatures": [
         "Everything in Free, plus:",
-        "Teams & organizations (multi-tenancy)",
-        "Role-based permissions beyond USER/ADMIN",
-        "Team billing & seat management",
-        "Member invitations & access control",
-        "More ways to get paid (providers & methods)"
+        "Teams and organizations",
+        "Invitations and ownership transfer",
+        "Roles: owner, admin, member, and your own",
+        "Team billing with seats",
+        "Email support and private Discord",
+        "Everything we add after launch, included"
       ]
     }
   },
@@ -821,7 +840,7 @@
     "disabledNote": "Forms are disabled in the live demo.",
     "consent": "By joining you agree to our <privacy>Privacy Policy</privacy>.",
     "sent": "Almost there: check your inbox to confirm your spot.",
-    "emailPlaceholder": "you@company.com",
+    "emailPlaceholder": "Your email",
     "emailLabel": "Email address",
     "sending": "Joining…"
   },

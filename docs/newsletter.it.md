@@ -2,12 +2,14 @@
 title: Newsletter e waitlist
 description: Lista con doppio opt-in, registro del consenso, sincronizzazione con Resend ed export dall'amministrazione.
 translated_from: newsletter.md
-source_checksum: e88bee27b420
+source_checksum: eb4919511669
 ---
 
 # Newsletter e waitlist
 
 Il kit include una lista con doppio opt-in che vive nel tuo database. È quella che alimenta la waitlist pre-lancio sulla pagina dei prezzi, ed è una funzione riutilizzabile: la lista, il flusso di conferma e l'export dall'amministrazione restano tuoi.
+
+La alimentano tre form: la waitlist sulla pagina dei prezzi, `<NewsletterSignup />` dentro un articolo del blog e un'iscrizione di una riga nel footer di ogni pagina pubblica (`src/components/landing/footer-signup.tsx`, testo in `footer.signup`). Quella del footer resta spenta finché non imposti `WAITLIST_ENABLED="true"`, da fare quando la tua informativa vera è pubblicata, e richiede anche un provider email, perché senza la conferma non arriverebbe mai. Per toglierla del tutto cancella la sua riga in `footer.tsx`. Ogni form manda il suo `source`, così l'export dell'amministrazione dice quale ha portato ciascun indirizzo.
 
 ## Come funziona
 

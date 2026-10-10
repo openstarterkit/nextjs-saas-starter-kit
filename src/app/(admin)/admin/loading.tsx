@@ -1,5 +1,5 @@
-import { BrandLoader } from "@/components/ui/spinner"
+import { RouteLoading } from "@/components/navigation-overlay"
 
 export default function AdminLoading() {
-  return <BrandLoader />
+  return <RouteLoading />
 }

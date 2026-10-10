@@ -34,9 +34,12 @@ const ARC_MASK =
 export function BrandLoader({
   label,
   className,
+  ring = true,
 }: {
   label?: string
   className?: string
+  /** The orbiting ring around the tile. Off, only the logo head turns. */
+  ring?: boolean
 }) {
   const t = useTranslations("loading")
   return (
@@ -46,22 +49,33 @@ export function BrandLoader({
       className={cn("flex min-h-[50vh] flex-col items-center justify-center gap-5", className)}
     >
       <div className="relative h-[72px] w-[72px]">
-        {/* faint full track */}
-        <span aria-hidden="true" className="absolute inset-0 rounded-full border-[3px] border-primary/10" />
-        {/* brand-gradient arc with a fading tail — the moving part */}
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 animate-spin rounded-full will-change-transform"
-          style={{
-            background:
-              "conic-gradient(from 0deg, transparent 50%, var(--primary-2) 82%, var(--primary) 100%)",
-            mask: ARC_MASK,
-            WebkitMask: ARC_MASK,
-            animationDuration: "800ms",
-          }}
-        />
+        {ring && (
+          <>
+            {/* faint full track */}
+            <span aria-hidden="true" className="absolute inset-0 rounded-full border-[3px] border-primary/10" />
+            {/* brand-gradient arc with a fading tail — the moving part */}
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 animate-spin rounded-full will-change-transform"
+              style={{
+                background:
+                  "conic-gradient(from 0deg, transparent 50%, var(--primary-2) 82%, var(--primary) 100%)",
+                mask: ARC_MASK,
+                WebkitMask: ARC_MASK,
+                animationDuration: "800ms",
+              }}
+            />
+          </>
+        )}
         <span className="absolute inset-0 flex items-center justify-center">
-          <LogoMark className="h-11 w-11 rounded-2xl ring-1 ring-primary/15" iconClassName="h-6 w-6" />
+          {/* The head turns too, faster than in the header (a turn every 1.6s
+              instead of 8s): a wait lasts a second, and at the header's pace
+              it would barely move. */}
+          <LogoMark
+            animated
+            className="h-11 w-11 rounded-2xl ring-1 ring-primary/15"
+            iconClassName="h-6 w-6 [animation-duration:1.6s]"
+          />
         </span>
       </div>
       {/* One announcement, not two: with a visible label the sr-only copy

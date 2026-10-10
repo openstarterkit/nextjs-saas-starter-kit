@@ -7,6 +7,7 @@ import { PendingButton } from "@/components/auth/pending-button"
 import { AuthNotice } from "@/components/auth/auth-notice"
 import { Input } from "@/components/ui/input"
 import { siteConfig } from "@/config/site"
+import { emailEnabled } from "@/lib/email-transport"
 
 export default async function SignupPage({
   searchParams,
@@ -26,7 +27,7 @@ export default async function SignupPage({
   // Marketing deployments delegate auth to the demo deployment.
   if (!isDemo && siteConfig.links.demo) redirect(siteConfig.links.demo)
 
-  const hasEmailService = !!process.env.RESEND_API_KEY
+  const hasEmailService = emailEnabled()
 
   return (
     <div className="flex flex-col gap-4">

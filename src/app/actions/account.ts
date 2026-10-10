@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma"
 import { passwordSchema } from "@/lib/password"
 import { stripe } from "@/lib/stripe"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { emailEnabled } from "@/lib/email-transport"
 
 // Account-management actions behind a session: link/unlink OAuth providers
 // and set or change the password. Outcomes surface as query params on the
@@ -60,7 +61,7 @@ export async function unlinkProvider(formData: FormData) {
   // Lock-out guard: after unlinking there must still be a way in — another
   // provider, a password, or the magic link (which needs Resend configured).
   const remainingMethods =
-    oauthAccounts.length - 1 + (hasPassword ? 1 : 0) + (process.env.RESEND_API_KEY ? 1 : 0)
+    oauthAccounts.length - 1 + (hasPassword ? 1 : 0) + (emailEnabled() ? 1 : 0)
   if (remainingMethods < 1) redirect(`${SETTINGS}?error=last-method`)
 
   await prisma.account.delete({ where: { id: accountId } })

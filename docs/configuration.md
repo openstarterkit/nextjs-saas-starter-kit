@@ -37,7 +37,7 @@ Both providers are optional; configure the ones you want on the login page.
 | `RESEND_API_KEY` | Enables all outgoing email: welcome, subscription, **magic link sign-in** and **password reset**. Without it, those two auth flows hide themselves in the UI. |
 | `EMAIL_FROM` | Sender identity, e.g. `"YourApp <hello@yourdomain.com>"`. The domain must be verified in Resend. |
 
-Setup: create an account at [resend.com](https://resend.com), verify your domain, create an API key.
+Setup: create an account at [resend.com](https://resend.com), verify your domain, create an API key. Another provider (SMTP, Postmark, SES): see [Email](./email.md).
 
 Verifying the domain in Resend sets up SPF and DKIM, not a DMARC policy. Add a DMARC record at your DNS provider as well, a `TXT` record on `_dmarc.yourdomain.com` such as `v=DMARC1; p=quarantine; rua=mailto:you@yourdomain.com`: without one, some mailbox providers file transactional email as spam, and nothing tells receiving servers what to do with mail that fakes your domain.
 
@@ -84,7 +84,7 @@ Worth knowing which limit to move first, because they are not protecting the sam
 | `NEXT_PUBLIC_DEMO_URL` | On a marketing deployment, points the sign-in links at your demo instance. |
 | `CRON_SECRET` | Demo deployments only. `vercel.json` schedules a daily reseed at 04:00 UTC so shared demo data does not drift; Vercel sends this value as a bearer token and the route refuses to run when it is unset, so an empty value just leaves the reset off. The route deletes every user, and `DEMO_MODE="true"` is the guard that keeps it away from a real database. |
 | `KIT_SITE` | Leave it empty. Reserved for the deployment that sells the kit itself: `"true"` switches the landing copy, pricing (hand-written open source tiers plus a Pro waitlist instead of your `Plan` rows), FAQ, footer license links and the dashboard upsell to talk about the repository rather than about your product. See below. |
-| `WAITLIST_ENABLED` | Only means anything with `KIT_SITE`. The Pro waitlist form on the open source pricing ships disabled until this is `"true"`, so a deployment cannot start collecting addresses before its real privacy policy is live. |
+| `WAITLIST_ENABLED` | `"true"` turns on the forms that collect email addresses on their own: the one-line signup in the footer of every public page (which also needs an email provider) and, with `KIT_SITE`, the Pro waitlist. Off by default, so a deployment cannot start collecting addresses before its real privacy policy is live: the policy that ships is a placeholder. A signup you place yourself in a blog post is not affected. |
 | `NEXT_PUBLIC_DISABLE_ANALYTICS` | `"true"` stops mounting Vercel Analytics. Left empty it stays on, which is the useful default on Vercel and the wrong one everywhere you would rather ship no analytics at all. |
 | `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` removes the "Built with" footer badge. Free to use, no unlock. |
 | `NEXT_PUBLIC_GITHUB_URL` | Repo link shown in the navbar/footer. |

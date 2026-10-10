@@ -9,6 +9,7 @@ import { LogoMark } from "@/components/logo"
 import { PendingButton } from "@/components/auth/pending-button"
 import { Input } from "@/components/ui/input"
 import { siteConfig } from "@/config/site"
+import { emailEnabled } from "@/lib/email-transport"
 
 export default async function LoginPage({
   searchParams,
@@ -28,9 +29,9 @@ export default async function LoginPage({
   // Demo deployments disable real OAuth (no personal data collected) and
   // offer one-click sign-in to shared fixture accounts instead.
   const isDemo = process.env.DEMO_MODE === "true"
-  // Magic link needs Resend configured; without it the kit still offers
+  // Magic link needs email configured; without it the kit still offers
   // OAuth and email+password.
-  const hasMagicLink = !!process.env.RESEND_API_KEY
+  const hasMagicLink = emailEnabled()
 
   // Marketing deployments delegate sign-in to the demo deployment
   // (same place the navbar and footer already point).

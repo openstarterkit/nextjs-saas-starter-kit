@@ -2,6 +2,8 @@
 
 The kit ships a double opt-in mailing list you own in your own database. It powers the pre-launch waitlist on the pricing page, and it is a reusable feature: the list, the confirmation flow and the admin export are yours to keep.
 
+Three forms feed it: the waitlist on the pricing page, `<NewsletterSignup />` inside a blog post, and a one-line signup in the footer of every public page (`src/components/landing/footer-signup.tsx`, text in `footer.signup`). The footer one stays off until you set `WAITLIST_ENABLED="true"`, which you do once your real privacy policy is live, and it also needs an email provider, since without one the confirmation never arrives. To drop it for good, delete its line in `footer.tsx`. Each form sends its own `source`, so the admin export tells you which one brought each address.
+
 ## How it works
 
 1. A visitor submits their email in the signup form. `POST /api/newsletter` validates it (Zod), checks a honeypot field and rate-limits by IP and by email, then stores a `NewsletterSubscriber` row and sends a confirmation email.

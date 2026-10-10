@@ -97,6 +97,12 @@ const KIT_DOCS: DocEntry[] = [
     file: "newsletter.md",
   },
   {
+    slug: "email",
+    title: "Email",
+    description: "Resend by default, or bring your own provider: SMTP, Postmark, SES.",
+    file: "email.md",
+  },
+  {
     slug: "i18n",
     title: "Languages",
     description: "Add a language, translate the docs, and the checks that catch a stale one.",

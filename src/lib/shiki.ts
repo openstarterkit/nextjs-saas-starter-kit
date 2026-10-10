@@ -52,26 +52,69 @@ const highlighter = createHighlighterCoreSync({
   engine: createJavaScriptRegexEngine(),
 })
 
-export const rehypeShikiPlugin: [typeof rehypeShikiFromHighlighter, ...unknown[]] = [
-  rehypeShikiFromHighlighter,
-  highlighter,
-  {
-    themes: { light: "github-light", dark: "github-dark" },
-    fallbackLanguage: "text",
-    /**
-     * Lets a fence name the file it comes from:
-     *
-     *     ```ts title="src/lib/auth.ts"
-     *
-     * The value is handed to the `pre` element as a data attribute, which is
-     * how it reaches the React component that draws the header. `filename` is
-     * accepted as well because half the ecosystem writes it that way, and a
-     * fence that silently loses its title is the kind of thing an author
-     * notices only after publishing.
-     */
-    parseMetaString(meta: string) {
-      const match = meta.match(/(?:title|filename)="([^"]+)"/)
-      return match ? { "data-filename": match[1] } : null
-    },
+type HastNode = {
+  type: string
+  tagName?: string
+  properties?: Record<string, unknown>
+  data?: { meta?: string }
+  children?: HastNode[]
+}
+
+/**
+ * Writes the language a fence asked for into its meta string, before Shiki
+ * runs. The code block's header shows it ("TypeScript", "Terminal") when the
+ * fence names no file, and Shiki would otherwise lose it: a language that is
+ * not imported above is highlighted as "text", and that is all the result
+ * would remember. Riding on the meta string, it reaches the component the same
+ * way the file name does, through `parseMetaString` below.
+ */
+function annotateLanguages(node: HastNode) {
+  if (node.tagName === "pre") {
+    const code = node.children?.[0]
+    const classes = code?.properties?.className
+    const languageClass = Array.isArray(classes)
+      ? classes.find((c): c is string => typeof c === "string" && c.startsWith("language-"))
+      : undefined
+    if (code && languageClass) {
+      const meta = code.data?.meta ?? String(code.properties?.metastring ?? "")
+      code.data = { ...code.data, meta: `${meta} lang="${languageClass.slice("language-".length)}"`.trim() }
+    }
+    return
+  }
+  node.children?.forEach(annotateLanguages)
+}
+
+const shikiOptions = {
+  themes: { light: "github-light", dark: "github-dark" },
+  fallbackLanguage: "text",
+  /**
+   * Lets a fence name the file it comes from:
+   *
+   *     ```ts title="src/lib/auth.ts"
+   *
+   * The value is handed to the `pre` element as a data attribute, which is
+   * how it reaches the React component that draws the header. `filename` is
+   * accepted as well because half the ecosystem writes it that way, and a
+   * fence that silently loses its title is the kind of thing an author
+   * notices only after publishing.
+   */
+  parseMetaString(meta: string) {
+    const file = meta.match(/(?:title|filename)="([^"]+)"/)
+    const lang = meta.match(/(?:^|\s)lang="([^"]+)"/)
+    return {
+      ...(file ? { "data-filename": file[1] } : {}),
+      ...(lang ? { "data-language": lang[1] } : {}),
+    }
   },
-]
+}
+
+/** Shiki, with the fence's language saved first (annotateLanguages). */
+function rehypeCodeBlocks() {
+  const shiki = rehypeShikiFromHighlighter(highlighter, shikiOptions)
+  return (tree: HastNode) => {
+    annotateLanguages(tree)
+    return (shiki as unknown as (tree: HastNode) => unknown)(tree)
+  }
+}
+
+export const rehypeShikiPlugin: [typeof rehypeCodeBlocks] = [rehypeCodeBlocks]

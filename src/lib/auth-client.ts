@@ -14,7 +14,7 @@ import type { auth } from "@/auth"
  * is bundled into the browser.
  *
  * The magic link plugin is registered unconditionally, unlike its server half,
- * which only loads when RESEND_API_KEY is set. A client plugin only adds
+ * which only loads when email is configured (emailEnabled()). A client plugin only adds
  * methods: registering it when the server has not costs nothing, and the sign
  * in form is hidden by the same env check anyway.
  *

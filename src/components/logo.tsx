@@ -24,17 +24,19 @@ export function LogoMark({
   iconClassName?: string
   /**
    * Turns the head slowly and without stopping, a full turn every 8s.
-   * Reserved for the logo in the header: the mark shows up several times on
-   * one page (footer, mockups, the loader) and all of them turning at once is
-   * noise, and in a mockup it would be someone else's logo moving.
+   * Reserved for the logo in the header and for the loader (BrandLoader,
+   * faster): the mark shows up several times on one page (footer, mockups)
+   * and all of them turning at once is noise, and in a mockup it would be
+   * someone else's logo moving.
    *
    * Only the placeholder head turns, never the kit's bolt, and reduced-motion
    * switches it off through the reset in globals.css.
    */
   animated?: boolean
   /**
-   * Renders a stand-in mark instead of this deployment's own: neutral grey,
-   * and the socket head even on the kit's site. For screenshots and mockups
+   * Renders a stand-in mark instead of this deployment's own: a black tile
+   * with the white socket head, even on the kit's site (a hairline ring keeps
+   * the tile visible on a dark surface). For screenshots and mockups
    * that depict *someone else's* product, where our bolt would claim it as
    * ours.
    */
@@ -52,7 +54,7 @@ export function LogoMark({
         // The kit's own site needs the hex spelled out, because its light
         // `--primary` is #1d4ed8 and the brand blue is #2563eb.
         generic
-          ? "bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
+          ? "bg-black text-white dark:ring-1 dark:ring-white/15"
           : cn(
               isKitSite ? "bg-[#2563eb]" : "bg-primary",
               "text-white dark:bg-primary/10 dark:text-primary"

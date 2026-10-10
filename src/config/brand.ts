@@ -22,7 +22,7 @@ const gradient = process.env.NEXT_PUBLIC_BRAND_GRADIENT?.trim() || null
  */
 const KIT_GRADIENT = "linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #38bdf8 100%)"
 const KIT_CSS = [
-  ":root{",
+  ":root,.light{",
   "--background:#ffffff;--foreground:#0f172a;",
   "--muted:#f8fafc;--muted-foreground:#64748b;",
   "--border:#e2e8f0;--input:#e2e8f0;--ring:#3b82f6;",
@@ -74,7 +74,7 @@ export function brandOverrideCss(): string {
     brand.primary2 && `--primary-2:${brand.primary2}!important`,
     brand.gradient && `--gradient-brand:${brand.gradient}!important`,
   ].filter(Boolean)
-  return decls.length ? `${base}:root{${decls.join(";")}}` : base
+  return decls.length ? `${base}:root,.light{${decls.join(";")}}` : base
 }
 
 /**

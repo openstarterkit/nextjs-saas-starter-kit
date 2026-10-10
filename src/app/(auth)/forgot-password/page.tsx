@@ -7,6 +7,7 @@ import { PendingButton } from "@/components/auth/pending-button"
 import { AuthNotice } from "@/components/auth/auth-notice"
 import { Input } from "@/components/ui/input"
 import { siteConfig } from "@/config/site"
+import { emailEnabled } from "@/lib/email-transport"
 
 export default async function ForgotPasswordPage({
   searchParams,
@@ -23,7 +24,7 @@ export default async function ForgotPasswordPage({
 
   // Without an email service the reset link can never arrive: say so
   // honestly instead of pretending to send.
-  const hasEmailService = !!process.env.RESEND_API_KEY
+  const hasEmailService = emailEnabled()
   const formDisabled = isDemo || !hasEmailService
 
   return (

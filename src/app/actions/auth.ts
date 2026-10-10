@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma"
 import { passwordSchema } from "@/lib/password"
 import { checkRateLimit, rateLimitKeyFromIp } from "@/lib/rate-limit"
 import { BACKUP_CODE_LENGTH, normalizeBackupCode } from "@/lib/backup-codes"
+import { emailEnabled } from "@/lib/email-transport"
 
 // Every action here calls auth.api.* and then redirects OUTSIDE the try block.
 // redirect() works by throwing, so a redirect inside a try is caught by the
@@ -220,7 +221,7 @@ export async function requestPasswordReset(formData: FormData) {
   )
   // Whatever happens, land on the same confirmation: the response must not
   // reveal whether an account exists.
-  if (parsed.success && (await checkRateLimit(`reset:${parsed.data}`, 3)) && process.env.RESEND_API_KEY) {
+  if (parsed.success && (await checkRateLimit(`reset:${parsed.data}`, 3)) && emailEnabled()) {
     try {
       await auth.api.requestPasswordReset({
         body: { email: parsed.data, redirectTo: "/reset-password" },

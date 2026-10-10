@@ -1,4 +1,4 @@
-import { Check } from "lucide-react"
+import { Check, Plus } from "lucide-react"
 import { jsonLdScript } from "@/lib/json-ld"
 import { softwareApplicationJsonLd } from "@/lib/pricing-jsonld"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,15 @@ function CheckIcon() {
   return (
     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
       <Check className="h-3 w-3" strokeWidth={3} />
+    </span>
+  )
+}
+
+/** Marks "Everything in Free, plus:": same circle as the checks, filled, so it reads as the list's heading and not as one more feature. */
+function PlusIcon() {
+  return (
+    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+      <Plus className="h-3 w-3" strokeWidth={3} />
     </span>
   )
 }
@@ -107,18 +116,24 @@ export function Pricing({
             </Card>
           </Reveal>
 
-          {/* Pro / Teams — in design, feedback-gathering */}
+          {/* Pro: the launch date where the price will go. The features are
+              the "Included at launch" list of ROADMAP.md, in the same order,
+              and the last line is the sentence that follows it there:
+              change the two together. No figure until the launch price is
+              announced. */}
           <Reveal delay={100}>
             <Card className="border-gradient-brand relative flex h-full flex-col overflow-hidden shadow-[var(--shadow-glow)]">
               <CardHeader className="pt-8">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl">{t("proTitle")}</CardTitle>
-                  <Badge>{t("comingSoon")}</Badge>
+                  {/* Says what a visitor can do today. Changes with the launch: "Launch
+                      price" from November 19 to 27, then removed. */}
+                  <Badge>{t("statusBadge")}</Badge>
                 </div>
                 <CardDescription>{t("proDescription")}</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-extrabold text-foreground">{t("comingSoon")}</span>
-                  <p className="mt-1 text-sm text-muted-foreground">{t("youTellUs")}</p>
+                  <span className="text-4xl font-extrabold text-foreground">{t("launchDate")}</span>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("launchOffer")}</p>
                 </div>
               </CardHeader>
 
@@ -126,7 +141,7 @@ export function Pricing({
                 <ul className="space-y-3">
                   {proFeatures.map((feature, i) => (
                     <li key={feature} className="flex items-start gap-3 text-sm">
-                      {i === 0 ? <span className="mt-0.5 h-5 w-5 shrink-0" /> : <CheckIcon />}
+                      {i === 0 ? <PlusIcon /> : <CheckIcon />}
                       <span className={i === 0 ? "font-medium text-foreground" : "text-foreground"}>
                         {feature}
                       </span>

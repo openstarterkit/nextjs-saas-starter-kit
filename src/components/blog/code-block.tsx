@@ -5,20 +5,64 @@ import { useTranslations } from "next-intl"
 import { Database, FileCode, FileJson, FileText, Palette, Terminal } from "lucide-react"
 
 /**
- * A code block: syntax highlighted at build time, with a copy button and an
- * optional header naming the file it came from.
+ * A code block: syntax highlighted at build time, under a header with a label
+ * on the left and the copy button on the right. Every block has the header, so
+ * the button is always in the same place and every snippet says what it is.
  *
  * This is the only client-side part of the whole feature. The colours are
  * already in the markup by the time this renders (Shiki runs in the build), so
- * what ships here is one button and, when a fence asked for it, one header.
+ * what ships here is the header and its button.
  *
- * To name a file, write it on the fence:
+ * The label is the file name when the fence gives one:
  *
  *     ```ts title="src/lib/auth.ts"
  *
- * Without a title the block looks as it did before, with the button floating in
- * the corner.
+ * and otherwise the fence's language, in words ("TypeScript", "Terminal"), or
+ * "Code" when the fence names no language at all.
  */
+
+/** A fence's language as a reader would name it. Anything unmapped is shown as written. */
+const LANGUAGE_LABELS: Record<string, string> = {
+  bash: "Terminal",
+  sh: "Terminal",
+  shell: "Terminal",
+  zsh: "Terminal",
+  powershell: "PowerShell",
+  ts: "TypeScript",
+  typescript: "TypeScript",
+  tsx: "TSX",
+  js: "JavaScript",
+  javascript: "JavaScript",
+  jsx: "JSX",
+  json: "JSON",
+  env: ".env",
+  dotenv: ".env",
+  yaml: "YAML",
+  yml: "YAML",
+  sql: "SQL",
+  prisma: "Prisma",
+  css: "CSS",
+  html: "HTML",
+  md: "Markdown",
+  markdown: "Markdown",
+  mdx: "MDX",
+  text: "Text",
+  txt: "Text",
+}
+
+/** The pseudo file name the icon is chosen from, for a block that names no file. */
+const LANGUAGE_ICON_HINT: Record<string, string> = {
+  Terminal: "terminal",
+  PowerShell: "terminal",
+  ".env": ".env",
+  JSON: "x.json",
+  SQL: "x.sql",
+  Prisma: "x.prisma",
+  CSS: "x.css",
+  Markdown: "x.md",
+  MDX: "x.mdx",
+  Text: "x.txt",
+}
 
 /**
  * The file type, as a small mark beside the name. Deliberately short: anything
@@ -45,12 +89,19 @@ function FileIcon({ filename }: { filename: string }) {
 export function CodeBlock({
   children,
   ...props
-}: React.ComponentPropsWithoutRef<"pre"> & { "data-filename"?: string }) {
+}: React.ComponentPropsWithoutRef<"pre"> & { "data-filename"?: string; "data-language"?: string }) {
   const t = useTranslations("blog.code")
   const ref = useRef<HTMLPreElement>(null)
   const [copied, setCopied] = useState(false)
 
   const filename = props["data-filename"]
+  const language = props["data-language"]
+  const label = filename ?? (language ? (LANGUAGE_LABELS[language] ?? language) : "Code")
+  const iconHint = filename ?? LANGUAGE_ICON_HINT[label] ?? "code"
+  // Only the attributes a <pre> understands go on to the element.
+  const preProps = { ...props }
+  delete preProps["data-filename"]
+  delete preProps["data-language"]
 
   async function copy() {
     const text = ref.current?.textContent ?? ""
@@ -78,32 +129,23 @@ export function CodeBlock({
     </button>
   )
 
-  if (!filename) {
-    return (
-      <div className="relative">
-        <pre ref={ref} {...props}>
-          {children}
-        </pre>
-        <div className="absolute right-2 top-2">{copyButton}</div>
-      </div>
-    )
-  }
-
   return (
-    <div className="overflow-hidden rounded-[var(--radius)] border border-border">
-      {/* The header carries the file name, so a reader knows where the snippet
-          belongs before reading it — the question every code block in a
-          tutorial raises and most leave unanswered. */}
+    // The vertical space a bare <pre> gets from the prose styles, which the
+    // block inside no longer has (see !m-0 below): without it two blocks in a
+    // row touch.
+    <div className="my-[1.7em] overflow-hidden rounded-[var(--radius)] border border-border">
+      {/* The header says what the snippet is, a file or a language, before
+          the reader reads it: where it belongs, or what to run it in. */}
       <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/50 px-3 py-2">
         <span className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-          <FileIcon filename={filename} />
-          <span className="truncate font-mono">{filename}</span>
+          <FileIcon filename={iconHint} />
+          <span className={filename ? "truncate font-mono" : "truncate"}>{label}</span>
         </span>
         {copyButton}
       </div>
       {/* The border and radius now belong to the wrapper, so the block inside
           loses its own: two nested rounded boxes read as a mistake. */}
-      <pre ref={ref} {...props} className={`${props.className ?? ""} !m-0 !rounded-none !border-0`}>
+      <pre ref={ref} {...preProps} className={`${props.className ?? ""} !m-0 !rounded-none !border-0`}>
         {children}
       </pre>
     </div>

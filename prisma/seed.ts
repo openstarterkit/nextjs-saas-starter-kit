@@ -6,8 +6,8 @@ const prisma = new PrismaClient({ adapter })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // EXAMPLE plans — these exist so the Stripe checkout flow works out of the box.
-// They are NOT OpenStarterKit's own pricing (the kit itself is free; its paid
-// "Pro · Teams" tier is still in design). Replace name/description/features/price
+// They are NOT OpenStarterKit's own pricing (the kit itself is free; Pro and
+// Pro Studio are sold separately from November 19). Replace name/description/features/price
 // with YOUR product's plans, and set real Stripe price IDs via the env vars below
 // (or hard-code your own). The six plans demonstrate every billing pattern the
 // kit supports: monthly, yearly, one-time (lifetime) and metered (usage-based,

@@ -20,13 +20,13 @@ interface UserMenuProps {
   name?: string | null
   email?: string | null
   image?: string | null
-  /** Which side the dropdown opens on. The sidebar opens up, mobile headers open down. */
+  /** Which side the dropdown opens on. Both the sidebar and the mobile header open down. */
   side?: "top" | "bottom"
   /** Avatar-only trigger for tight spots like the mobile header. */
   hideDetails?: boolean
 }
 
-export function UserMenu({ name, email, image, side = "top", hideDetails = false }: UserMenuProps) {
+export function UserMenu({ name, email, image, side = "bottom", hideDetails = false }: UserMenuProps) {
   const t = useTranslations("dashboard.userMenu")
   const initial = name?.[0]?.toUpperCase() ?? email?.[0]?.toUpperCase() ?? "U"
   const [signOutOpen, setSignOutOpen] = React.useState(false)

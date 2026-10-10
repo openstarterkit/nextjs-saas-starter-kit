@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: cb6bf3055ec1
+source_checksum: 9fa75921a5f1
 ---
 
 # Aggiornare
@@ -45,6 +45,16 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.3.5: il tuo provider di email, e un solo caricamento per l'app
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare, niente da configurare. Resend resta il default.
+
+Ogni email ora passa da `sendEmail()` in `src/lib/email-transport.ts`, e ogni controllo *le email sono attive?* da `emailEnabled()`. Per usare un altro provider riscrivi quelle due funzioni: [Email](./email.md) ha gli esempi.
+
+**Dove un merge può andare in conflitto.** Se hai modificato `src/lib/email.ts`, le tue modifiche stanno accanto a chiamate che ora sono `sendEmail({ kind, to, subject, html })`: tieni i tuoi contenuti, prendi la chiamata nuova. Se hai modificato la barra laterale in `src/app/(dashboard)/layout.tsx` o `src/app/(admin)/layout.tsx`, il menu account è passato dal fondo alla cima. I file `loading.tsx` ora mostrano `RouteLoading` da `src/components/navigation-overlay.tsx`; uno scheletro tuo può restare, ma il caricamento compare anche sui link verso la dashboard, quindi forse vorrai toglierlo. `src/components/blog/code-block.tsx` mostra sempre la sua intestazione. In `src/components/landing/hero.tsx` e `footer.tsx` tieni i tuoi testi e prendi il markup nuovo; in `src/app/globals.css` sono cambiati la variante `dark`, il selettore `:root, .light` e una regola per il cursore a manina, e i tuoi token restano come sono.
+
+Il footer ha in più un'iscrizione di una riga, spenta finché non imposti `WAITLIST_ENABLED="true"` (quando la tua informativa vera è pubblicata) e solo con un provider email configurato. Finché non la accendi non compare niente. Per toglierla del tutto cancella la sua riga in `src/components/landing/footer.tsx`.
 
 ## 2.3.4: un aggiornamento di sicurezza per il magic link
 

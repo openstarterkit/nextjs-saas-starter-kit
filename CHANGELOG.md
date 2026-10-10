@@ -7,6 +7,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.3.5] - 2026-10-10
+
+📨 **Bring your own email provider.** Every email the kit sends now goes through one function, so moving from Resend to SMTP, Postmark or any other service means rewriting one file, and a new guide walks through two examples. Asked for in [#48](https://github.com/openstarterkit/nextjs-saas-starter-kit/issues/48). This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure: Resend stays the default and works as before.
+
+### Added
+
+- **`sendEmail()` and `emailEnabled()` in `src/lib/email-transport.ts`.** Every email goes through the first, and every "is email set up?" asks the second instead of reading `RESEND_API_KEY` in nine places. [Email](./docs/email.md) shows Nodemailer over SMTP and Postmark, the three behaviours to keep when you swap, and a note on text messages
+- **A one-line signup in the footer of every public page**, feeding the same double opt-in list as the pricing waitlist, with `footer` as its source in the admin export. It stays off until you set `WAITLIST_ENABLED="true"`, once your real privacy policy is live (the one that ships is a placeholder), and needs an email provider; `WAITLIST_ENABLED`, until now meaningful only on the kit's own site, is the gate for every form that collects addresses on its own. Disabled in demo mode. The line above the field is in `footer.signup`; to drop the form, delete its line in `footer.tsx`. See [Newsletter & waitlist](./docs/newsletter.md)
+- **Every code block in the docs and the blog has a header**: the file name when the fence gives one, otherwise the language (Terminal, TypeScript, .env...), and the Copy button on the right
+
+### Changed
+
+- **One loading state for every page change in the dashboard and the admin**: the page dims as behind a dialog, with the logo turning in the middle, after 120 ms. Pages without a `loading.tsx` of their own no longer sit still while the next one loads, back and forward included
+- **The account menu sits at the top of the sidebar**, under the logo, in the dashboard and the admin, and opens downwards. Its items are unchanged
+- **The landing hero**: the headline is two lines of the same size, a little bolder than medium, the subtitle runs wider, and from 1280 px up the dashboard preview scales to the full content width. The preview follows the real sidebar, with the account menu under the logo, and its theme switch turns only the preview light or dark: a `.light` class now scopes the light theme inside a dark page, as `.dark` already did the other way round. A clone without a `hero.$product.trust` line shows nothing under the buttons
+- **The top menu is as wide as the footer's content**, and from 1536 px up the public pages grow by 12% as a whole, so on a wide monitor the content no longer fills barely half the screen. The dashboard and the admin are not affected
+- **Dependencies**: `react-hook-form` 7.89, `vitest` and `@vitest/coverage-v8` 5.0.3, `@shikijs/rehype` 4.5, `@types/node` 26.6, `dotenv` 18.0.5, `lucide-react` 1.50, `pg` 8.23.1
+
+### Fixed
+
+- **Buttons and other clickable controls show the pointer cursor again.** Tailwind 4 dropped the rule that gave it to them, so most of the app showed the arrow. One rule in `globals.css` puts it back for buttons, selects, checkboxes, radios, file inputs, `summary` and labels, never on a disabled control, and a `cursor-*` class still wins over it. The items of a `Select` use it too, like the dropdown menu's
+- **A page change starts at the top again.** From a scrolled page, the logo or a menu link could land halfway down the next one, often on a section: the smooth scrolling in `globals.css` animated the jump, and since Next.js 16 the router turns it off during navigation only when `<html>` carries `data-scroll-behavior="smooth"`, which the root layout now sets. The section links keep scrolling smoothly
+
+### Security
+
+- **`sharp` and `source-map-js` move to their fixed versions** (two high advisories). `sprintf-js` has no fixed version: it reaches the kit only through `argparse` 1, which `js-yaml` 3 under `gray-matter` uses for its own command line and never while reading the docs. An override scoped to that chain moves it to `argparse` 2. Production dependencies audit at zero
+
+### If you customised the layouts, the landing, the loading pages or the emails
+
+Expect conflicts in `src/app/(dashboard)/layout.tsx`, `src/app/(admin)/layout.tsx`, the `loading.tsx` files, `src/lib/email.ts`, `src/components/blog/code-block.tsx`, `src/components/landing/hero.tsx`, `src/components/landing/footer.tsx` and `src/app/globals.css`: see [Upgrading](./docs/upgrading.md).
+
 ## [2.3.4] - 2026-10-03
 
 🔐 **Security: update now if you use the magic link together with Google or GitHub sign-in.** Better Auth 1.7.7 fixes a critical vulnerability ([GHSA-965c-763c-88jm](https://github.com/better-auth/better-auth/security/advisories/GHSA-965c-763c-88jm)): the state of an OAuth sign-in was accepted as a magic link token, so anyone who knew a user's email could sign in as them without access to the mailbox. The kit is affected when `RESEND_API_KEY` is set and at least one social provider has credentials. This is a PATCH: `git pull`, `npm install`. Nothing to migrate.
@@ -615,6 +646,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.3.5]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.5
 [2.3.4]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.4
 [2.3.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.3
 [2.3.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.2

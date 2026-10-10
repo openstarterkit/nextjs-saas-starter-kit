@@ -20,14 +20,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Logo animated wordmarkClassName="sidebar-collapsed:hidden" />
           </Link>
         </div>
-        <SidebarNav variant="dashboard" showAdminLink={user.role === "ADMIN"} />
-        <div className="border-t border-border p-3">
+        {/* The account menu sits at the top, under the logo: the first thing
+            in the sidebar is who you are, and the menu opens downwards. */}
+        <div className="border-b border-border p-3">
           <UserMenu
             name={user.name}
             email={user.email}
             image={user.image}
           />
         </div>
+        <SidebarNav variant="dashboard" showAdminLink={user.role === "ADMIN"} />
       </aside>
 
       {/* min-w-0: without it this flex item keeps `min-width: auto`, so any wide

@@ -1,9 +1,9 @@
-import { Resend } from "resend"
 import { siteConfig } from "@/config/site"
 import { emailAccent } from "@/config/brand"
 import { getTranslations } from "next-intl/server"
 import { routing } from "@/i18n/routing"
 import { deliver } from "@/lib/email-delivery"
+import { resendClient, sendEmail } from "@/lib/email-transport"
 
 /**
  * Subjects for the transactional emails.
@@ -21,29 +21,13 @@ function emailStrings() {
   return getTranslations({ locale: routing.defaultLocale, namespace: "email" })
 }
 
-let _instance: Resend | null = null
-
-function getInstance(): Resend {
-  if (!_instance) {
-    const key = process.env.RESEND_API_KEY
-    if (!key) throw new Error("RESEND_API_KEY is not set")
-    _instance = new Resend(key)
-  }
-  return _instance
-}
-
-const FROM_ADDRESS = process.env.EMAIL_FROM ?? `${siteConfig.name} <${siteConfig.contactEmail}>`
-
 export async function sendWelcomeEmail(to: string, name: string) {
-  const resend = getInstance()
-  return deliver("welcome", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: (await emailStrings())("welcome", { site: siteConfig.name }),
-      html: await welcomeTemplate(name),
-    }),
-  )
+  return sendEmail({
+    kind: "welcome",
+    to,
+    subject: (await emailStrings())("welcome", { site: siteConfig.name }),
+    html: await welcomeTemplate(name),
+  })
 }
 
 export async function sendSubscriptionConfirmation(
@@ -58,17 +42,14 @@ export async function sendSubscriptionConfirmation(
   // announcing an active subscription.
   trialEndDate?: string
 ) {
-  const resend = getInstance()
-  return deliver("subscription-confirmation", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: trialEndDate
-        ? (await emailStrings())("trialStarted", { plan: planName })
-        : (await emailStrings())("subscriptionActive", { plan: planName }),
-      html: await subscriptionTemplate(name, planName, amount, currency, renewalDate, trialEndDate),
-    }),
-  )
+  return sendEmail({
+    kind: "subscription-confirmation",
+    to,
+    subject: trialEndDate
+      ? (await emailStrings())("trialStarted", { plan: planName })
+      : (await emailStrings())("subscriptionActive", { plan: planName }),
+    html: await subscriptionTemplate(name, planName, amount, currency, renewalDate, trialEndDate),
+  })
 }
 
 export async function sendPurchaseConfirmation(
@@ -78,63 +59,48 @@ export async function sendPurchaseConfirmation(
   amount: number,
   currency: string
 ) {
-  const resend = getInstance()
-  return deliver("purchase-confirmation", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: (await emailStrings())("purchaseConfirmed", { plan: planName }),
-      html: await purchaseTemplate(name, planName, amount, currency),
-    }),
-  )
+  return sendEmail({
+    kind: "purchase-confirmation",
+    to,
+    subject: (await emailStrings())("purchaseConfirmed", { plan: planName }),
+    html: await purchaseTemplate(name, planName, amount, currency),
+  })
 }
 
 export async function sendMagicLinkEmail(to: string, url: string) {
-  const resend = getInstance()
-  return deliver("magic-link", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: (await emailStrings())("magicLink", { site: siteConfig.name }),
-      html: await magicLinkTemplate(url),
-    }),
-  )
+  return sendEmail({
+    kind: "magic-link",
+    to,
+    subject: (await emailStrings())("magicLink", { site: siteConfig.name }),
+    html: await magicLinkTemplate(url),
+  })
 }
 
 export async function sendPasswordResetEmail(to: string, url: string) {
-  const resend = getInstance()
-  return deliver("password-reset", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: (await emailStrings())("passwordReset", { site: siteConfig.name }),
-      html: await passwordResetTemplate(url),
-    }),
-  )
+  return sendEmail({
+    kind: "password-reset",
+    to,
+    subject: (await emailStrings())("passwordReset", { site: siteConfig.name }),
+    html: await passwordResetTemplate(url),
+  })
 }
 
 export async function sendChangeEmailConfirmation(to: string, newEmail: string, url: string) {
-  const resend = getInstance()
-  return deliver("change-email", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: (await emailStrings())("changeEmail", { site: siteConfig.name }),
-      html: await changeEmailTemplate(newEmail, url),
-    }),
-  )
+  return sendEmail({
+    kind: "change-email",
+    to,
+    subject: (await emailStrings())("changeEmail", { site: siteConfig.name }),
+    html: await changeEmailTemplate(newEmail, url),
+  })
 }
 
 export async function sendSubscriptionCancelledEmail(to: string, name: string, endDate: string) {
-  const resend = getInstance()
-  return deliver("subscription-cancelled", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: (await emailStrings())("subscriptionCancelled", { site: siteConfig.name }),
-      html: await cancellationTemplate(name, endDate),
-    }),
-  )
+  return sendEmail({
+    kind: "subscription-cancelled",
+    to,
+    subject: (await emailStrings())("subscriptionCancelled", { site: siteConfig.name }),
+    html: await cancellationTemplate(name, endDate),
+  })
 }
 
 function baseTemplate(content: string) {
@@ -304,16 +270,13 @@ async function cancellationTemplate(name: string, endDate: string) {
  * the message lands in an HTML email and must never carry markup through.
  */
 export async function sendContactMessage(fromEmail: string, name: string | undefined, message: string) {
-  const resend = getInstance()
-  return deliver("contact-message", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to: siteConfig.contactEmail,
-      replyTo: fromEmail,
-      subject: (await emailStrings())("contact", { from: name || fromEmail }),
-      html: contactTemplate(escapeHtml(fromEmail), name ? escapeHtml(name) : undefined, escapeHtml(message)),
-    }),
-  )
+  return sendEmail({
+    kind: "contact-message",
+    to: siteConfig.contactEmail,
+    replyTo: fromEmail,
+    subject: (await emailStrings())("contact", { from: name || fromEmail }),
+    html: contactTemplate(escapeHtml(fromEmail), name ? escapeHtml(name) : undefined, escapeHtml(message)),
+  })
 }
 
 function escapeHtml(value: string): string {
@@ -339,27 +302,21 @@ function contactTemplate(email: string, name: string | undefined, message: strin
 // ─── Newsletter / waitlist (double opt-in) ──────────────────────────────────
 
 export async function sendNewsletterConfirmEmail(to: string, confirmUrl: string) {
-  const resend = getInstance()
-  return deliver("newsletter-confirm", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: (await emailStrings())("newsletterConfirm", { site: siteConfig.name }),
-      html: await newsletterConfirmTemplate(confirmUrl),
-    }),
-  )
+  return sendEmail({
+    kind: "newsletter-confirm",
+    to,
+    subject: (await emailStrings())("newsletterConfirm", { site: siteConfig.name }),
+    html: await newsletterConfirmTemplate(confirmUrl),
+  })
 }
 
 export async function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: string) {
-  const resend = getInstance()
-  return deliver("newsletter-welcome", async () =>
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to,
-      subject: (await emailStrings())("newsletterWelcome"),
-      html: await newsletterWelcomeTemplate(unsubscribeUrl),
-    }),
-  )
+  return sendEmail({
+    kind: "newsletter-welcome",
+    to,
+    subject: (await emailStrings())("newsletterWelcome"),
+    html: await newsletterWelcomeTemplate(unsubscribeUrl),
+  })
 }
 
 /**
@@ -370,14 +327,14 @@ export async function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: str
 export async function syncNewsletterContact(email: string) {
   const audienceId = process.env.RESEND_AUDIENCE_ID
   if (!audienceId) return
-  const resend = getInstance()
+  const resend = await resendClient()
   await deliver("audience-add", () => resend.contacts.create({ email, audienceId, unsubscribed: false }))
 }
 
 export async function removeNewsletterContact(email: string) {
   const audienceId = process.env.RESEND_AUDIENCE_ID
   if (!audienceId) return
-  const resend = getInstance()
+  const resend = await resendClient()
   await deliver(
     "audience-remove",
     () => resend.contacts.remove({ email, audienceId }),

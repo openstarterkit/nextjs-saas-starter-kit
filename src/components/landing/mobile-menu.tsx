@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl"
 
+import { Fragment } from "react"
 import Link from "next/link"
 import { usePathname } from "@/i18n/navigation"
 import { Menu } from "lucide-react"
@@ -55,17 +56,19 @@ export function MobileMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60 md:hidden">
         {sections.map(({ id }) => (
-          <DropdownMenuItem key={id} asChild>
-            <Link
-              href={`/#${id}`}
-              onClick={(e) => scrollToSection(e, id)}
-              className={cn(
-                current === id && "bg-primary/10 font-medium text-primary"
-              )}
-            >
-              {t(id)}
-            </Link>
-          </DropdownMenuItem>
+          <Fragment key={id}>
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/#${id}`}
+                onClick={(e) => scrollToSection(e, id)}
+                className={cn(
+                  current === id && "bg-primary/10 font-medium text-primary"
+                )}
+              >
+                {t(id)}
+              </Link>
+            </DropdownMenuItem>
+          </Fragment>
         ))}
         <DropdownMenuItem asChild>
           <Link href="/docs">Docs</Link>

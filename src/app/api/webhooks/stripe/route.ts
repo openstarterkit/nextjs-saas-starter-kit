@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import { subscriptionDates } from "@/lib/billing"
 import type Stripe from "stripe"
+import { emailEnabled } from "@/lib/email-transport"
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
@@ -121,7 +122,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     where: { id: session.metadata.userId },
     select: { email: true, name: true },
   })
-  if (isNewSubscription && user && process.env.RESEND_API_KEY) {
+  if (isNewSubscription && user && emailEnabled()) {
     const { sendSubscriptionConfirmation } = await import("@/lib/email")
     // Awaited: a promise left running after the response has no guarantee of
     // finishing on a serverless platform. It cannot fail the webhook, because a
@@ -176,7 +177,7 @@ async function handleOneTimeCheckout(session: Stripe.Checkout.Session) {
     },
   })
 
-  if (isNewPurchase && process.env.RESEND_API_KEY) {
+  if (isNewPurchase && emailEnabled()) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { email: true, name: true },
@@ -226,7 +227,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       where: { id: existing.userId },
       select: { email: true, name: true },
     })
-    if (user && process.env.RESEND_API_KEY) {
+    if (user && emailEnabled()) {
       const { sendSubscriptionCancelledEmail } = await import("@/lib/email")
       await sendSubscriptionCancelledEmail(user.email, user.name ?? "", longDate(currentPeriodEnd)).catch(
         console.error

@@ -39,6 +39,16 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.3.5: your own email provider, and one loading state for the app
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure. Resend stays the default.
+
+Every email now goes through `sendEmail()` in `src/lib/email-transport.ts`, and every check for "is email set up?" through `emailEnabled()`. To use another provider, rewrite those two functions: [Email](./email.md) has the examples.
+
+**Where a merge may conflict.** If you edited `src/lib/email.ts`, your changes sit next to calls that are now `sendEmail({ kind, to, subject, html })`: keep your content, take the new call. If you edited the sidebar in `src/app/(dashboard)/layout.tsx` or `src/app/(admin)/layout.tsx`, the account menu moved from the bottom to the top. The `loading.tsx` files now render `RouteLoading` from `src/components/navigation-overlay.tsx`; a custom skeleton of yours can stay, but the overlay also shows on links into the dashboard, so you may want to remove the skeleton. `src/components/blog/code-block.tsx` always renders its header now. In `src/components/landing/hero.tsx` and `footer.tsx` keep your copy and take the new markup; in `src/app/globals.css` the `dark` variant, the `:root, .light` selector and a pointer-cursor rule changed, and your own tokens stay as they are.
+
+The footer gains a one-line signup, off until you set `WAITLIST_ENABLED="true"` (once your real privacy policy is live) and only with an email provider configured. Nothing appears until you turn it on. To remove it for good, delete its line in `src/components/landing/footer.tsx`.
+
 ## 2.3.4: a security update for the magic link
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate.

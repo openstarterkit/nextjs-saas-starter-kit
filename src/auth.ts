@@ -11,6 +11,7 @@ import { hashPassword, verifyPassword } from "@/lib/password"
 import { generateBackupCodes } from "@/lib/backup-codes"
 import { refusesAutomaticLink } from "@/lib/account-linking"
 import { siteConfig } from "@/config/site"
+import { emailEnabled } from "@/lib/email-transport"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Fixture sign-ins: dev and demo.
@@ -301,7 +302,7 @@ export const auth = betterAuth({
     // verification. Here the library sends its own verification email, which
     // is the same idea without the trick. Only when email is configured: with
     // no key there is nothing to send and sign-up still completes.
-    sendOnSignUp: !!process.env.RESEND_API_KEY,
+    sendOnSignUp: emailEnabled(),
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
       const { sendMagicLinkEmail } = await import("@/lib/email")
@@ -321,7 +322,7 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          if (user.email && process.env.RESEND_API_KEY) {
+          if (user.email && emailEnabled()) {
             const { sendWelcomeEmail } = await import("@/lib/email")
             // Awaited for the same reason as the webhook emails: nothing
             // guarantees a promise left running after the response finishes.
@@ -333,11 +334,11 @@ export const auth = betterAuth({
   },
 
   plugins: [
-    // Magic link needs Resend configured; without a key the form is hidden in
+    // Magic link needs email configured (emailEnabled()); without it the form is hidden in
     // the UI and the plugin is not registered. The client plugin is registered
     // unconditionally: it only adds methods, and its types come from the type
     // of the plugin rather than from this array.
-    ...(process.env.RESEND_API_KEY
+    ...(emailEnabled()
       ? [
           magicLink({
             expiresIn: 15 * 60, // link valid for 15 minutes

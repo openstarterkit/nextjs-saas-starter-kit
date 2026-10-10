@@ -15,7 +15,7 @@ import { rehypeShikiPlugin } from "@/lib/shiki"
  * So the round trip is pinned here rather than trusted.
  */
 
-type PreProps = React.ComponentPropsWithoutRef<"pre"> & { "data-filename"?: string }
+type PreProps = React.ComponentPropsWithoutRef<"pre"> & { "data-filename"?: string; "data-language"?: string }
 
 const render = (md: string) => {
   const props: PreProps[] = []
@@ -57,6 +57,26 @@ describe("the file name a fence declares", () => {
   it("is absent on a plain fence, which must keep working exactly as before", () => {
     const { props } = render("```ts\nconst a = 1\n```\n")
     expect(props[0]["data-filename"]).toBeUndefined()
+  })
+})
+
+describe("the language a fence declares", () => {
+  it("reaches the component as data-language, for the header label", () => {
+    const { props } = render("```ts\nconst a = 1\n```\n")
+    expect(props[0]["data-language"]).toBe("ts")
+  })
+
+  it("survives a language that is highlighted as plain text", () => {
+    // env is not among the imported grammars: Shiki colours it as "text", and
+    // the header must still say .env rather than Text.
+    const { props } = render('```env\nKEY="value"\n```\n')
+    expect(props[0]["data-language"]).toBe("env")
+  })
+
+  it("travels together with a file name", () => {
+    const { props } = render('```ts title="src/lib/auth.ts"\nconst a = 1\n```\n')
+    expect(props[0]["data-filename"]).toBe("src/lib/auth.ts")
+    expect(props[0]["data-language"]).toBe("ts")
   })
 })
 

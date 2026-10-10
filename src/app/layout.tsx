@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
+import { NavigationOverlay } from "@/components/navigation-overlay"
 import { siteConfig } from "@/config/site"
 import { brandOverrideCss } from "@/config/brand"
 import { getLocale } from "next-intl/server"
@@ -50,7 +51,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // pages are not translated.
   const locale = await getLocale()
   return (
-    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+    // data-scroll-behavior: globals.css scrolls smoothly for the #section
+    // links, and since Next 16 the router only switches that off during a
+    // page change when this attribute asks it to. Without it, going from a
+    // scrolled page to another animated from the old position and stopped
+    // wherever the new page's height left it, often on a section.
+    <html
+      lang={locale}
+      data-scroll-behavior="smooth"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: `${themeInit};${sidebarInit}` }} />
         {brandCss && <style dangerouslySetInnerHTML={{ __html: brandCss }} />}
@@ -61,6 +72,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             in the message files rather than in the components. */}
         <NextIntlClientProvider>
           {children}
+          {/* Inside the provider: the loader's screen-reader text is translated. */}
+          <NavigationOverlay />
         </NextIntlClientProvider>
         <Toaster />
         {/* Vercel Analytics, unless this deployment says otherwise. It ships

@@ -6,11 +6,13 @@ import {
   FolderKanban,
   CreditCard,
   Settings,
+  ChevronsUpDown,
   type LucideIcon,
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
+import { PreviewThemeFrame, PreviewThemeToggle } from "@/components/landing/hero-preview-theme"
 import { siteConfig } from "@/config/site"
 
 /**
@@ -71,17 +73,27 @@ export function Hero() {
           <span className="text-muted-foreground">{t("pill")}</span>
         </div>
 
+        {/* Two lines of the same size, weight 550 and tight tracking: tall,
+            narrow letters, so the headline can be large and still sit on one
+            line each. From xl up both lines may use the footer's full content
+            width (66rem, hence -mx-16 out of the 58rem column). 550 in both
+            themes, between medium (thin on a white page) and semibold; Geist
+            is variable, so the weight is exact. The longer line is 1032px of
+            1056: if you change the words, check it still fits at 5.25rem. */}
         <h1
-          className="animate-fade-in-up text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl"
+          className="animate-fade-in-up text-foreground"
           style={{ animationDelay: "60ms" }}
         >
-          {headline.head}
-          <br />
-          <span className="text-gradient-brand">{headline.accent}</span>
+          <span className="block text-3xl font-[550] leading-[1.05] tracking-tighter sm:text-4xl md:text-5xl xl:-mx-16 xl:text-[length:5.25rem] xl:leading-none">
+            {headline.head}
+          </span>
+          <span className="block text-3xl font-[550] leading-[1.05] tracking-tighter text-gradient-brand sm:text-4xl md:text-5xl xl:-mx-16 xl:text-[length:5.25rem] xl:leading-none">
+            {headline.accent}
+          </span>
         </h1>
 
         <p
-          className="mx-auto mt-6 max-w-2xl animate-fade-in-up text-lg text-muted-foreground md:text-xl"
+          className="mx-auto mt-6 max-w-4xl animate-fade-in-up text-lg text-muted-foreground md:text-xl"
           style={{ animationDelay: "120ms" }}
         >
           {t("subtitle")}
@@ -101,12 +113,16 @@ export function Hero() {
           </Button>
         </div>
 
-        <p
-          className="mt-5 animate-fade-in-up text-sm text-muted-foreground"
-          style={{ animationDelay: "240ms" }}
-        >
-          {t("trust")}
-        </p>
+        {/* The kit's own site has no line here (the pill above says it);
+            a clone shows its own from hero.$product.trust. */}
+        {t.has("trust") && (
+          <p
+            className="mt-5 animate-fade-in-up text-sm text-muted-foreground"
+            style={{ animationDelay: "240ms" }}
+          >
+            {t("trust")}
+          </p>
+        )}
 
         {/* Dashboard mockup — mirrors the real app shell.
 
@@ -119,12 +135,20 @@ export function Hero() {
             of the page's contrast findings, because a deliberately faint
             illustration was being measured as if it were text to read. The
             headline above already says what the product is. */}
+        {/* Scaled as a whole from xl up, so it spans the same width as the
+            menu above and the footer below (56rem x 1.1786 = 66rem) while
+            every proportion inside stays as it is. `zoom`, not `transform`:
+            the scaled size is the one the layout makes room for. The column
+            it sits in is 58rem wide, so it reaches out 4rem on each side
+            (the negative margins, divided by the zoom because they are
+            scaled too). Below xl there is not 66rem to fill, and it keeps
+            its own size. */}
         <div
           aria-hidden="true"
-          className="mx-auto mt-16 max-w-4xl animate-fade-in-up text-left"
+          className="mx-auto mt-16 max-w-4xl animate-fade-in-up text-left xl:mx-[-3.394rem] xl:max-w-none xl:[zoom:1.1786]"
           style={{ animationDelay: "320ms" }}
         >
-          <div className="overflow-hidden rounded-2xl border border-border bg-background shadow-[var(--shadow-soft-lg)] ring-1 ring-white/10 md:animate-float">
+          <PreviewThemeFrame className="overflow-hidden rounded-2xl border border-border bg-background shadow-[var(--shadow-soft-lg)] ring-1 ring-white/10 transition-colors md:animate-float">
             {/* Browser chrome */}
             <div className="flex items-center gap-2 border-b border-border bg-card px-4 py-3">
               <span className="h-3 w-3 rounded-full bg-red-400" />
@@ -139,13 +163,26 @@ export function Hero() {
             <div className="flex">
               {/* Sidebar */}
               <aside className="hidden w-52 flex-col border-r border-border bg-background sm:flex">
-                <div className="flex h-14 items-center border-b border-border px-4 text-sm font-bold tracking-tight">
+                <div className="flex h-14 items-center border-b border-border px-5 text-sm font-bold tracking-tight">
                   {/* Generic on purpose: this mockup is the customer's own
                       product (dashboard.yoursaas.com, alex@acme.io), not ours.
-                      Greying the tile was not enough, because the mark itself
+                      A neutral tile was not enough, because the mark itself
                       is our bolt on the kit's site: `generic` swaps the symbol
                       too, in both themes. */}
-                  <Logo generic markClassName="h-6 w-6" />
+                  <Logo generic />
+                </div>
+                {/* The account menu under the logo, as in the real sidebar. */}
+                <div className="border-b border-border p-3">
+                  <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-2 text-xs font-semibold text-primary-foreground">
+                      AR
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-foreground">Alex Rivera</p>
+                      <p className="truncate text-[11px] text-muted-foreground">alex@acme.io</p>
+                    </div>
+                    <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  </div>
                 </div>
                 <nav className="flex-1 space-y-1 p-3">
                   {mockNav.map(({ key, icon: Icon, active }) => (
@@ -160,22 +197,15 @@ export function Hero() {
                     </div>
                   ))}
                 </nav>
-                <div className="flex items-center gap-2.5 border-t border-border p-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-2 text-xs font-semibold text-primary-foreground">
-                    AR
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-foreground">Alex Rivera</p>
-                    <p className="truncate text-[11px] text-muted-foreground">alex@acme.io</p>
-                  </div>
-                </div>
               </aside>
 
               {/* Main column */}
               <div className="flex-1 bg-muted/20">
                 {/* Top bar */}
-                <div className="flex h-14 items-center justify-end gap-4 border-b border-border bg-background px-5 text-xs text-muted-foreground">
-                  <span>Docs</span>
+                {/* As in the real header: the theme switch and Sign out. The
+                    switch turns only this preview light or dark. */}
+                <div className="flex h-14 items-center justify-end gap-3 border-b border-border bg-background px-5 text-xs text-muted-foreground">
+                  <PreviewThemeToggle />
                   <span>Sign out</span>
                 </div>
 
@@ -233,7 +263,7 @@ export function Hero() {
                 </div>
               </div>
             </div>
-          </div>
+          </PreviewThemeFrame>
         </div>
       </div>
     </section>

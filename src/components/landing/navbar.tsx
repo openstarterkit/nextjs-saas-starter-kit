@@ -33,7 +33,7 @@ export async function Navbar() {
 
   return (
     <NavbarWrapper>
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 rounded-full border border-border bg-background/70 px-4 pl-5 shadow-soft backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      <div className="mx-auto flex h-14 max-w-[68.5rem] items-center justify-between gap-4 rounded-full border border-border bg-background/70 px-5 shadow-soft backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
         <LogoLink className="flex items-center gap-2">
           <Logo animated wordmarkClassName="text-base font-bold" />
         </LogoLink>

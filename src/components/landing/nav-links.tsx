@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl"
 
+import { Fragment } from "react"
 import Link from "next/link"
 import { usePathname } from "@/i18n/navigation"
 import { cn } from "@/lib/utils"
@@ -21,9 +22,11 @@ export function NavLinks() {
   return (
     <nav className="hidden items-center gap-1 md:flex">
       {sections.map(({ id }) => (
-        <Link key={id} href={`/#${id}`} className={linkClass(current === id)}>
-          {t(id)}
-        </Link>
+        <Fragment key={id}>
+          <Link href={`/#${id}`} className={linkClass(current === id)}>
+            {t(id)}
+          </Link>
+        </Fragment>
       ))}
       <Link href="/docs" className={linkClass(pathname.startsWith("/docs"))}>
         {t("docs")}

@@ -7,6 +7,8 @@ import { LogoLink } from "@/components/landing/logo-link"
 import { siteConfig } from "@/config/site"
 import { useTranslations } from "next-intl"
 import { isKitSite } from "@/config/kit"
+import { emailEnabled } from "@/lib/email-transport"
+import { FooterSignup } from "@/components/landing/footer-signup"
 
 function XIcon() {
   return (
@@ -19,6 +21,16 @@ function XIcon() {
 export function Footer() {
   const t = useTranslations("footer")
   const orgUrl = siteConfig.links.githubOrg ?? siteConfig.links.github
+  // The footer signup collects addresses from every page on its own, so it
+  // stays off until WAITLIST_ENABLED="true": set it once your real privacy
+  // policy is live (the one that ships is a placeholder). It also needs an
+  // email provider, or the visitor would be told to check an inbox that never
+  // receives anything. The demo shows it disabled, like every form there. The
+  // kit's own site keeps it visible and disabled until the gate opens.
+  const isDemo = process.env.DEMO_MODE === "true"
+  const waitlistOn = process.env.WAITLIST_ENABLED === "true"
+  const showSignup = isDemo || isKitSite || (waitlistOn && emailEnabled())
+  const signupDisabled = isDemo || !waitlistOn
   return (
     <footer className="border-t border-border bg-muted/30 py-12">
       <div className="mx-auto max-w-6xl px-6 lg:px-12">
@@ -54,6 +66,7 @@ export function Footer() {
                 </a>
               )}
             </div>
+            {showSignup && <FooterSignup disabled={signupDisabled} />}
           </div>
 
           <div>

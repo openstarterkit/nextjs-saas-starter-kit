@@ -10,6 +10,7 @@ Everything you need to go from `git clone` to production.
 | [Billing & payments](./billing.md) | Subscriptions, one-time payments, usage-based billing and entitlements |
 | [Blog & content](./blog.md) | File-based MDX blog with categories, RSS and per-post SEO |
 | [Newsletter & waitlist](./newsletter.md) | Double opt-in mailing list, consent record, Resend sync and admin export |
+| [Email](./email.md) | Sending through Resend, or bringing your own provider (SMTP, Postmark, SES), and a note on text messages |
 | [Languages](./i18n.md) | Adding a language, translating the docs, and keeping translations current |
 | [Deployment](./deployment.md) | Shipping to Vercel, production env, webhooks, going admin |
 | [Upgrading](./upgrading.md) | Taking a newer version without losing your work, and the cost in advance |

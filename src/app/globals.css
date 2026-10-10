@@ -50,12 +50,31 @@
   overflow-wrap: break-word;
 }
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* Tailwind 4 dropped the pointer cursor its v3 preflight gave buttons, so
+   every clickable thing showed the arrow. Put back here once, for what can be
+   clicked and is not disabled, as the v4 upgrade guide suggests. In the base
+   layer, so a `cursor-*` class on a component still wins. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  input:is([type="checkbox"], [type="radio"], [type="file"], [type="submit"], [type="button"], [type="reset"]):not(:disabled),
+  label[for],
+  summary {
+    cursor: pointer;
+  }
+}
+
+/* `.light` scopes a subtree back to the light theme inside a dark page (and
+   `.dark` the other way round): the hero's dashboard preview has its own
+   switch. `dark:` stops at a `.light` boundary; specificity stays zero. */
+@custom-variant dark (&:where(.dark, .dark *):not(:where(.light, .light *)));
 /* Active while the dashboard sidebar is collapsed to icons (class set on <html>
    by SidebarCollapseToggle, persisted in localStorage). */
 @custom-variant sidebar-collapsed (&:where(html.sidebar-collapsed *));
 
-:root {
+:root,
+.light {
   --background: #ffffff;
   --foreground: #0a0a0a;
   --muted: #fafafa;
