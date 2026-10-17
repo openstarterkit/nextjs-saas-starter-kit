@@ -1,3 +1,4 @@
+import path from "node:path"
 import NextLink from "next/link"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
@@ -10,7 +11,8 @@ import { Languages } from "lucide-react"
 import { getDocs, getDoc, getDocContent, translatedLocales } from "@/lib/docs"
 import { extractToc, slugify, nodeText } from "@/lib/toc"
 import { OnThisPage } from "@/components/docs/on-this-page"
-import { mapRepoHref } from "@/lib/markdown-links"
+import { mapRepoHref, mapRepoMedia } from "@/lib/markdown-links"
+import { DocMedia } from "@/components/docs/doc-media"
 import { Link } from "@/i18n/navigation"
 import { localeAlternates } from "@/i18n/alternates"
 import { languageName } from "@/i18n/language-name"
@@ -65,6 +67,10 @@ export default async function DocPage({
   const doc = getDoc(slug, locale)
   if (!doc) notFound()
   const content = getDocContent(doc)
+  // Media resolve from the folder the guide actually lives in: docs/ on the
+  // kit's own site, content/docs/ in your app. A fixed "docs" would break
+  // every image in your product docs.
+  const mediaBase = path.relative(process.cwd(), path.dirname(doc.source)).split(path.sep).join("/")
   const toc = extractToc(content)
   // The reader asked for a language this page does not have yet. Serving the
   // English text unannounced would read as a translation that stopped halfway;
@@ -120,6 +126,21 @@ export default async function DocPage({
                 {children}
               </h4>
             ),
+            // Images and videos are written for GitHub, from docs/: see
+            // mapRepoMedia for the paths and DocMedia for how each kind shows.
+            img: ({ src, alt, title }) => (
+              <DocMedia src={mapRepoMedia(typeof src === "string" ? src : "", mediaBase)} alt={alt ?? ""} title={title} />
+            ),
+            // Markdown wraps an image on its own line in a paragraph, and a
+            // <figure> inside a <p> is invalid HTML that React refuses to
+            // hydrate. A paragraph holding only an image renders as the image.
+            p: ({ node, children }) => {
+              const only = node?.children.filter((c) => !(c.type === "text" && !c.value.trim()))
+              if (only?.length === 1 && only[0].type === "element" && only[0].tagName === "img") {
+                return <>{children}</>
+              }
+              return <p>{children}</p>
+            },
             a: ({ href, children }) => {
               const mapped = mapHref(href ?? "")
               // A link from one guide to another keeps the reader's language;

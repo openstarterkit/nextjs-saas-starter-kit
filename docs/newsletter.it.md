@@ -2,7 +2,7 @@
 title: Newsletter e waitlist
 description: Lista con doppio opt-in, registro del consenso, sincronizzazione con Resend ed export dall'amministrazione.
 translated_from: newsletter.md
-source_checksum: eb4919511669
+source_checksum: 6668ac27366f
 ---
 
 # Newsletter e waitlist
@@ -26,6 +26,8 @@ L'API risponde sempre un `200` neutro: che l'indirizzo sia nuovo, già iscritto 
 ## Spedire le email
 
 Il kit non include un editor per la newsletter, ed è una scelta. Gli iscritti confermati vengono sincronizzati su una Resend Audience, e ogni numero lo mandi come Broadcast dal pannello Resend, che ti dà editor, programmazione, gestione delle disiscrizioni e tracciamento di aperture e clic senza costruirli.
+
+Il link di disiscrizione di un Broadcast è quello di Resend: segna il contatto come disiscritto su Resend e lascia il tuo database com'era. Va bene finché la stessa persona non si iscrive di nuovo: per ogni indirizzo che ha già come confermato l'endpoint chiede a Resend, e se Resend lo dà per disiscritto lo registra e manda una nuova conferma, così confermando la persona torna iscritta da tutte e due le parti.
 
 Niente parte da solo: nel kit non c'è nessun cron, nessun job programmato, nessuna automazione. Un numero esce quando premi invia.
 

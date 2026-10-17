@@ -4,6 +4,8 @@ From zero to a running app in about 10 minutes.
 
 **You need:** Node 24 or newer, git, and a PostgreSQL database ([Neon](https://neon.tech) has a free tier).
 
+![A terminal runs git clone, npm install and npm run dev, then the app opens at localhost:3000](../public/media/quick-setup.webp "Steps 1 and 2 on a fresh clone: the page that opens lists what is left.")
+
 ## 1. Clone and install
 
 ```bash

@@ -49,12 +49,18 @@ export function MobileMenu({
       <DropdownMenuTrigger asChild>
         <button
           aria-label={t("openMenu")}
-          className="flex h-11 w-11 items-center justify-center rounded-[var(--radius)] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-[var(--radius)] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground xl:hidden"
         >
           <Menu size={24} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60 md:hidden">
+      {/* A phone on its side is about 400px tall, less than the list: the menu
+          stops at the space Radix measures below the button and scrolls. */}
+      <DropdownMenuContent
+        align="end"
+        collisionPadding={12}
+        className="max-h-[var(--radix-dropdown-menu-content-available-height)] w-60 overflow-y-auto overflow-x-hidden xl:hidden"
+      >
         {sections.map(({ id }) => (
           <Fragment key={id}>
             <DropdownMenuItem asChild>

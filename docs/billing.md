@@ -106,7 +106,7 @@ What it does not do:
 
 ## Webhook events
 
-The handler at `/api/webhooks/stripe` processes these events; select them when you create the production endpoint (see [Deployment](./deployment.md)):
+The handler at `/api/webhooks/stripe` processes these events; select them when you create the production endpoint, with the same API version as `apiVersion` in `src/lib/stripe.ts` (see [Deployment](./deployment.md)):
 
 - `checkout.session.completed` (subscriptions and one-time payments)
 - `customer.subscription.updated`

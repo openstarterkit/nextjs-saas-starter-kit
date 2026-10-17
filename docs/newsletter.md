@@ -20,6 +20,8 @@ The API always answers a neutral `200`: whether the address is new, already subs
 
 The kit does not include a newsletter editor by design. Confirmed subscribers are synced to a Resend Audience, and you send each issue as a Broadcast from the Resend dashboard, which gives you the editor, scheduling, unsubscribe handling and open/click tracking for free.
 
+The unsubscribe link in a Broadcast is Resend's, so it marks the contact unsubscribed on Resend and leaves your database as it was. That is fine until the same person signs up again: the endpoint asks Resend about any address it already has as confirmed, and if Resend says unsubscribed, it records that and sends a fresh confirmation, so confirming brings them back on both sides.
+
 Nothing sends on its own: there is no cron, no scheduled job, no automation in the kit. An issue goes out when you press send.
 
 One word on the cadence you promise. The signup form, the confirmation page and the welcome email all describe what a subscriber will get, and the kit words them without a frequency on purpose. A cadence is easy to write and hard to keep, and the one in the welcome email is the version that sits in their inbox. Promise what you will still be doing in three months, and if you do commit to a rhythm, change all three together.

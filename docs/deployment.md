@@ -12,6 +12,8 @@ vercel          # first deploy, links the project
 vercel --prod   # production deploy
 ```
 
+**Selling with it means a paid plan.** Vercel's free Hobby plan is for personal, non-commercial projects only. Once the app takes payments or runs a business, budget for [Vercel Pro](https://vercel.com/pricing), or deploy it on any Node.js host (next section).
+
 ## Production environment
 
 Set the variables from [.env.example](../.env.example) in the Vercel dashboard (Project → Settings → Environment Variables). Minimum for production:
@@ -27,6 +29,18 @@ Set the variables from [.env.example](../.env.example) in the Vercel dashboard (
 ## Deploying somewhere other than Vercel
 
 The kit is a standard Next.js app, so Docker, a VPS or any Node host works, and since 2.0 there is no extra variable to set for it.
+
+On a Node.js server it runs the way the [Next.js self-hosting guide](https://nextjs.org/docs/app/guides/self-hosting) describes:
+
+```bash
+npm ci
+npm run build
+npm start          # next start, port 3000 unless you set PORT
+```
+
+Put it behind a reverse proxy for HTTPS, apply migrations the same way as on Vercel (see below), and keep the process running with your host's service manager.
+
+The one thing that does not come along is the cron job in `vercel.json`: Vercel runs it, nothing else does. It only resets a public demo (`/api/cron/reset-demo`, which refuses to run unless `DEMO_MODE="true"`), so most deployments can ignore it. If you do run a demo, call that path on the same schedule from your own scheduler, with `Authorization: Bearer <CRON_SECRET>`.
 
 The reason is `NEXT_PUBLIC_APP_URL`, which you already set: the kit passes it to Better Auth as the base URL, so the origin never has to be guessed from an incoming `Host` header. Set it to the address people actually visit, with no trailing slash, and OAuth callbacks and redirects land where you expect wherever the app runs.
 
@@ -78,6 +92,8 @@ https://yourdomain.com/api/webhooks/stripe
 ```
 
 Subscribe it to the subscription lifecycle events, copy the signing secret into `STRIPE_WEBHOOK_SECRET` on Vercel, and redeploy. Use live keys (`sk_live_...`) on production only.
+
+**Match the endpoint's API version to the kit's.** The kit pins its Stripe API version in `src/lib/stripe.ts` (`apiVersion`), but the endpoint has a version of its own, chosen when you create it, and the events it sends are shaped by that one. When the two differ, nothing complains: TypeScript checks against the kit's version while the handler reads fields that have moved. Pick the same version when you create the endpoint, and after any update that changes `apiVersion`, update the endpoint too and send a few test events (`stripe trigger checkout.session.completed`).
 
 ## Make yourself admin
 

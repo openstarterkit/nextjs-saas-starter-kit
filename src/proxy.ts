@@ -75,15 +75,24 @@ const AUTH_ROUTES = ["/login", "/signup", "/2fa"]
 //
 // Either way this is a redirect layer, not the authorization: the real check
 // lives in requireUser() and requireAdmin(), on the page.
+//
+// The session is read only on the routes in the three lists above. Nothing
+// else here depends on it, and reading it on every request (the home, the
+// blog, the docs, link prefetches, crawlers) cost a round trip and function
+// time on each one: on Vercel that was most of a small site's CPU.
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
-  const session = await auth.api.getSession({ headers: req.headers })
-  const isLoggedIn = !!session
-  const isAdmin = session?.user?.role === "ADMIN"
 
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r))
   const isAdminRoute = ADMIN_ROUTES.some((r) => pathname.startsWith(r))
   const isProtectedRoute = PROTECTED_ROUTES.some((r) => pathname.startsWith(r))
+
+  const session =
+    isAuthRoute || isAdminRoute || isProtectedRoute
+      ? await auth.api.getSession({ headers: req.headers })
+      : null
+  const isLoggedIn = !!session
+  const isAdmin = session?.user?.role === "ADMIN"
 
   // `/api/auth` and the inbound webhooks (e.g. Stripe) carry no session and
   // need no special case here: they are not in the lists above, so they pass.
@@ -111,6 +120,8 @@ export default async function proxy(req: NextRequest) {
   return intlMiddleware(req)
 }
 
+// Static files in public/ skip the proxy. Videos are listed too: without them
+// next-intl took /videos/clip.mp4 for a page and answered 404.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4|webm)$).*)"],
 }

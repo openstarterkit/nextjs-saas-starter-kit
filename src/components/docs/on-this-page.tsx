@@ -79,7 +79,7 @@ export function OnThisPage({ items }: { items: TocItem[] }) {
       */}
       <div
         ref={boxRef}
-        className="max-h-[calc(100dvh-var(--header-h,4.5rem)-8rem)] overflow-y-auto overscroll-contain pr-3 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:var(--color-border)_transparent]"
+        className="max-h-[calc(100dvh-var(--header-h,4.5rem)-8rem)] overflow-y-auto 2xl:max-h-[calc(100dvh/1.12-var(--header-h,4.5rem)-8rem)] overscroll-contain pr-3 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:var(--color-border)_transparent]"
       >
         <ul className="space-y-1 text-sm">
           {items.map((item) => (

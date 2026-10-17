@@ -323,12 +323,33 @@ export async function sendNewsletterWelcomeEmail(to: string, unsubscribeUrl: str
  * Mirrors a confirmed subscriber onto the Resend Audience so issues can be
  * sent as Broadcasts from the Resend dashboard. No-op when
  * RESEND_AUDIENCE_ID is unset: the database list still works on its own.
+ *
+ * An address that is already on the audience gets an update instead: that is
+ * the one who unsubscribed through a Broadcast and has just confirmed again,
+ * and Resend keeps them out of every send until `unsubscribed` is cleared.
  */
 export async function syncNewsletterContact(email: string) {
   const audienceId = process.env.RESEND_AUDIENCE_ID
   if (!audienceId) return
   const resend = await resendClient()
+  const { error } = await resend.contacts.update({ email, audienceId, unsubscribed: false })
+  if (!error) return
   await deliver("audience-add", () => resend.contacts.create({ email, audienceId, unsubscribed: false }))
+}
+
+/**
+ * Whether Resend has this address as unsubscribed. The link at the foot of a
+ * Broadcast is Resend's, so it unsubscribes there and never touches the
+ * database: without asking, a person who left that way and signs up again
+ * looks confirmed and active, and gets nothing. False when there is no
+ * audience, no such contact, or Resend does not answer.
+ */
+export async function isNewsletterContactUnsubscribed(email: string): Promise<boolean> {
+  const audienceId = process.env.RESEND_AUDIENCE_ID
+  if (!audienceId) return false
+  const resend = await resendClient()
+  const { data } = await resend.contacts.get({ email, audienceId })
+  return data?.unsubscribed === true
 }
 
 export async function removeNewsletterContact(email: string) {

@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 9fa75921a5f1
+source_checksum: 21c5cf9792f8
 ---
 
 # Aggiornare
@@ -45,6 +45,14 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.3.6: il proxy legge la sessione solo dove serve
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare, niente da configurare.
+
+**Dove un merge può andare in conflitto.** In `src/proxy.ts` le liste dei percorsi si calcolano prima, e `getSession` parte solo se una di loro corrisponde: se hai aggiunto prefissi a `PROTECTED_ROUTES`, `ADMIN_ROUTES` o `AUTH_ROUTES` tienili, e tieni ogni tua area privata in `PROTECTED_ROUTES`. Il matcher in fondo ora salta anche `.mp4` e `.webm`. In `src/components/landing/navbar.tsx`, `nav-links.tsx` e `mobile-menu.tsx` il punto di rottura è passato da `md` a `xl`: tieni i tuoi link, prendi le classi nuove. In `src/lib/email.ts`, `syncNewsletterContact` aggiorna prima di creare ed è nuova `isNewsletterContactUnsubscribed`; `src/app/api/newsletter/route.ts` ha un ramo in più.
+
+**Se incassi con Stripe**, confronta nel pannello di Stripe la versione dell'API del tuo endpoint webhook con `apiVersion` in `src/lib/stripe.ts` (`2026-08-26.dahlia`): devono coincidere, vedi [Deployment](./deployment.md). Poi manda un evento di prova con `stripe trigger checkout.session.completed`.
 
 ## 2.3.5: il tuo provider di email, e un solo caricamento per l'app
 

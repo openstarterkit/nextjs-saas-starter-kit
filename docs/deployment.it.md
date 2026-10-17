@@ -2,7 +2,7 @@
 title: Deployment
 description: "In produzione su Vercel: variabili, migrazioni, webhook, e come diventare amministratore."
 translated_from: deployment.md
-source_checksum: bfaa1da69543
+source_checksum: 2a7416febd38
 ---
 
 # Deployment
@@ -19,6 +19,8 @@ vercel          # primo deploy, collega il progetto
 vercel --prod   # deploy in produzione
 ```
 
+**Se ci vendi, serve un piano a pagamento.** Il piano gratuito Hobby di Vercel è solo per progetti personali e non commerciali. Quando l'app incassa pagamenti o ci gira un'attività, metti in conto [Vercel Pro](https://vercel.com/pricing), oppure pubblicala su un qualsiasi host Node.js (sezione seguente).
+
 ## Ambiente di produzione
 
 Imposta le variabili di [.env.example](../.env.example) nel pannello Vercel (Project → Settings → Environment Variables). Il minimo per andare in produzione:
@@ -34,6 +36,18 @@ Imposta le variabili di [.env.example](../.env.example) nel pannello Vercel (Pro
 ## Deploy fuori da Vercel
 
 Il kit è una normale app Next.js, quindi Docker, un VPS o qualsiasi host Node vanno bene, e dalla 2.0 non serve nessuna variabile in più per farlo.
+
+Su un server Node.js gira come descrive la [guida al self-hosting di Next.js](https://nextjs.org/docs/app/guides/self-hosting):
+
+```bash
+npm ci
+npm run build
+npm start          # next start, porta 3000 se non imposti PORT
+```
+
+Mettilo dietro un reverse proxy per l'HTTPS, applica le migrazioni come su Vercel (vedi sotto) e tieni vivo il processo con il gestore di servizi del tuo host.
+
+L'unica cosa che non viene da sola è il cron di `vercel.json`: lo esegue Vercel, nessun altro. Serve solo a ripristinare una demo pubblica (`/api/cron/reset-demo`, che non parte se `DEMO_MODE` non è `"true"`), quindi la maggior parte dei deploy può ignorarlo. Se una demo la tieni, chiama quel percorso con la stessa cadenza dal tuo scheduler, con `Authorization: Bearer <CRON_SECRET>`.
 
 Il motivo è `NEXT_PUBLIC_APP_URL`, che imposti comunque: il kit la passa a Better Auth come URL di base, quindi l'origine non deve essere indovinata da un header `Host` in arrivo. Mettici l'indirizzo che le persone visitano davvero, senza barra finale, e callback OAuth e redirect finiscono dove ti aspetti ovunque giri l'app.
 
@@ -85,6 +99,8 @@ https://iltuodominio.com/api/webhooks/stripe
 ```
 
 Iscrivilo agli eventi del ciclo di vita degli abbonamenti, copia il signing secret in `STRIPE_WEBHOOK_SECRET` su Vercel, e rifai il deploy. Le chiavi live (`sk_live_...`) solo in produzione.
+
+**La versione dell'API dell'endpoint deve essere quella del kit.** Il kit fissa la sua versione dell'API di Stripe in `src/lib/stripe.ts` (`apiVersion`), ma l'endpoint ne ha una sua, scelta quando lo crei, e gli eventi che manda hanno la forma di quella. Se le due non combaciano nessuno si lamenta: TypeScript controlla sulla versione del kit, mentre il gestore legge campi che si sono spostati. Scegli la stessa versione quando crei l'endpoint, e dopo ogni aggiornamento che cambia `apiVersion` aggiorna anche l'endpoint e manda qualche evento di prova (`stripe trigger checkout.session.completed`).
 
 ## Diventare amministratore
 

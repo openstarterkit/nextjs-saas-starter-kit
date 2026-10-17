@@ -2,7 +2,7 @@
 title: Pagamenti e abbonamenti
 description: Abbonamenti, prove gratuite, pagamenti una tantum, consumo a metrica, codici promozionali, fatture e Stripe Tax.
 translated_from: billing.md
-source_checksum: e3b34e74f8e4
+source_checksum: e2a143318bad
 ---
 
 # Pagamenti e abbonamenti
@@ -113,7 +113,7 @@ Cosa non fa:
 
 ## Eventi del webhook
 
-Il gestore su `/api/webhooks/stripe` tratta questi eventi; selezionali quando crei l'endpoint di produzione (vedi [Deployment](./deployment.md)):
+Il gestore su `/api/webhooks/stripe` tratta questi eventi; selezionali quando crei l'endpoint di produzione, con la stessa versione dell'API di `apiVersion` in `src/lib/stripe.ts` (vedi [Deployment](./deployment.md)):
 
 - `checkout.session.completed` (abbonamenti e pagamenti una tantum)
 - `customer.subscription.updated`

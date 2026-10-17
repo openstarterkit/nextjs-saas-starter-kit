@@ -30,8 +30,9 @@ export async function DocsSidebar() {
           scrolled to reach its last entry. `--header-h` is measured by
           `StickyHeader`; the fallback covers the first paint. It stops being
           sticky where this column ends, which is what lets the footer come
-          up over it. */}
-      <div className="md:sticky md:top-[calc(var(--header-h,4.5rem)+2rem)] md:max-h-[calc(100dvh-var(--header-h,4.5rem)-4rem)] md:overflow-y-auto">
+          up over it. From 2xl the page is zoomed 12%, and zoom scales dvh
+          too, hence the divided height. */}
+      <div className="md:sticky md:top-[calc(var(--header-h,4.5rem)+2rem)] md:max-h-[calc(100dvh-var(--header-h,4.5rem)-4rem)] md:overflow-y-auto 2xl:max-h-[calc(100dvh/1.12-var(--header-h,4.5rem)-4rem)]">
         {/* Above the guide list, because it decides which list you are about
             to read rather than being an afterthought to it. Capped on a phone,
             where this column is the full width of the screen and a menu

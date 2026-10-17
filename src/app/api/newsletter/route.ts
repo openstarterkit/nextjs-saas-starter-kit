@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { checkRateLimit, rateLimitKeyFromIp } from "@/lib/rate-limit"
-import { sendNewsletterConfirmEmail } from "@/lib/email"
+import { isNewsletterContactUnsubscribed, sendNewsletterConfirmEmail } from "@/lib/email"
 import { siteConfig } from "@/config/site"
 
 /**
@@ -67,8 +67,17 @@ export async function POST(req: Request) {
         data: { confirmToken: token(), createdAt: new Date() },
       })
       await sendNewsletterConfirmEmail(email, confirmUrl(sub.confirmToken))
+    } else if (await isNewsletterContactUnsubscribed(email)) {
+      // Confirmed here, but unsubscribed on Resend through the link of a
+      // Broadcast, which never reaches the database. Record it, then the same
+      // path as any returning address: confirming clears it on both sides.
+      const sub = await prisma.newsletterSubscriber.update({
+        where: { email },
+        data: { unsubscribedAt: new Date(), confirmToken: token(), createdAt: new Date() },
+      })
+      await sendNewsletterConfirmEmail(email, confirmUrl(sub.confirmToken))
     }
-    // Confirmed and active: nothing to do, same neutral answer.
+    // Confirmed and active on both sides: nothing to do, same neutral answer.
   } catch (error) {
     // Missing RESEND_API_KEY or a DB hiccup must not leak to the caller.
     console.error("[newsletter] signup failed:", error)

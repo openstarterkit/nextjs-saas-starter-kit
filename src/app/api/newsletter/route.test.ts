@@ -11,13 +11,14 @@ const prismaMock = {
   newsletterSubscriber: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
 }
 const sendNewsletterConfirmEmail = vi.fn()
+const isNewsletterContactUnsubscribed = vi.fn()
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }))
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: async () => true,
   rateLimitKeyFromIp: async () => "newsletter:test",
 }))
-vi.mock("@/lib/email", () => ({ sendNewsletterConfirmEmail }))
+vi.mock("@/lib/email", () => ({ sendNewsletterConfirmEmail, isNewsletterContactUnsubscribed }))
 
 const { POST } = await import("./route")
 
@@ -37,6 +38,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   prismaMock.newsletterSubscriber.create.mockResolvedValue({ confirmToken: "t" })
   prismaMock.newsletterSubscriber.update.mockResolvedValue({ confirmToken: "t" })
+  isNewsletterContactUnsubscribed.mockResolvedValue(false)
 })
 
 describe("POST /api/newsletter: the answer never depends on the outcome", () => {
@@ -67,5 +69,48 @@ describe("POST /api/newsletter: the answer never depends on the outcome", () => 
     expect(known).toEqual(unknown)
     // The known address gets no email at all: there is nothing to confirm.
     expect(sendNewsletterConfirmEmail).toHaveBeenCalledOnce()
+  })
+})
+
+/**
+ * The unsubscribe link of a Broadcast is Resend's: it unsubscribes there and
+ * leaves the database saying confirmed and active. Before 2.3.6 that person
+ * could never sign up again, because the endpoint saw a confirmed address and,
+ * on purpose, sent nothing.
+ */
+describe("POST /api/newsletter: unsubscribed through a Broadcast, signing up again", () => {
+  const confirmed = { confirmedAt: new Date(), unsubscribedAt: null }
+
+  it("records the unsubscribe and sends a new confirmation", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
+    isNewsletterContactUnsubscribed.mockResolvedValue(true)
+
+    await POST(signup("left@example.com"))
+
+    const { data } = prismaMock.newsletterSubscriber.update.mock.calls[0][0]
+    expect(data.unsubscribedAt).toBeInstanceOf(Date)
+    expect(sendNewsletterConfirmEmail).toHaveBeenCalledOnce()
+  })
+
+  it("still sends nothing to an address active on both sides", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
+
+    await POST(signup("still-here@example.com"))
+
+    expect(prismaMock.newsletterSubscriber.update).not.toHaveBeenCalled()
+    expect(sendNewsletterConfirmEmail).not.toHaveBeenCalled()
+  })
+
+  it("answers the same neutral 200", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
+    isNewsletterContactUnsubscribed.mockResolvedValue(true)
+    expect(await answer(await POST(signup("left@example.com")))).toEqual({ status: 200, body: { ok: true } })
+  })
+
+  it("answers the same neutral 200 when Resend cannot be asked", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
+    isNewsletterContactUnsubscribed.mockRejectedValue(new Error("network"))
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    expect(await answer(await POST(signup("left@example.com")))).toEqual({ status: 200, body: { ok: true } })
   })
 })

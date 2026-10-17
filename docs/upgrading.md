@@ -39,6 +39,14 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.3.6: the proxy reads the session only where it is used
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure.
+
+**Where a merge may conflict.** In `src/proxy.ts` the route lists are computed first and `getSession` runs only when one of them matches: if you added prefixes to `PROTECTED_ROUTES`, `ADMIN_ROUTES` or `AUTH_ROUTES`, keep them, and keep any private area of yours in `PROTECTED_ROUTES`. The matcher at the bottom now skips `.mp4` and `.webm` as well. In `src/components/landing/navbar.tsx`, `nav-links.tsx` and `mobile-menu.tsx` the breakpoint went from `md` to `xl`: keep your links, take the new classes. In `src/lib/email.ts`, `syncNewsletterContact` updates before it creates and `isNewsletterContactUnsubscribed` is new; `src/app/api/newsletter/route.ts` has one more branch.
+
+**If you take payments with Stripe**, check the API version of your webhook endpoint in the Stripe dashboard against `apiVersion` in `src/lib/stripe.ts` (`2026-08-26.dahlia`): they should match, see [Deployment](./deployment.md). Then send a test event with `stripe trigger checkout.session.completed`.
+
 ## 2.3.5: your own email provider, and one loading state for the app
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure. Resend stays the default.

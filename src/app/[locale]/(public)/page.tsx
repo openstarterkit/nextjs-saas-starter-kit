@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Hero } from "@/components/landing/hero"
 import { Features } from "@/components/landing/features"
+import { SetupVideo } from "@/components/landing/setup-video"
 import { Pricing } from "@/components/landing/pricing"
 import { PlanPricing } from "@/components/landing/plan-pricing"
 import { FAQ } from "@/components/landing/faq"
@@ -50,6 +51,8 @@ export default async function LandingPage() {
       />
       <Hero />
       <Features />
+      {/* The kit's own site only: a recorded run from clone to dashboard. */}
+      {isKitSite && <SetupVideo />}
       {isKitSite ? <Pricing /> : <PlanPricing />}
       <FAQ withJsonLd />
     </>

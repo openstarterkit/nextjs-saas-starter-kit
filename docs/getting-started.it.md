@@ -2,7 +2,7 @@
 title: Primi passi
 description: Da git clone all'app che gira, in una decina di minuti.
 translated_from: getting-started.md
-source_checksum: 380e119ddacd
+source_checksum: 5f0df1f76045
 ---
 
 # Primi passi
@@ -10,6 +10,8 @@ source_checksum: 380e119ddacd
 Da zero all'app che gira in una decina di minuti.
 
 **Ti servono:** Node 24 o superiore, git e un database PostgreSQL ([Neon](https://neon.tech) ha un piano gratuito).
+
+![Un terminale esegue git clone, npm install e npm run dev, poi l'app si apre su localhost:3000](../public/media/quick-setup.webp "I passi 1 e 2 su un clone appena fatto: la pagina che si apre elenca cosa manca.")
 
 ## 1. Clona e installa
 

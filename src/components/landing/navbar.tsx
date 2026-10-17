@@ -43,15 +43,15 @@ export async function Navbar() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           {user ? (
-            <Button asChild size="sm" className="hidden md:inline-flex">
+            <Button asChild size="sm" className="hidden xl:inline-flex">
               <Link href="/dashboard">Dashboard</Link>
             </Button>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+              <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex">
                 <Link href={siteConfig.links.demo ?? "/login"}>{t("signIn")}</Link>
               </Button>
-              <Button asChild variant="gradient" size="sm" className="hidden md:inline-flex">
+              <Button asChild variant="gradient" size="sm" className="hidden xl:inline-flex">
                 {starHref ? (
                   <a href={starHref} target="_blank" rel="noreferrer">
                     <GithubIcon className="h-4 w-4" />

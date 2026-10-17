@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.3.5-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.3.6-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -118,6 +118,10 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 
 ## ⚡ Quick start
 
+<p align="center">
+  <img src="public/media/quick-setup.webp" alt="A terminal runs git clone, npm install and npm run dev, then the app opens at localhost:3000" width="100%" />
+</p>
+
 > 📚 Prefer step-by-step guides? The full documentation lives in [docs/](./docs/README.md) and is rendered at [openstarterkit.dev/docs](https://openstarterkit.dev/docs): getting started, configuration, authentication, deployment.
 
 **You need:** Node 24 or newer, git, and a PostgreSQL database ([Neon](https://neon.tech) has a free tier).
@@ -199,6 +203,8 @@ Click the **Deploy with Vercel** button at the top, or:
 npm i -g vercel
 vercel
 ```
+
+Vercel's free Hobby plan is for non-commercial use: if you sell with the app, budget for Vercel Pro or deploy on any Node.js host ([Deployment](./docs/deployment.md)).
 
 Set all environment variables in the Vercel dashboard. For Stripe webhooks in production, create a new endpoint in the Stripe dashboard pointing to `https://yourdomain.com/api/webhooks/stripe`. Builds do not run migrations: apply them to the production database yourself, with `npm run check:deploy` before and after (see [Deployment](./docs/deployment.md)).
 
@@ -328,7 +334,7 @@ Your environment is validated at boot (`src/instrumentation.ts`): a configuratio
 
 ```bash
 npm run smoke -- https://your-app.com
-npm run smoke -- https://your-app.com --expect-version 2.3.5
+npm run smoke -- https://your-app.com --expect-version 2.3.6
 ```
 
 Checks a running deployment from the outside: `/api/health` (including whether the database has every migration the build ships), home, blog index, feed, a real post, the SEO surfaces, and two routing guards (an unknown path is a 404, `/dashboard` redirects to sign in). With `--expect-version` it also compares the version the site reports with the one you are releasing, which is how you catch a deploy that succeeded while still serving the previous build.

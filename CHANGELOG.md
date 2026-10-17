@@ -7,6 +7,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.3.6] - 2026-10-17
+
+⚡ **The proxy stops reading the session on every request.** It did so on public pages, link prefetches and crawler visits too, where nothing uses it, and on Vercel that was most of a small site's function time. Now it reads it only on sign-in, the dashboard, the admin and the billing routes. This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
+
+### Added
+
+- **Images and videos in the docs.** A Markdown image pointing into `public/media/` shows on GitHub and on the site alike, with the Markdown title as its caption; an `.mp4` gets player controls, and a `file.dark.webp` next to an image is used in dark mode. The rule is in `AGENTS.md`
+- **The Quick start as a short looping clip**, in the README and in [Getting started](./docs/getting-started.md): clone, install and the first page of the app, recorded on a fresh clone
+- **Running the kit on any Node.js host**, in [Deployment](./docs/deployment.md): build and start as the Next.js self-hosting guide describes, and the one thing that does not come along off Vercel, the cron that resets a public demo
+
+### Changed
+
+- **`src/proxy.ts` reads the session only on the routes in `AUTH_ROUTES`, `ADMIN_ROUTES` and `PROTECTED_ROUTES`.** The redirects are the same, and a new test fails if a public page reads it again. If you added a private area outside `/dashboard`, it still belongs in `PROTECTED_ROUTES`, as the comment in the file says
+- **The menu button takes over below 1280 px**, so a tablet in landscape gets the menu instead of a row of links that ran into the edges. The menu stops at the bottom of the screen and scrolls, so a phone on its side reaches every item
+- **The docs say what Vercel's free plan is for**: the Hobby plan is for non-commercial projects, so an app that takes payments needs Vercel Pro or another host. In the README and in Deployment
+- **Dependencies**: `next` and `eslint-config-next` 16.4.0, the Radix packages to their current releases, `lucide-react` 1.59, `resend` 6.34.1, `@playwright/test` 1.64.1, `dotenv` 18.0.8, `@types/node` 26.6.5. Production dependencies audit at zero
+
+### Fixed
+
+- **Someone who unsubscribed through a Broadcast can sign up again.** The unsubscribe link in a Broadcast is Resend's: it marked the contact unsubscribed on Resend and left the database saying confirmed, so a new signup got nothing at all. The endpoint now asks Resend about an address it already has as confirmed, and sends a new confirmation when Resend has it unsubscribed; confirming brings the contact back on both sides. See [Newsletter & waitlist](./docs/newsletter.md)
+- **Opening a guide from the docs index no longer shrinks the page.** From 1536 px up the public pages are 12% larger, and the guides were the only ones left out
+- **Videos in `public/` load.** The proxy took `/file.mp4` and `/file.webm` for pages and answered 404
+
+### Documentation
+
+- **The API version of the Stripe webhook endpoint**: the endpoint has its own, chosen when you create it, and the events follow that one, not the version in `src/lib/stripe.ts`. Pick the same one, and update the endpoint whenever the kit changes `apiVersion`. In Deployment and Billing
+
+### If you customised the proxy, the navbar or the newsletter
+
+Expect conflicts in `src/proxy.ts`, `src/components/landing/navbar.tsx`, `nav-links.tsx`, `mobile-menu.tsx`, `src/lib/email.ts` and `src/app/api/newsletter/route.ts`: see [Upgrading](./docs/upgrading.md).
+
 ## [2.3.5] - 2026-10-10
 
 📨 **Bring your own email provider.** Every email the kit sends now goes through one function, so moving from Resend to SMTP, Postmark or any other service means rewriting one file, and a new guide walks through two examples. Asked for in [#48](https://github.com/openstarterkit/nextjs-saas-starter-kit/issues/48). This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure: Resend stays the default and works as before.
@@ -646,6 +677,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.3.6]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.6
 [2.3.5]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.5
 [2.3.4]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.4
 [2.3.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.3

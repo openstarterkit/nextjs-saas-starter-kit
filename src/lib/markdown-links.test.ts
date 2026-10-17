@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest"
 // which is the case these links are written for.
 process.env.NEXT_PUBLIC_GITHUB_URL = "https://github.com/acme/kit"
 process.env.KIT_SITE = "true"
-const { mapRepoHref } = await import("./markdown-links")
+const { mapRepoHref, mapRepoMedia, isVideoPath } = await import("./markdown-links")
 
 const BLOB = "https://github.com/acme/kit/blob/main"
 
@@ -61,5 +61,44 @@ describe("mapRepoHref", () => {
 
   it("does not invent a link when the path climbs out of the repository", () => {
     expect(mapRepoHref("../../elsewhere.md")).toBe("../../elsewhere.md")
+  })
+})
+
+describe("mapRepoMedia", () => {
+  // The path GitHub reads from docs/ is the one the site serves from its root:
+  // without this the image is a 404 on every deployment and fine on GitHub,
+  // which is where nobody would think to look for the bug.
+  it("serves a file in public/ from the site root", () => {
+    expect(mapRepoMedia("../public/media/quick-setup.webp", "docs")).toBe("/media/quick-setup.webp")
+    expect(mapRepoMedia("public/media/clip.mp4")).toBe("/media/clip.mp4")
+  })
+
+  // In a clone /docs renders content/docs/, two levels down: the same file is
+  // reached with one more "..", and has to land on the same URL.
+  it("resolves from the folder the guide lives in", () => {
+    expect(mapRepoMedia("../../public/media/shot.png", "content/docs")).toBe("/media/shot.png")
+  })
+
+  it("loads a file the site does not serve from the repository", () => {
+    expect(mapRepoMedia("../.github/logo.png", "docs")).toBe("https://github.com/acme/kit/raw/main/.github/logo.png")
+  })
+
+  it("leaves alone what is already a usable source", () => {
+    for (const src of ["https://example.com/a.png", "/media/a.png", "data:image/png;base64,AAAA"]) {
+      expect(mapRepoMedia(src, "docs")).toBe(src)
+    }
+  })
+
+  it("does not invent a path when it climbs out of the repository", () => {
+    expect(mapRepoMedia("../../outside.png", "docs")).toBe("../../outside.png")
+  })
+})
+
+describe("isVideoPath", () => {
+  it("tells videos from images, ignoring query and hash", () => {
+    expect(isVideoPath("/media/clip.mp4")).toBe(true)
+    expect(isVideoPath("/media/clip.WEBM?v=2")).toBe(true)
+    expect(isVideoPath("/media/quick-setup.webp")).toBe(false)
+    expect(isVideoPath("/media/shot.png#x")).toBe(false)
   })
 })

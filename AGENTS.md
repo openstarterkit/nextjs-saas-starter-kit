@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -52,5 +52,13 @@ the file you are in.
 
 **Every `docs/x.md` has a `docs/x.it.md`.** A guide added in one language only
 is a guide half the readers cannot use.
+
+**Images and videos in the docs live in `public/media/`**, written as Markdown
+images relative to the guide: `![What it shows](../public/media/file.webp "Caption")`
+from `docs/`, `../../public/media/...` from `content/docs/`.
+That one path works on GitHub, on the site and in every clone. A clip that
+loops goes in as an animated WebP; an `.mp4` gets player controls on the site
+and shows broken on GitHub. Add `file.dark.webp` next to an image for dark
+mode. See `src/components/docs/doc-media.tsx`.
 
 Before calling work finished: `npx tsc --noEmit`, `npm run lint`, `npm test`.
