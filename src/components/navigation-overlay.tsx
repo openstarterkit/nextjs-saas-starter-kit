@@ -88,7 +88,11 @@ export function LoadingOverlay({ label, animate = true }: { label?: string; anim
     >
       {/* The label in white: it sits on the dim, in light mode as in dark. */}
       {/* Without the ring: on the dim, the turning logo head is enough. */}
-      <BrandLoader label={label} ring={false} className="min-h-0 [&_p]:text-white/90" />
+      {/* will-change: the turning head on a layer of its own. Without it Chrome
+          redraws the strip of the screen around it every frame, and in dark
+          mode that strip comes out a shade off the rest of the dim: a band
+          across the page, visible on a large screen. */}
+      <BrandLoader label={label} ring={false} className="min-h-0 will-change-transform [&_p]:text-white/90" />
     </div>
   )
 }

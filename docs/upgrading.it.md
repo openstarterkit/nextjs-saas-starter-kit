@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 21c5cf9792f8
+source_checksum: 932a9f35714c
 ---
 
 # Aggiornare
@@ -45,6 +45,12 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.3.7: Next.js 16.4.2 per gli avvisi di sicurezza del 14 ottobre
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare, niente da configurare. **Prendila subito** se la tua app ha una Server Action, come il kit: Next.js 16.4.1 ha corretto un blocco del server (denial of service) che colpisce ogni app con App Router che ne abbia una, e la 16.4.2 contiene quella correzione.
+
+**Dove un merge può andare in conflitto.** Solo `package.json` e `package-lock.json`, se hai cambiato tu le dipendenze: tieni le tue, prendi le versioni nuove, poi `npm install`. `src/components/navigation-overlay.tsx` cambia di poche righe, se hai ridisegnato il loader delle pagine.
 
 ## 2.3.6: il proxy legge la sessione solo dove serve
 

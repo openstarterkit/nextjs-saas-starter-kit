@@ -39,6 +39,12 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.3.7: Next.js 16.4.2 for the October 14 security advisories
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure. **Take it now** if your app has a Server Action, as the kit does: Next.js 16.4.1 fixed a denial of service that reaches every App Router app with one, and 16.4.2 carries that fix.
+
+**Where a merge may conflict.** Only `package.json` and `package-lock.json`, if you changed dependencies yourself: keep yours, take the new versions, then run `npm install`. `src/components/navigation-overlay.tsx` changed a few lines, if you restyled the page loader.
+
 ## 2.3.6: the proxy reads the session only where it is used
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure.

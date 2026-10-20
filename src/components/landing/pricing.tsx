@@ -44,10 +44,10 @@ export function Pricing({
   const Heading = heading
   const freeFeatures = t.raw("freeFeatures") as string[]
   const proFeatures = t.raw("proFeatures") as string[]
-  // Production gate (COO #007 §5): the waitlist must not collect real emails
-  // until the real privacy policy is live on the showcase. Off by default,
-  // so a deploy that forgets the overlay ships a disabled form, not a live
-  // one. Set WAITLIST_ENABLED="true" on the showcase once /privacy is real.
+  // The waitlist stays off until a real privacy policy is published: it
+  // collects email addresses, and those need one. Off is the default, so a
+  // deploy that forgets the variable ships a disabled form rather than a live
+  // one. Set WAITLIST_ENABLED="true" once /privacy is the real policy.
   const isDemo = process.env.DEMO_MODE === "true"
   const waitlistOn = process.env.WAITLIST_ENABLED === "true"
   return (

@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.3.7] - 2026-10-20
+
+🔐 **Next.js 16.4.2, for the security advisories of October 14.** One of them lets crafted requests tie up the CPU of any App Router app with a Server Action, and the kit has several: update now. The other two, remote code execution through `use cache` functions and through SVG image optimization, do not reach the kit as it ships (it has no `use cache`, and `sharp` was already at the fixed 0.35.5), but they reach an app that adds either. This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
+
+### Security
+
+- **`next` and `eslint-config-next` 16.4.2**, which carries the fixes of 16.4.1 for [GHSA-p3m5-59mp-jv5r](https://github.com/vercel/next.js/security/advisories/GHSA-p3m5-59mp-jv5r) (denial of service through Server Actions), [GHSA-673q-mjm6-r5xr](https://github.com/vercel/next.js/security/advisories/GHSA-673q-mjm6-r5xr) and [GHSA-2464-fhr4-w9xw](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw)
+
+### Changed
+
+- **`better-auth` and `@better-auth/prisma-adapter` 1.7.12**: cookie attributes aligned with RFC 6265bis, cookies cleared once a session expires, and OAuth callbacks through the OAuth proxy checked like the direct ones
+- **Dependencies**: `react` and `react-dom` 19.3.1, `prisma`, `@prisma/client` and `@prisma/adapter-pg` 7.10.1, `react-hook-form` 7.90, `zod` 4.6.7, `lucide-react` 1.60, `@hookform/resolvers` 5.9.2, `vitest` and `@vitest/coverage-v8` 5.0.5, `@axe-core/playwright` 4.14. The minimum versions in `package.json` move up with them, so a fresh install gets the fixed releases. Production dependencies audit at zero
+
+### Fixed
+
+- **No band around the page loader in dark mode.** On a large screen the strip behind the spinning logo came out a shade off the rest of the dimmed page; the loader now has a layer of its own
+
 ## [2.3.6] - 2026-10-17
 
 ⚡ **The proxy stops reading the session on every request.** It did so on public pages, link prefetches and crawler visits too, where nothing uses it, and on Vercel that was most of a small site's function time. Now it reads it only on sign-in, the dashboard, the admin and the billing routes. This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
