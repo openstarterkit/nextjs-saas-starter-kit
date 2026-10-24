@@ -11,13 +11,13 @@ import { passwordSchema } from "@/lib/password"
 import { stripe } from "@/lib/stripe"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { emailEnabled } from "@/lib/email-transport"
+import { enabledOAuthProviders } from "@/lib/oauth-providers"
 
 // Account-management actions behind a session: link/unlink OAuth providers
 // and set or change the password. Outcomes surface as query params on the
 // settings page (same redirect-with-code pattern as the auth pages).
 
 const SETTINGS = "/dashboard/settings"
-const LINKABLE_PROVIDERS = ["google", "github"]
 
 // A subscription in any of these still bills, or is about to: deleting the
 // account under it would leave Stripe charging a customer who no longer exists
@@ -26,7 +26,8 @@ const BILLING_STATUSES = ["ACTIVE", "PAST_DUE", "TRIALING"]
 
 export async function linkProvider(formData: FormData) {
   const provider = String(formData.get("provider") ?? "")
-  if (!LINKABLE_PROVIDERS.includes(provider)) redirect(SETTINGS)
+  // Only a provider with its keys set: the others are not registered in src/auth.ts.
+  if (!(enabledOAuthProviders() as string[]).includes(provider)) redirect(SETTINGS)
   // Linking is its own call now, not a sign-in that happens to attach: the
   // library returns the provider URL and this hands the browser over to it.
   const { url } = await auth.api.linkSocialAccount({
@@ -137,6 +138,14 @@ export async function deleteAccount(formData: FormData) {
   const typed = String(formData.get("confirm") ?? "").trim().toLowerCase()
   if (typed !== user.email.toLowerCase()) redirect(`${SETTINGS}?error=confirm`)
 
+  // The last administrator cannot remove themselves, or the deployment is left
+  // with no way back into the admin panel. This refusal comes before Stripe:
+  // refusing after the cancel would keep the account but lose its subscription.
+  if (user.role === "ADMIN") {
+    const admins = await prisma.user.count({ where: { role: "ADMIN" } })
+    if (admins <= 1) redirect(`${SETTINGS}?error=last-admin`)
+  }
+
   // A live subscription is cancelled at Stripe before anything is deleted here,
   // immediately rather than at period end: someone closing their account is not
   // asking to keep paying until the month runs out.
@@ -160,13 +169,6 @@ export async function deleteAccount(formData: FormData) {
         redirect(`${SETTINGS}?error=subscription`)
       }
     }
-  }
-
-  // The last administrator cannot remove themselves, or the deployment is left
-  // with no way back into the admin panel.
-  if (user.role === "ADMIN") {
-    const admins = await prisma.user.count({ where: { role: "ADMIN" } })
-    if (admins <= 1) redirect(`${SETTINGS}?error=last-admin`)
   }
 
   await prisma.user.delete({ where: { id: currentUser.id } })

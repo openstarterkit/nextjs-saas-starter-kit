@@ -12,6 +12,7 @@ import { TwoFactorCard } from "@/components/settings/two-factor-card"
 import { ActiveSessions } from "@/components/settings/active-sessions"
 import { PendingButton } from "@/components/auth/pending-button"
 import { changeEmail, linkProvider, unlinkProvider, updatePassword } from "@/app/actions/account"
+import { enabledOAuthProviders } from "@/lib/oauth-providers"
 
 const PROVIDER_LABELS: Record<string, string> = {
   google: "Google",
@@ -90,6 +91,12 @@ export async function SettingsView({
   // same list instead of from two different places.
   const hasPassword = user.accounts.some((a) => a.providerId === "credential")
   const linked = new Map(user.accounts.map((a) => [a.providerId, a.id]))
+  // A provider without its keys cannot be connected, so its row would offer a
+  // button that fails. One already linked stays listed, to be disconnected.
+  const enabled: string[] = enabledOAuthProviders()
+  const providerRows = Object.entries(PROVIDER_LABELS).filter(
+    ([provider]) => enabled.includes(provider) || linked.has(provider)
+  )
   // The photo, when there is one, came from the provider the account was
   // created with. First linked one is the best guess the schema allows: the
   // adapter does not record which account supplied the image.
@@ -139,7 +146,7 @@ export async function SettingsView({
           <CardDescription>{t("methodsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          {Object.entries(PROVIDER_LABELS).map(([provider, label]) => {
+          {providerRows.map(([provider, label]) => {
             const accountId = linked.get(provider)
             return (
               <div key={provider} className="flex items-center justify-between border-b border-border pb-3">

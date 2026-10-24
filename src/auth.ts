@@ -12,6 +12,7 @@ import { generateBackupCodes } from "@/lib/backup-codes"
 import { refusesAutomaticLink } from "@/lib/account-linking"
 import { siteConfig } from "@/config/site"
 import { emailEnabled } from "@/lib/email-transport"
+import { enabledOAuthProviders, oauthCredentials } from "@/lib/oauth-providers"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Fixture sign-ins: dev and demo.
@@ -274,16 +275,11 @@ export const auth = betterAuth({
     },
   },
 
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    },
-  },
+  // Only the providers with both keys set (src/lib/oauth-providers.ts): one
+  // registered without them fails on the first click, not at startup.
+  socialProviders: Object.fromEntries(
+    enabledOAuthProviders().map((provider) => [provider, oauthCredentials(provider)!])
+  ),
 
   account: {
     // What Auth.js needed `allowDangerousEmailAccountLinking` for. Here it is

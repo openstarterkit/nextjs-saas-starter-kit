@@ -4,8 +4,11 @@ import { useTranslations } from "next-intl"
 
 import Link from "next/link"
 import { useRenderedPathname } from "@/hooks/use-rendered-pathname"
+import { KIT_DOCS_URL } from "@/components/dashboard/sidebar-nav"
 import {
   ArrowLeft,
+  ArrowUpRight,
+  Code,
   CreditCard,
   FolderKanban,
   LayoutGrid,
@@ -38,9 +41,12 @@ const menus = {
 export function MobileNav({
   variant,
   showAdminLink = false,
+  showDevDocsLink = false,
 }: {
   variant: keyof typeof menus
   showAdminLink?: boolean
+  /** The kit's manual, as in the sidebar. */
+  showDevDocsLink?: boolean
 }) {
   const t = useTranslations("dashboard.nav")
   const pathname = useRenderedPathname()
@@ -68,15 +74,27 @@ export function MobileNav({
             </Link>
           </DropdownMenuItem>
         ))}
-        {variant === "dashboard" && showAdminLink && (
+        {variant === "dashboard" && (showAdminLink || showDevDocsLink) && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/admin">
-                <Shield />
-                Admin Panel
-              </Link>
-            </DropdownMenuItem>
+            {showAdminLink && (
+              <DropdownMenuItem asChild>
+                <Link href="/admin">
+                  <Shield />
+                  Admin Panel
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {showDevDocsLink && (
+              <DropdownMenuItem asChild>
+                <a href={KIT_DOCS_URL} target="_blank" rel="noreferrer">
+                  <Code />
+                  {t("devDocs")}
+                  <ArrowUpRight className="ml-auto" aria-hidden="true" />
+                  <span className="sr-only">{t("newTab")}</span>
+                </a>
+              </DropdownMenuItem>
+            )}
           </>
         )}
         {variant === "admin" && (

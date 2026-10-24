@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.4.0] - 2026-10-24
+
+🧭 **Breadcrumbs in the dashboard header, and your account behind the avatar, top right.** The sidebar keeps only navigation; where you are and who you are move up into the header, where most apps keep them. This is a MINOR: `git pull`, `npm install`. Nothing to migrate, and the one new environment variable is optional.
+
+### Added
+
+- **Breadcrumbs in the header of the dashboard and the admin**, next to the button that folds the sidebar: *Dashboard › Projects › Website*, with the area's icon in front. They are built from the address, so a new page gets its crumb from a label in `labels` in its layout (`src/app/(dashboard)/layout.tsx`, `src/app/(admin)/layout.tsx`), without being listed anywhere else. A page with a name of its own, like a project, gives it with `<BreadcrumbName name={...} />`; until it does, the crumb is left out rather than shown as an id. The trail at the top of the project page moved up into the header
+- **The account menu, top right**, behind the avatar, on every screen size: Settings, Billing and Sign out, with your name and email at the top of it. They leave the top of the sidebar
+- **Your product's name under the footer of the public pages, if you want it**: large and faint, its lower edge cut by the page, your `siteConfig.name`. Off by default, so nothing changes until you set `NEXT_PUBLIC_SHOW_FOOTER_WORDMARK="true"`, see [Configuration](./docs/configuration.md). Decoration only, hidden from screen readers
+
+### Changed
+
+- **The Admin Panel sits at the bottom of the sidebar**, under a rule, apart from the entries you use every day, with **Developer docs** under it: the kit's manual on openstarterkit.dev, in a new tab, in the phone menu too. Only while developing and in a demo (`DEMO_MODE`), never in your production app, whose users would find setup instructions instead of help
+- **"Demo" instead of "Sign in" when the link goes to the demo.** With `NEXT_PUBLIC_DEMO_URL` set, the navbar link points at your demo, where no visitor has an account of their own, so it now says so. Without it nothing changes
+- **"Pricing" in the footer opens `/pricing`**, not the pricing section of the home page. The top menu still scrolls to the section. A link from every page is what tells search engines the pricing page matters, and a link to a section only counts for the home
+- **No rule above the "Built with" badge** at the bottom of the dashboard, so removing the badge no longer leaves an empty strip with a line over it
+- **Dependencies**: `next` and `eslint-config-next` 16.4.3, `lucide-react` 1.61, `react-hook-form` 7.91, `dotenv` 18.0.9, and `fast-uri` 3.1.9 under `@hookform/resolvers`, for four moderate advisories on URI parsing. Production dependencies audit at zero
+
+### Fixed
+
+- **The Google and GitHub buttons show only when their keys are set.** On a fresh clone they were always there, and a click ended on Better Auth's `CLIENT_ID_AND_SECRET_REQUIRED`: the error overlay in development, an error page in production. Now the login page and Settings show a provider only with both its keys, and `src/auth.ts` registers only those, the same way the magic link already hides without email. A provider you already connected stays in Settings, to be disconnected. One key set without the other still stops the boot, as before
+- **Deleting the account of the last administrator no longer cancels their subscription first.** The refusal came after the cancel at Stripe, so the account stayed and its subscription was gone. The last-admin check now runs before Stripe is touched
+
 ## [2.3.7] - 2026-10-20
 
 🔐 **Next.js 16.4.2, for the security advisories of October 14.** One of them lets crafted requests tie up the CPU of any App Router app with a Server Action, and the kit has several: update now. The other two, remote code execution through `use cache` functions and through SVG image optimization, do not reach the kit as it ships (it has no `use cache`, and `sharp` was already at the fixed 0.35.5), but they reach an app that adds either. This is a PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
@@ -694,6 +717,8 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.4.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.4.0
+[2.3.7]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.7
 [2.3.6]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.6
 [2.3.5]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.5
 [2.3.4]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.4

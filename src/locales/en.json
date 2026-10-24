@@ -383,6 +383,9 @@
       "settings": "Settings",
       "overview": "Overview",
       "adminPanel": "Admin Panel",
+      "devDocs": "Developer docs",
+      "newTab": "(opens in a new tab)",
+      "more": "More",
       "backToDashboard": "Back to Dashboard",
       "openNavigation": "Open navigation"
     }
@@ -561,6 +564,7 @@
       "navProjects": "Projects",
       "navBilling": "Billing",
       "navSettings": "Settings",
+      "navAdmin": "Admin Panel",
       "statPlan": "Current Plan",
       "statStatus": "Status",
       "statStatusValue": "Active",
@@ -572,6 +576,8 @@
       "title": "From git clone to a running SaaS",
       "subtitle": "Recorded on a fresh clone: a few commands, two values in a file, and the whole app runs on your machine. Not a demo shell.",
       "videoLabel": "Recording of a terminal: the kit is cloned, installed, connected to a database and started, then the browser signs in to the dashboard.",
+      "play": "Play the recording",
+      "pause": "Pause the recording",
       "guide": "Follow the same steps in the Getting started guide"
     }
   },
@@ -728,6 +734,7 @@
     "blog": "Blog",
     "changelog": "Changelog",
     "signIn": "Sign in",
+    "demo": "Demo",
     "getStarted": "Get started",
     "openMenu": "Open menu",
     "backToTop": "Back to top"
@@ -841,7 +848,7 @@
     "step2Body": "The first creates the tables, the second adds the example plans.",
     "step2Note": "Seeing an SSL warning in the terminal? The string Neon gives you ends with sslmode=require: change it to sslmode=verify-full in .env.local.",
     "step3Title": "Restart",
-    "step3Body": "Stop the dev server and start it again. The landing page comes back, and Sign in has a Dev Login (Admin) button that needs no OAuth app.",
+    "step3Body": "Stop the dev server and start it again. The landing page comes back, and Sign in has a Dev Login (Admin) button that needs no OAuth app. The Google and GitHub buttons appear once their keys are in .env.local (docs/configuration.md).",
     "guideCta": "Read the full guide",
     "devOnly": "This page only appears in development, while the database is not ready."
   },

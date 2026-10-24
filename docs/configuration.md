@@ -18,7 +18,7 @@ Every variable lives in [.env.example](../.env.example) with inline comments. Co
 
 ## OAuth providers
 
-Both providers are optional; configure the ones you want on the login page.
+Both providers are optional. A button shows on the login page, and in Settings, only when both keys of its provider are set: configure the ones you want and restart the dev server.
 
 **Google** ([console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → OAuth 2.0 Client ID)
 
@@ -81,12 +81,13 @@ Worth knowing which limit to move first, because they are not protecting the sam
 | Variable | Notes |
 |---|---|
 | `DEMO_MODE` | `"true"` turns the deployment into a public demo: one-click shared accounts, real OAuth disabled, email-based auth forms hidden. Use an isolated database. |
-| `NEXT_PUBLIC_DEMO_URL` | On a marketing deployment, points the sign-in links at your demo instance. |
+| `NEXT_PUBLIC_DEMO_URL` | On a marketing deployment, points the sign-in links at your demo instance, and they read *Demo* instead of *Sign in*. |
 | `CRON_SECRET` | Demo deployments only. `vercel.json` schedules a daily reseed at 04:00 UTC so shared demo data does not drift; Vercel sends this value as a bearer token and the route refuses to run when it is unset, so an empty value just leaves the reset off. The route deletes every user, and `DEMO_MODE="true"` is the guard that keeps it away from a real database. |
 | `KIT_SITE` | Leave it empty. Reserved for the deployment that sells the kit itself: `"true"` switches the landing copy, pricing (hand-written open source tiers plus a Pro waitlist instead of your `Plan` rows), FAQ, footer license links and the dashboard upsell to talk about the repository rather than about your product. See below. |
 | `WAITLIST_ENABLED` | `"true"` turns on the forms that collect email addresses on their own: the one-line signup in the footer of every public page (which also needs an email provider) and, with `KIT_SITE`, the Pro waitlist. Off by default, so a deployment cannot start collecting addresses before its real privacy policy is live: the policy that ships is a placeholder. A signup you place yourself in a blog post is not affected. |
 | `NEXT_PUBLIC_DISABLE_ANALYTICS` | `"true"` stops mounting Vercel Analytics. Left empty it stays on, which is the useful default on Vercel and the wrong one everywhere you would rather ship no analytics at all. |
 | `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` removes the "Built with" footer badge. Free to use, no unlock. |
+| `NEXT_PUBLIC_SHOW_FOOTER_WORDMARK` | `"true"` shows your product's name, large and faint, under the footer of the public pages. Off by default. |
 | `NEXT_PUBLIC_GITHUB_URL` | Repo link shown in the navbar/footer. |
 
 ### Two deployments from one codebase

@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl"
 import { isKitSite } from "@/config/kit"
 import { emailEnabled } from "@/lib/email-transport"
 import { FooterSignup } from "@/components/landing/footer-signup"
+import { FooterWordmark } from "@/components/landing/footer-wordmark"
 
 function XIcon() {
   return (
@@ -32,7 +33,7 @@ export function Footer() {
   const showSignup = isDemo || isKitSite || (waitlistOn && emailEnabled())
   const signupDisabled = isDemo || !waitlistOn
   return (
-    <footer className="border-t border-border bg-muted/30 py-12">
+    <footer className="border-t border-border bg-muted/30 pt-12">
       <div className="mx-auto max-w-6xl px-6 lg:px-12">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between md:gap-8">
           <div>
@@ -75,7 +76,10 @@ export function Footer() {
               {/* `/#` instead of bare `#`: the footer renders on every public
                   page, but the sections only exist on the home page. */}
               <li><Link href="/#features" className="transition-colors hover:text-foreground">{t("features")}</Link></li>
-              <li><Link href="/#pricing" className="transition-colors hover:text-foreground">{t("pricing")}</Link></li>
+              {/* The pricing page, not the home section the top menu scrolls
+                  to: a link from every page is what tells search engines the
+                  page matters, and a fragment only ever counts as the home. */}
+              <li><Link href="/pricing" className="transition-colors hover:text-foreground">{t("pricing")}</Link></li>
               <li><Link href="/docs" className="transition-colors hover:text-foreground">{t("docs")}</Link></li>
               <li><Link href="/blog" className="transition-colors hover:text-foreground">{t("blog")}</Link></li>
               <li><Link href="/changelog" className="transition-colors hover:text-foreground">{t("changelog")}</Link></li>
@@ -176,6 +180,7 @@ export function Footer() {
           <PoweredBy />
         </div>
       </div>
+      <FooterWordmark />
     </footer>
   )
 }

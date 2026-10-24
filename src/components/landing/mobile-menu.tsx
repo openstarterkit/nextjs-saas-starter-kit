@@ -19,10 +19,13 @@ import { sections, useActiveSection } from "@/components/landing/use-active-sect
 
 export function MobileMenu({
   signInHref,
+  signInToDemo = false,
   starHref,
   isAuthenticated,
 }: {
   signInHref: string
+  /** The link goes to the demo, so it reads "Demo" rather than "Sign in". */
+  signInToDemo?: boolean
   /** Set only on the kit's own site: see the comment in `navbar.tsx`. */
   starHref?: string | null
   isAuthenticated: boolean
@@ -93,7 +96,7 @@ export function MobileMenu({
         ) : (
           <>
             <DropdownMenuItem asChild>
-              <Link href={signInHref}>{t("signIn")}</Link>
+              <Link href={signInHref}>{signInToDemo ? t("demo") : t("signIn")}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               {starHref ? (

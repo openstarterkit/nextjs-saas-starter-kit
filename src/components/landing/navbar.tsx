@@ -49,7 +49,11 @@ export async function Navbar() {
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex">
-                <Link href={siteConfig.links.demo ?? "/login"}>{t("signIn")}</Link>
+                <Link href={siteConfig.links.demo ?? "/login"}>
+                  {/* Where the link goes decides the word: the demo has no
+                      account of yours to sign in to. */}
+                  {siteConfig.links.demo ? t("demo") : t("signIn")}
+                </Link>
               </Button>
               <Button asChild variant="gradient" size="sm" className="hidden xl:inline-flex">
                 {starHref ? (
@@ -68,6 +72,7 @@ export async function Navbar() {
               same way `signInHref` already is. */}
           <MobileMenu
             signInHref={siteConfig.links.demo ?? "/login"}
+            signInToDemo={!!siteConfig.links.demo}
             starHref={starHref}
             isAuthenticated={!!user}
           />

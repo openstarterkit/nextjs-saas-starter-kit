@@ -10,6 +10,7 @@ import { PendingButton } from "@/components/auth/pending-button"
 import { Input } from "@/components/ui/input"
 import { siteConfig } from "@/config/site"
 import { emailEnabled } from "@/lib/email-transport"
+import { enabledOAuthProviders } from "@/lib/oauth-providers"
 
 export default async function LoginPage({
   searchParams,
@@ -32,6 +33,11 @@ export default async function LoginPage({
   // Magic link needs email configured; without it the kit still offers
   // OAuth and email+password.
   const hasMagicLink = emailEnabled()
+  // A provider button shows only when its keys are set, or a click would end on
+  // an error page. The demo shows both, disabled, as part of the showcase.
+  const providers = isDemo ? ["google", "github"] : enabledOAuthProviders()
+  const hasGoogle = providers.includes("google")
+  const hasGithub = providers.includes("github")
 
   // Marketing deployments delegate sign-in to the demo deployment
   // (same place the navbar and footer already point).
@@ -51,48 +57,52 @@ export default async function LoginPage({
         </div>
 
         <div className="flex flex-col gap-3">
-          <form
-            action={async () => {
-              "use server"
-              const { url } = await auth.api.signInSocial({
-                body: { provider: "google", callbackURL: "/dashboard" },
-                headers: await headers(),
-              })
-              if (url) redirect(url)
-            }}
-          >
-            <PendingButton
-              disabled={isDemo}
-              className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:bg-secondary hover:shadow-soft disabled:pointer-events-none disabled:opacity-45"
+          {hasGoogle && (
+            <form
+              action={async () => {
+                "use server"
+                const { url } = await auth.api.signInSocial({
+                  body: { provider: "google", callbackURL: "/dashboard" },
+                  headers: await headers(),
+                })
+                if (url) redirect(url)
+              }}
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/>
-                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
-                <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/>
-                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/>
-              </svg>
-              {t("google")}
-            </PendingButton>
-          </form>
+              <PendingButton
+                disabled={isDemo}
+                className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:bg-secondary hover:shadow-soft disabled:pointer-events-none disabled:opacity-45"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                  <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/>
+                  <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
+                  <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/>
+                  <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z"/>
+                </svg>
+                {t("google")}
+              </PendingButton>
+            </form>
+          )}
 
-          <form
-            action={async () => {
-              "use server"
-              const { url } = await auth.api.signInSocial({
-                body: { provider: "github", callbackURL: "/dashboard" },
-                headers: await headers(),
-              })
-              if (url) redirect(url)
-            }}
-          >
-            <PendingButton
-              disabled={isDemo}
-              className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:bg-secondary hover:shadow-soft disabled:pointer-events-none disabled:opacity-45"
+          {hasGithub && (
+            <form
+              action={async () => {
+                "use server"
+                const { url } = await auth.api.signInSocial({
+                  body: { provider: "github", callbackURL: "/dashboard" },
+                  headers: await headers(),
+                })
+                if (url) redirect(url)
+              }}
             >
-              <GithubIcon className="h-[18px] w-[18px]" />
-              {t("github")}
-            </PendingButton>
-          </form>
+              <PendingButton
+                disabled={isDemo}
+                className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:bg-secondary hover:shadow-soft disabled:pointer-events-none disabled:opacity-45"
+              >
+                <GithubIcon className="h-[18px] w-[18px]" />
+                {t("github")}
+              </PendingButton>
+            </form>
+          )}
 
           {isDemo && (
             <p className="text-center text-xs text-muted-foreground">
@@ -116,14 +126,18 @@ export default async function LoginPage({
 
         {!isDemo && (
           <>
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
+            {/* "Or with email" separates the providers from the form: with no
+                provider configured there is nothing above it to separate. */}
+            {(hasGoogle || hasGithub) && (
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-card px-2 text-xs text-muted-foreground">{t("dividerEmail")}</span>
+                </div>
               </div>
-              <div className="relative flex justify-center">
-                <span className="bg-card px-2 text-xs text-muted-foreground">{t("dividerEmail")}</span>
-              </div>
-            </div>
+            )}
 
             {errorMessage && (
               <p className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-center text-sm text-destructive">

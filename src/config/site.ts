@@ -41,7 +41,7 @@ export const siteConfig = {
    */
   llmsSummary: process.env.NEXT_PUBLIC_LLMS_SUMMARY || null,
 
-  version: "2.3.7",
+  version: "2.4.0",
   description:
     process.env.NEXT_PUBLIC_BRAND_DESCRIPTION ||
     (isKitSite
@@ -71,9 +71,9 @@ export const siteConfig = {
     /** X / Twitter profile — the footer icon hides when unset. */
     x: process.env.NEXT_PUBLIC_X_URL || (isKitSite ? "https://x.com/openstarterkit" : null),
     /**
-     * Live demo URL. When set, "Sign in" and "Demo" on the public pages
-     * point here instead of the local /login — useful when this deployment
-     * is a marketing site and the demo runs elsewhere.
+     * Live demo URL. When set, the sign-in link on the public pages points
+     * here instead of the local /login and reads "Demo": useful when this
+     * deployment is a marketing site and the demo runs elsewhere.
      */
     demo: process.env.NEXT_PUBLIC_DEMO_URL || null,
   },

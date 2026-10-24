@@ -39,6 +39,12 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.4.0: breadcrumbs in the header, the account menu top right
+
+A MINOR: `git pull`, `npm install`. Nothing to migrate. `NEXT_PUBLIC_SHOW_FOOTER_WORDMARK` is new and optional: set it to `"true"` to show your product's name under the footer, leave it empty and your pages look as before.
+
+**Where a merge may conflict.** The dashboard and admin layouts, `src/app/(dashboard)/layout.tsx` and `src/app/(admin)/layout.tsx`, if you changed the header or the sidebar: the header now holds the breadcrumbs on the left and the account menu on the right, and the sidebar ends at the navigation. Keep your additions, take the new structure. If you added pages with a segment of their own, give it a label in `labels` there, or its crumb stays out. `src/components/dashboard/sidebar-nav.tsx` and `mobile-nav.tsx`, if you added entries: the Admin Panel moved out of the list to the bottom, next to a Developer docs link turned on by `showDevDocsLink`. `src/components/dashboard/user-menu.tsx` has a new `inHeader` variant. `src/components/landing/footer.tsx` changed in two places, the Pricing link and the wordmark at the end, if you edited your footer. `src/app/(auth)/login/page.tsx` and `src/auth.ts`, if you added a sign-in provider: the providers now come from `src/lib/oauth-providers.ts`, so add yours there and it shows only once its keys are set.
+
 ## 2.3.7: Next.js 16.4.2 for the October 14 security advisories
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure. **Take it now** if your app has a Server Action, as the kit does: Next.js 16.4.1 fixed a denial of service that reaches every App Router app with one, and 16.4.2 carries that fix.

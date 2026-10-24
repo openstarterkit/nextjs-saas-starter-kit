@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 932a9f35714c
+source_checksum: 03185325be3a
 ---
 
 # Aggiornare
@@ -45,6 +45,12 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.4.0: briciole di pane nell'intestazione, il menu dell'account in alto a destra
+
+Una MINOR: `git pull`, `npm install`. Niente da migrare. `NEXT_PUBLIC_SHOW_FOOTER_WORDMARK` è nuova e facoltativa: impostala a `"true"` per mostrare il nome del tuo prodotto sotto il footer, lasciala vuota e le tue pagine restano come prima.
+
+**Dove un merge può andare in conflitto.** I layout della dashboard e dell'admin, `src/app/(dashboard)/layout.tsx` e `src/app/(admin)/layout.tsx`, se hai cambiato l'intestazione o la barra laterale: l'intestazione ora contiene le briciole di pane a sinistra e il menu dell'account a destra, e la barra laterale finisce con la navigazione. Tieni le tue aggiunte, prendi la struttura nuova. Se hai aggiunto pagine con un segmento loro, dagli un'etichetta in `labels` lì, altrimenti la sua briciola resta fuori. `src/components/dashboard/sidebar-nav.tsx` e `mobile-nav.tsx`, se hai aggiunto voci: l'Admin Panel è uscito dall'elenco ed è sceso in fondo, accanto a un link Developer docs acceso da `showDevDocsLink`. `src/components/dashboard/user-menu.tsx` ha una variante nuova, `inHeader`. `src/components/landing/footer.tsx` cambia in due punti, il link Pricing e la scritta del marchio in fondo, se hai modificato il tuo footer. `src/app/(auth)/login/page.tsx` e `src/auth.ts`, se hai aggiunto un provider di accesso: i provider ora vengono da `src/lib/oauth-providers.ts`, quindi aggiungi lì il tuo e compare solo quando le sue chiavi sono impostate.
 
 ## 2.3.7: Next.js 16.4.2 per gli avvisi di sicurezza del 14 ottobre
 

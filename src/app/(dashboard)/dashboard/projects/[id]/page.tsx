@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { getFormatter, getTranslations } from "next-intl/server"
 import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BreadcrumbTrail } from "@/components/ui/breadcrumb"
+import { BreadcrumbName } from "@/components/dashboard/breadcrumb-name"
 import { Button } from "@/components/ui/button"
 import { ProjectEditForm } from "@/components/dashboard/project-edit-form"
 import { deleteProject } from "@/app/actions/projects"
@@ -14,7 +14,6 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>
 }) {
   const t = await getTranslations("dashboard.projectDetail")
-  const tNav = await getTranslations("dashboard.nav")
   const format = await getFormatter()
   const user = await requireUser()
 
@@ -30,15 +29,9 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      {/* Visible trail only: /dashboard is disallowed in robots.ts, so a
-          BreadcrumbList here would be structured data emitted for nobody. */}
-      <BreadcrumbTrail
-        trail={[
-          { name: tNav("dashboard"), href: "/dashboard" },
-          { name: tNav("projects"), href: "/dashboard/projects" },
-          { name: project.name, href: `/dashboard/projects/${project.id}` },
-        ]}
-      />
+      {/* The trail is in the header (HeaderBreadcrumbs); this gives it the
+          project's name in place of its id. */}
+      <BreadcrumbName name={project.name} />
 
       <div>
         <h1 className="text-2xl font-bold">{project.name}</h1>

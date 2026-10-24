@@ -7,6 +7,8 @@ import {
   CreditCard,
   Settings,
   ChevronsUpDown,
+  PanelLeftClose,
+  Shield,
   type LucideIcon,
 } from "lucide-react"
 import { useTranslations } from "next-intl"
@@ -171,19 +173,6 @@ export function Hero() {
                       too, in both themes. */}
                   <Logo generic />
                 </div>
-                {/* The account menu under the logo, as in the real sidebar. */}
-                <div className="border-b border-border p-3">
-                  <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-2 text-xs font-semibold text-primary-foreground">
-                      AR
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold text-foreground">Alex Rivera</p>
-                      <p className="truncate text-[11px] text-muted-foreground">alex@acme.io</p>
-                    </div>
-                    <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  </div>
-                </div>
                 <nav className="flex-1 space-y-1 p-3">
                   {mockNav.map(({ key, icon: Icon, active }) => (
                     <div
@@ -197,16 +186,40 @@ export function Hero() {
                     </div>
                   ))}
                 </nav>
+                {/* The bottom of the real sidebar, under its rule: Alex runs
+                    this product, so the admin panel is there. */}
+                <div className="border-t border-border p-3">
+                  <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground">
+                    <Shield className="h-4 w-4" />
+                    {tm("navAdmin")}
+                  </div>
+                </div>
               </aside>
 
               {/* Main column */}
               <div className="flex-1 bg-muted/20">
-                {/* Top bar */}
-                {/* As in the real header: the theme switch and Sign out. The
-                    switch turns only this preview light or dark. */}
-                <div className="flex h-14 items-center justify-end gap-3 border-b border-border bg-background px-5 text-xs text-muted-foreground">
-                  <PreviewThemeToggle />
-                  <span>Sign out</span>
+                {/* Top bar, as in the real header: the sidebar toggle and the
+                    breadcrumbs on the left, the theme switch and the account
+                    menu on the right. The switch turns only this preview light
+                    or dark. */}
+                <div className="flex h-14 items-center gap-3 border-b border-border bg-background px-5 text-xs text-muted-foreground">
+                  <PanelLeftClose className="h-4 w-4 shrink-0" />
+                  <span className="h-5 w-px shrink-0 bg-border" />
+                  <LayoutGrid className="h-4 w-4 shrink-0" />
+                  <span className="font-medium text-foreground">{tm("navDashboard")}</span>
+                  <div className="ml-auto flex items-center gap-3">
+                    <PreviewThemeToggle />
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-2 text-[11px] font-semibold text-primary-foreground">
+                        AR
+                      </span>
+                      <div className="hidden min-w-0 md:block">
+                        <p className="truncate text-xs font-semibold text-foreground">Alex Rivera</p>
+                        <p className="truncate text-[11px] text-muted-foreground">alex@acme.io</p>
+                      </div>
+                      <ChevronsUpDown className="hidden h-3.5 w-3.5 shrink-0 md:block" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Content */}

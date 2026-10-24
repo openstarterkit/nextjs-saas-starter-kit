@@ -8,6 +8,8 @@ import { Logo } from "@/components/logo"
 import { MobileNav } from "@/components/dashboard/mobile-nav"
 import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { SidebarCollapseToggle } from "@/components/dashboard/sidebar-collapse-toggle"
+import { HeaderBreadcrumbs } from "@/components/dashboard/header-breadcrumbs"
+import { Shield } from "lucide-react"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
@@ -24,15 +26,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           <span className="ml-2 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive sidebar-collapsed:hidden">{t("badge")}</span>
         </div>
-        {/* The account menu sits at the top, under the logo: the first thing
-            in the sidebar is who you are, and the menu opens downwards. */}
-        <div className="border-b border-border p-3">
-          <UserMenu
-            name={user.name}
-            email={user.email}
-            image={user.image}
-          />
-        </div>
         <SidebarNav variant="admin" />
       </aside>
 
@@ -41,7 +34,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           scrolling inside its own container. */}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:px-6">
-          <SidebarCollapseToggle />
+          <div className="flex min-w-0 items-center gap-3">
+            <SidebarCollapseToggle />
+            <HeaderBreadcrumbs icon={<Shield className="h-4 w-4" />} base={{ name: t("badge"), href: "/admin" }} labels={{}} />
+          </div>
           <div className="flex items-center gap-1 md:hidden">
             <MobileNav variant="admin" />
             <Logo animated wordmarkClassName="text-base font-bold text-foreground" />
@@ -49,15 +45,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <ThemeToggle />
-            <div className="md:hidden">
-              <UserMenu
-                name={user.name}
-                email={user.email}
-                image={user.image}
-                side="bottom"
-                hideDetails
-              />
-            </div>
+            <UserMenu name={user.name} email={user.email} image={user.image} side="bottom" inHeader />
           </div>
         </header>
         {/* Same container as the public pages and the dashboard, so the two consoles match. */}

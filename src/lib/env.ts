@@ -105,10 +105,10 @@ export const envSchema = z
       "checkout would succeed but no payment would ever be recorded",
     )
     requireTogether("RESEND_API_KEY", "EMAIL_FROM", "every email would fail without a sender address")
-    requireTogether("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "the Google sign-in button would break")
-    requireTogether("GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_ID", "the Google sign-in button would break")
-    requireTogether("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "the GitHub sign-in button would break")
-    requireTogether("GITHUB_CLIENT_SECRET", "GITHUB_CLIENT_ID", "the GitHub sign-in button would break")
+    requireTogether("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "with one key alone the Google button stays hidden, with no word why")
+    requireTogether("GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_ID", "with one key alone the Google button stays hidden, with no word why")
+    requireTogether("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "with one key alone the GitHub button stays hidden, with no word why")
+    requireTogether("GITHUB_CLIENT_SECRET", "GITHUB_CLIENT_ID", "with one key alone the GitHub button stays hidden, with no word why")
 
     if (env.NODE_ENV === "production" && !env.AUTH_SECRET) {
       ctx.addIssue({

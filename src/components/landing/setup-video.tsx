@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useTranslations } from "next-intl"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Pause, Play } from "lucide-react"
 import { Link } from "@/i18n/navigation"
 import { Reveal } from "@/components/landing/reveal"
+import { cn } from "@/lib/utils"
 
 /**
  * The kit's own site only (KIT_SITE="true"): a recording of a fresh clone
@@ -20,9 +21,13 @@ import { Reveal } from "@/components/landing/reveal"
  * does not fall back to the next <source>. It stayed on the first frame.
  *
  * The video loads only when the section is about to scroll into view, so it
- * does not compete with the hero for bandwidth, and it does not start on its
- * own for people who asked their system for reduced motion: they get the
- * poster and the guide.
+ * does not compete with the hero for bandwidth, and then plays on its own, for
+ * everyone. A click anywhere on it pauses it and a second click resumes it, as
+ * on a video site, and a play button shows while it is paused: that is what
+ * lets anyone stop moving content (WCAG 2.2.2). Reduced motion does not hold
+ * it back any more: it is common on low-end PCs, where Windows animations are
+ * off for speed, and there the video simply never started. Battery or data
+ * saver can still refuse autoplay, and then the play button is the way in.
  */
 
 const VIDEO = {
@@ -34,6 +39,7 @@ export function SetupVideo() {
   const t = useTranslations("setupVideo")
   const videoRef = useRef<HTMLVideoElement>(null)
   const [load, setLoad] = useState(false)
+  const [playing, setPlaying] = useState(false)
 
   // Attach the source only when the section is close to the viewport.
   useEffect(() => {
@@ -52,12 +58,19 @@ export function SetupVideo() {
     return () => observer.disconnect()
   }, [])
 
+  function toggle() {
+    const video = videoRef.current
+    if (!video) return
+    if (!load) setLoad(true)
+    if (video.paused) void video.play().catch(() => {})
+    else video.pause()
+  }
+
   // Once the source is in, play and keep looping.
   useEffect(() => {
     const video = videoRef.current
     if (!load || !video) return
     video.load()
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     video.play().catch(() => {
       // Autoplay refused (data saver, battery saver): the poster stays.
     })
@@ -74,7 +87,7 @@ export function SetupVideo() {
         </Reveal>
 
         <Reveal delay={100}>
-          <div className="overflow-hidden rounded-2xl border border-border shadow-[var(--shadow-glow)]">
+          <div className="relative overflow-hidden rounded-2xl border border-border shadow-[var(--shadow-glow)]">
             <video
               ref={videoRef}
               className="block aspect-[8/5] w-full bg-secondary"
@@ -84,9 +97,35 @@ export function SetupVideo() {
               playsInline
               preload="none"
               aria-label={t("videoLabel")}
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
             >
               {load && <source src={VIDEO.mp4} type="video/mp4" />}
             </video>
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={playing ? t("pause") : t("play")}
+              className={cn(
+                "group absolute inset-0 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                playing ? "bg-transparent" : "bg-black/10 hover:bg-black/20"
+              )}
+            >
+              {/* Play while paused; pause only under the pointer or the keyboard
+                  focus while it plays, so the moving video stays clean. */}
+              <span
+                className={cn(
+                  "flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-white backdrop-blur-sm transition-opacity duration-200 sm:h-20 sm:w-20",
+                  playing && "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                )}
+              >
+                {playing ? (
+                  <Pause className="h-7 w-7 fill-current sm:h-8 sm:w-8" />
+                ) : (
+                  <Play className="ml-1 h-7 w-7 fill-current sm:h-8 sm:w-8" />
+                )}
+              </span>
+            </button>
           </div>
         </Reveal>
 

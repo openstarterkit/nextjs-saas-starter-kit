@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/auth"
+import { getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/dashboard/user-menu"
@@ -7,10 +8,16 @@ import { Logo } from "@/components/logo"
 import { MobileNav } from "@/components/dashboard/mobile-nav"
 import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { SidebarCollapseToggle } from "@/components/dashboard/sidebar-collapse-toggle"
-import { SignOutDialog } from "@/components/dashboard/sign-out-dialog"
+import { HeaderBreadcrumbs } from "@/components/dashboard/header-breadcrumbs"
+import { LayoutGrid } from "lucide-react"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser()
+  const tNav = await getTranslations("dashboard.nav")
+  // The kit's manual, for whoever is building: while developing, and in the
+  // demo, where the visitor is a developer weighing the kit. Never in your
+  // production app, whose users would find setup instructions instead of help.
+  const showDevDocs = process.env.NODE_ENV === "development" || process.env.DEMO_MODE === "true"
 
   return (
     <div className="flex min-h-screen bg-muted/20">
@@ -20,16 +27,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Logo animated wordmarkClassName="sidebar-collapsed:hidden" />
           </Link>
         </div>
-        {/* The account menu sits at the top, under the logo: the first thing
-            in the sidebar is who you are, and the menu opens downwards. */}
-        <div className="border-b border-border p-3">
-          <UserMenu
-            name={user.name}
-            email={user.email}
-            image={user.image}
-          />
-        </div>
-        <SidebarNav variant="dashboard" showAdminLink={user.role === "ADMIN"} />
+        <SidebarNav variant="dashboard" showAdminLink={user.role === "ADMIN"} showDevDocsLink={showDevDocs} />
       </aside>
 
       {/* min-w-0: without it this flex item keeps `min-width: auto`, so any wide
@@ -37,29 +35,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
           scrolling inside its own container. */}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:px-6">
-          <SidebarCollapseToggle />
+          <div className="flex min-w-0 items-center gap-3">
+            <SidebarCollapseToggle />
+            <HeaderBreadcrumbs
+              icon={<LayoutGrid className="h-4 w-4" />}
+              base={{ name: tNav("dashboard"), href: "/dashboard" }}
+              labels={{ projects: tNav("projects"), billing: tNav("billing"), settings: tNav("settings") }}
+            />
+          </div>
           <div className="flex items-center gap-1 md:hidden">
-            <MobileNav variant="dashboard" showAdminLink={user.role === "ADMIN"} />
+            <MobileNav variant="dashboard" showAdminLink={user.role === "ADMIN"} showDevDocsLink={showDevDocs} />
             <Logo animated wordmarkClassName="text-base font-bold text-foreground" />
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <ThemeToggle />
-            <SignOutDialog
-              trigger={
-                <button className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground md:block">
-                  Sign out
-                </button>
-              }
-            />
-            <div className="md:hidden">
-              <UserMenu
-                name={user.name}
-                email={user.email}
-                image={user.image}
-                side="bottom"
-                hideDetails
-              />
-            </div>
+            {/* Who you are, top right, where most apps keep it: the avatar opens
+                Settings, Billing and Sign out, on every screen size. */}
+            <UserMenu name={user.name} email={user.email} image={user.image} side="bottom" inHeader />
           </div>
         </header>
         {/* Narrower than the public pages on purpose. Here the sidebar already
@@ -70,7 +62,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             to the full viewport and the three stat cards were over 400px each
             to hold one word. */}
         <main className="mx-auto w-full max-w-5xl flex-1 p-6 lg:px-14">{children}</main>
-        <footer className="flex items-center justify-center border-t border-border px-6 py-4">
+        <footer className="flex items-center justify-center px-6 py-4">
           <PoweredBy />
         </footer>
       </div>
