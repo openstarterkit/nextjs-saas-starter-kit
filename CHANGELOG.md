@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.5.1] - 2026-10-28
+
+🌱 **`npm run db:seed` and `npm run db:seed:demo` work again.** Since 2.3.3 both stopped with a usage message instead of seeding: two packages each installed a command called `dotenv`, and the one that answered did not know the option the scripts used. A PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure. `npx prisma db seed`, the command of the first steps, was never affected.
+
+### Fixed
+
+- **The two seed scripts** load `.env` and `.env.local` through Node, as `npm run check:deploy` already does, instead of a `dotenv` command. A variable already set in the shell still wins over the files, so `DATABASE_URL=... npm run db:seed:demo` seeds the database you name
+- **`dotenv-cli` is gone** from the dependencies: nothing uses it any more, and it is what made the `dotenv` command ambiguous
+
 ## [2.5.0] - 2026-10-28
 
 🛠️ **An admin panel that keeps up as users grow, and a way to upgrade for whoever is on the free tier.** Users and the waitlist get pages of their own, paginated, and a search of the users now goes past its first page. The account menu moves to the foot of the sidebar, with your plan and *Upgrade plan*. A MINOR: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
@@ -750,6 +759,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.5.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.1
 [2.5.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.0
 [2.4.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.4.0
 [2.3.7]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.7

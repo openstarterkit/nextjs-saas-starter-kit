@@ -39,6 +39,12 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.5.1: the seed scripts work again
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure.
+
+**Where a merge may conflict.** `package.json`, if you changed its scripts or dependencies: `db:seed` and `db:seed:demo` now start with `node --env-file-if-exists=.env --env-file-if-exists=.env.local -r ts-node/register`, and `dotenv-cli` is no longer a dependency. Keep your changes, take these two lines, then run `npm install`. If a script of your own calls `dotenv -e`, it stopped working with 2.3.3 for the same reason: give it the same start.
+
 ## 2.5.0: the admin's users and waitlist on pages of their own, the account menu at the foot of the sidebar
 
 A MINOR: `git pull`, `npm install`. Nothing to migrate, nothing to configure.

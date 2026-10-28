@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 60c52bb49cf7
+source_checksum: 45ebb2384be2
 ---
 
 # Aggiornare
@@ -45,6 +45,12 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.5.1: gli script del seed tornano a funzionare
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare, niente da configurare.
+
+**Dove un merge può andare in conflitto.** `package.json`, se hai cambiato i suoi script o le dipendenze: `db:seed` e `db:seed:demo` ora cominciano con `node --env-file-if-exists=.env --env-file-if-exists=.env.local -r ts-node/register`, e `dotenv-cli` non è più una dipendenza. Tieni le tue modifiche, prendi queste due righe, poi `npm install`. Se un tuo script chiama `dotenv -e`, ha smesso di funzionare con la 2.3.3 per la stessa ragione: dagli lo stesso inizio.
 
 ## 2.5.0: gli utenti e la lista d'attesa dell'admin su pagine loro, il menu dell'account in fondo alla barra laterale
 

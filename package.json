@@ -1,6 +1,6 @@
 {
   "name": "openstarterkit",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "private": true,
   "engines": {
     "node": ">=24"
@@ -19,8 +19,8 @@
     "smoke": "node scripts/smoke.mjs",
     "check:translations": "node scripts/check-translations.mjs",
     "check:deploy": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/check-deploy.mjs",
-    "db:seed": "dotenv -e .env.local -- ts-node prisma/seed.ts",
-    "db:seed:demo": "dotenv -e .env.local -- ts-node prisma/seed-demo.ts"
+    "db:seed": "node --env-file-if-exists=.env --env-file-if-exists=.env.local -r ts-node/register prisma/seed.ts",
+    "db:seed:demo": "node --env-file-if-exists=.env --env-file-if-exists=.env.local -r ts-node/register prisma/seed-demo.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.7.12",
@@ -81,7 +81,6 @@
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^5.0.5",
     "dotenv": "^18.0.9",
-    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
