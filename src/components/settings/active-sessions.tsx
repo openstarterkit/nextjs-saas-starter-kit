@@ -7,6 +7,10 @@ import { revokeSession, revokeOtherSessions } from "@/app/actions/sessions"
 import { Badge } from "@/components/ui/badge"
 import { PendingButton } from "@/components/auth/pending-button"
 import { formatDevice, formatIpAddress } from "@/lib/user-agent"
+import { ShowMoreList } from "@/components/settings/show-more-list"
+
+/** Rows shown before "Show more": this device and the four newest. */
+const VISIBLE_SESSIONS = 5
 
 /**
  * Every device currently signed in to this account.
@@ -59,7 +63,11 @@ export async function ActiveSessions() {
     <div className="space-y-4 text-sm">
       <p className="text-muted-foreground">{t("blurb")}</p>
 
-      <ul className="divide-y divide-border">
+      <ShowMoreList
+        className="divide-y divide-border"
+        limit={VISIBLE_SESSIONS}
+        moreLabel={t("showMore", { count: ordered.length - VISIBLE_SESSIONS })}
+      >
         {ordered.map((session) => {
           const isCurrent = session.id === currentId
           const device = formatDevice(session.userAgent)
@@ -95,7 +103,7 @@ export async function ActiveSessions() {
             </li>
           )
         })}
-      </ul>
+      </ShowMoreList>
 
       {others > 0 && (
         <form action={revokeOtherSessions}>

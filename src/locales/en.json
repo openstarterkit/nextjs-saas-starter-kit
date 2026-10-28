@@ -229,6 +229,7 @@
         "unknownDevice": "Unknown device",
         "revoke": "End session",
         "revokeOthers": "End all other sessions ({count})",
+        "showMore": "Show {count, plural, one {# more session} other {# more sessions}}",
         "caveat": "A session you end here can survive on the other device for up to a minute, because the session is cached in a cookie for that long. Changing your password ends every other session at once, with no such delay."
       },
       "accountTitle": "Account",
@@ -363,9 +364,9 @@
       "save": "Save changes"
     },
     "signOut": {
-      "title": "Sign out?",
-      "pending": "Signing out…",
-      "confirm": "Sign out"
+      "title": "Log out?",
+      "pending": "Logging out…",
+      "confirm": "Log out"
     },
     "sidebar": {
       "expand": "Expand sidebar",
@@ -374,7 +375,9 @@
     "userMenu": {
       "open": "Open account menu",
       "avatarAlt": "Avatar",
-      "myAccount": "My Account"
+      "plan": "{name} plan",
+      "freePlan": "Free plan",
+      "upgrade": "Upgrade plan"
     },
     "nav": {
       "dashboard": "Dashboard",
@@ -382,6 +385,8 @@
       "billing": "Billing",
       "settings": "Settings",
       "overview": "Overview",
+      "users": "Users",
+      "waitlist": "Waitlist",
       "adminPanel": "Admin Panel",
       "devDocs": "Developer docs",
       "newTab": "(opens in a new tab)",
@@ -402,6 +407,9 @@
     "revenueTooltip": "MRR",
     "usersTitle": "Users",
     "usersCount": "{count, plural, one {# total user} other {# total users}}",
+    "usersFound": "{count, plural, =0 {No matching users} one {# matching user} other {# matching users}}",
+    "usersSubtitle": "Everyone with an account: search by email, promote to admin.",
+    "viewUsers": "View all users",
     "searchPlaceholder": "Search by email...",
     "search": "Search",
     "free": "Free",
@@ -412,10 +420,15 @@
     "colStatus": "Status",
     "colRole": "Role",
     "colJoined": "Joined",
-    "page": "Page {page} of {total}",
+    "pageNumber": "Page",
+    "pagination": "User pages",
     "previous": "Previous",
     "next": "Next",
     "waitlistTitle": "Waitlist",
+    "waitlistSubtitle": "Everyone who signed up to the newsletter, newest first.",
+    "waitlistCounts": "{confirmed} confirmed · {pending} pending confirmation",
+    "waitlistPagination": "Waitlist pages",
+    "viewWaitlist": "View the waitlist",
     "exportCsv": "Export CSV",
     "colEmail": "Email",
     "colSource": "Source",
@@ -537,7 +550,7 @@
         "bullets": "<p>📬 <strong>One short email</strong> when there is real news to share.</p>\n      <p>🎟️ <strong>Early access</strong> when what you signed up for goes live.</p>"
       },
       "$kit": {
-        "bullets": "<p>📬 <strong>One short email</strong> when there is real news on the Pro.</p>\n      <p>🎟️ <strong>The launch price</strong> of Pro and Pro Studio, before the public announcement on October 31.</p>"
+        "bullets": "<p>📬 <strong>One short email</strong> when there is real news on the Pro.</p>\n      <p>🎟️ <strong>The launch price</strong> of Pro and Pro Studio, right after you confirm.</p>"
       },
       "noSpam": "No spam, no daily drip. Unsubscribe anytime with one click.",
       "unsubscribe": "Unsubscribe"
@@ -768,6 +781,10 @@
           "answer": "{site} uses a best-of-breed stack where every component is independent. No Supabase lock-in, no proprietary auth layer. If a dependency releases a breaking change, you update one package, not the entire stack."
         },
         {
+          "question": "Is there a JavaScript version as well as TypeScript?",
+          "answer": "You don't need one. TypeScript is JavaScript with types added: the two speak the same language, and one project can mix them file by file. {site} is written in strict TypeScript, and your own pages and components can be plain .js or .jsx files next to it. They use the kit's components, database and sign-in as they are and work out of the box. Rename a file to .tsx when you want TypeScript to check it."
+        },
+        {
           "question": "Which database providers are supported?",
           "answer": "Any PostgreSQL provider: Neon (recommended, cheapest), Supabase, Railway, PlanetScale (via Postgres mode), or self-hosted. Just set your DATABASE_URL and run the migration."
         },
@@ -785,7 +802,7 @@
         },
         {
           "question": "What are Pro and Pro Studio, and when do they launch?",
-          "answer": "The paid tier, built on this kit for products where people work together: teams, invitations, roles and team billing. A one-time purchase with updates for life. Pro is for one person and their own products; Pro Studio is for an organization, client work included, with up to five people on the repository. The waitlist gets the launch price by email as soon as you confirm, and it is announced publicly on October 31. On November 19 both launch for the waitlist at that price, until November 27. From November 28 they are on sale to everyone at the full price."
+          "answer": "The paid tier, built on this kit for products where people work together: teams, invitations, roles and team billing. A one-time purchase with updates for life. Pro is for one person and their own products; Pro Studio is for an organization, client work included, with up to five people on the repository. The launch price is on openstarterkit.dev/pro, and the waitlist also gets it by email as soon as you confirm. On November 19 both launch for the waitlist at that price, until November 27. From November 28 they are on sale to everyone at the full price."
         }
       ]
     }
@@ -803,7 +820,7 @@
       "statusBadge": "Waitlist open",
       "proDescription": "For apps that need teams, and for studios that build them.",
       "launchDate": "November 19",
-      "launchOffer": "Launch day, at a launch price for the waitlist. Confirm your email and the price is in your inbox right away, before the public announcement on October 31.",
+      "launchOffer": "Launch day, at a launch price for the waitlist. Confirm your email and the price is in your inbox right away.",
       "waitlistCta": "Join the Pro & Pro Studio waitlist",
       "waitlistNote": "One short email when there is real news, and the launch price as soon as you confirm. Unsubscribe anytime, one click.",
       "formsDisabled": "Forms are disabled in the live demo.",
@@ -959,6 +976,7 @@
     "starOnGitHub": "Star on GitHub"
   },
   "theme": {
+    "title": "Theme",
     "label": "Change theme",
     "light": "Light",
     "dark": "Dark",

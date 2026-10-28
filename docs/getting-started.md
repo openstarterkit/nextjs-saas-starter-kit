@@ -66,3 +66,27 @@ Restart `npm run dev` and open the site again. Click **Sign in**: in development
 - Payments and webhooks: the Stripe section of [Configuration](./configuration.md)
 - Make it yours: your brand lives in `src/config/site.ts` and `src/components/logo.tsx`; swap those two files and the whole app (metadata, navbar, footer, emails, legal pages) follows
 - Ship it: [Deployment](./deployment.md)
+
+## 7. Your own code, in TypeScript or JavaScript
+
+The kit is written in strict TypeScript, and that is where its checks live: the sign-in, billing and database code you build on is typed and tested. Your own code doesn't have to be. The pages and components you add can be plain JavaScript, `.js` or `.jsx` files next to the kit's `.ts` ones. They import the kit's components, `prisma` and the rest as they are, and `npm run build`, `npm run lint` and `npx tsc --noEmit` pass with them, because the kit's `tsconfig.json` has `allowJs`.
+
+```jsx
+// src/app/(dashboard)/dashboard/reports/page.jsx
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { prisma } from "@/lib/prisma"
+
+export default async function ReportsPage() {
+  const plans = await prisma.plan.count()
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Plans</CardTitle>
+      </CardHeader>
+      <CardContent>{plans}</CardContent>
+    </Card>
+  )
+}
+```
+
+The page sits in the dashboard, so it is already behind sign-in. When a file grows, rename it to `.tsx`: TypeScript starts checking it and your editor shows what to fix. Nothing else changes.

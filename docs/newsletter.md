@@ -30,7 +30,7 @@ Set `RESEND_AUDIENCE_ID` to enable the sync. Without it, the database list still
 
 ## Admin
 
-The admin panel (`/admin`) shows the confirmed and pending counts, the most recent signups, and an **Export CSV** button backed by `/api/admin/newsletter-export` (admin-only).
+The admin panel shows the confirmed count among the cards of its overview (`/admin`), and the whole list on its own page (`/admin/waitlist`): confirmed and pending counts, every signup ten to a page, and an **Export CSV** button backed by `/api/admin/newsletter-export` (admin-only).
 
 ## Demo mode
 

@@ -81,19 +81,31 @@ BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
  * (`breadcrumbJsonLd`). Pages pass the trail once, so the row on screen and the
  * BreadcrumbList in the markup cannot describe different paths.
  */
-function BreadcrumbTrail({ trail, className }: { trail: Crumb[]; className?: string }) {
+function BreadcrumbTrail({
+  trail,
+  className,
+  firstClassName,
+}: {
+  trail: Crumb[]
+  className?: string
+  /** Classes for the first crumb alone, the area the trail starts from. */
+  firstClassName?: string
+}) {
   return (
     <Breadcrumb className={className}>
       <BreadcrumbList>
         {trail.map((crumb, index) => {
           const last = index === trail.length - 1
+          const tone = index === 0 ? firstClassName : undefined
           return (
             <React.Fragment key={crumb.href}>
               <BreadcrumbItem>
                 {last ? (
-                  <BreadcrumbPage>{crumb.name}</BreadcrumbPage>
+                  <BreadcrumbPage className={tone}>{crumb.name}</BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink href={crumb.href}>{crumb.name}</BreadcrumbLink>
+                  <BreadcrumbLink href={crumb.href} className={tone}>
+                    {crumb.name}
+                  </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
               {!last && <BreadcrumbSeparator />}

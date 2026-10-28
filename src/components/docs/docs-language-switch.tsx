@@ -58,11 +58,13 @@ export function DocsLanguageSwitch() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label={t("label")}
           className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Globe className="h-4 w-4 shrink-0" />
           <span className="truncate">{languageName(locale)}</span>
+          {/* After the language, not in place of it: the name read out has to
+              contain the word on screen (WCAG 2.5.3, label in name). */}
+          <span className="sr-only"> ({t("label")})</span>
           <ChevronDown className="ml-auto h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden="true" />
         </button>
       </DropdownMenuTrigger>

@@ -3,20 +3,15 @@
 import type { CSSProperties } from "react"
 import { Reveal } from "@/components/landing/reveal"
 import { cn } from "@/lib/utils"
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip"
 
-/** Brand color shown on hover. Monochrome marks (Next.js, Prisma, Resend) use
- *  the theme foreground so they stay visible in both light and dark mode. */
+/** Each mark in its brand colour. Monochrome marks (Next.js, Prisma, Resend)
+ *  use the theme foreground so they stay visible in both light and dark mode. */
 const brandColor: Record<string, string> = {
   "Next.js": "var(--foreground)",
   React: "#61DAFB",
   TypeScript: "#3178C6",
   "Tailwind CSS": "#06B6D4",
+  "Better Auth": "var(--foreground)",
   Prisma: "var(--foreground)",
   PostgreSQL: "#4169E1",
   Stripe: "#635BFF",
@@ -24,14 +19,15 @@ const brandColor: Record<string, string> = {
 }
 
 /**
- * "Built with" logo strip. Monochrome brand marks that inherit the theme
- * color (muted by default, foreground on hover) for a clean logo-cloud look.
+ * "Built with" logo strip: each mark in its brand colour, as big as the
+ * logos on the Pro page, with its name under it.
  *
- * Logos are inline SVG paths (from Simple Icons, CC0) so the kit ships with
+ * Logos are inline SVG paths (from Simple Icons, CC0; Better Auth's from its
+ * own brand assets, docs/public/branding in its repository) so the kit ships with
  * zero extra dependencies — nothing to install, nothing to lock into.
  * To swap the stack, just edit the `stack` array below.
  */
-const stack: { name: string; path: string }[] = [
+const stack: { name: string; path: string; viewBox?: string }[] = [
   {
     name: "Next.js",
     path: "M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z",
@@ -47,6 +43,11 @@ const stack: { name: string; path: string }[] = [
   {
     name: "Tailwind CSS",
     path: "M12.001,4.8c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 C13.666,10.618,15.027,12,18.001,12c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C16.337,6.182,14.976,4.8,12.001,4.8z M6.001,12c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 c1.177,1.194,2.538,2.576,5.512,2.576c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C10.337,13.382,8.976,12,6.001,12z",
+  },
+  {
+    name: "Better Auth",
+    path: "M0 150v150h100V200h100v100h200V0H200v100H100V0H0zm300 0v50H200V100h100z",
+    viewBox: "0 0 400 300",
   },
   {
     name: "Prisma",
@@ -68,37 +69,22 @@ const stack: { name: string; path: string }[] = [
 
 export function TechStack({ className }: { className?: string }) {
   return (
-    <TooltipProvider delayDuration={0}>
-      <Reveal
-        className={cn(
-          "flex flex-wrap items-center justify-center gap-x-10 gap-y-6",
-          className
-        )}
-      >
-        {stack.map(({ name, path }) => (
-          <Tooltip key={name}>
-            <TooltipTrigger asChild>
-              <span
-                tabIndex={0}
-                aria-label={name}
-                style={{ "--brand": brandColor[name] } as CSSProperties}
-                className="rounded-md text-muted-foreground/70 outline-none transition-colors duration-300 hover:text-[var(--brand)] focus-visible:text-[var(--brand)] focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <svg
-                  role="img"
-                  aria-label={name}
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="h-7 w-7 shrink-0"
-                >
-                  <path d={path} />
-                </svg>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top">{name}</TooltipContent>
-          </Tooltip>
-        ))}
-      </Reveal>
-    </TooltipProvider>
+    <Reveal className={cn("flex flex-wrap items-start justify-center gap-x-6 gap-y-8", className)}>
+      {stack.map(({ name, path, viewBox }) => (
+        <div key={name} className="flex w-24 flex-col items-center gap-3">
+          {/* The name under it is what screen readers say; the mark is decoration. */}
+          <svg
+            aria-hidden
+            viewBox={viewBox ?? "0 0 24 24"}
+            fill="currentColor"
+            style={{ color: brandColor[name] } as CSSProperties}
+            className="h-14 w-14 shrink-0"
+          >
+            <path d={path} />
+          </svg>
+          <span className="whitespace-nowrap text-center text-sm font-medium text-muted-foreground">{name}</span>
+        </div>
+      ))}
+    </Reveal>
   )
 }

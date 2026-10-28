@@ -7,6 +7,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.5.0] - 2026-10-28
+
+🛠️ **An admin panel that keeps up as users grow, and a way to upgrade for whoever is on the free tier.** Users and the waitlist get pages of their own, paginated, and a search of the users now goes past its first page. The account menu moves to the foot of the sidebar, with your plan and *Upgrade plan*. A MINOR: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
+
+### Added
+
+- **The users of the admin panel have a page of their own**, `/admin/users`, with an entry in the sidebar, ten to a page and the page buttons centred as on the blog. Past seven pages the middle ones fold into dots, on the blog too: 1 … 4 5 6 … 50. On the overview they sat under the metrics and the chart, and every page of results took you back to the top of the overview. The overview keeps the numbers, the revenue and the waitlist, with a link to the users; an old `/admin?page=` or `?search=` link lands on the same results
+- **The waitlist has a page of its own too**, `/admin/waitlist`, with every signup ten to a page and the export. The overview showed the latest eight and nothing past them; it keeps the confirmed count, as a fourth card next to the users, the subscriptions and the MRR
+- **Upgrade plan in the account menu**, for whoever is on the free tier, leading to the plans on the Billing page; it goes once they pay. Above it, your email and the plan you are on
+- **Active sessions show the first five**, this device and the four newest, with a button for the rest: an account signed in on many devices no longer makes Settings a long scroll
+- **A thin bar at the top while a page loads**, on the public pages and for a link that leaves for another site in the same tab, like a live demo. It shows after 120 ms, so a fast page opens without it, and goes when the next page arrives. The dashboard and the admin keep the dimmed overlay
+- **The theme in the account menu**: light, dark or system, next to the switch in the header, which stays. The two read the same choice
+- **`GEMINI.md`**, one line that imports `AGENTS.md`, so Gemini CLI reads the same rules as Claude Code, Cursor, GitHub Copilot and Codex
+- **Your own code can be plain JavaScript**, in [Getting started](./docs/getting-started.md): pages and components as `.js` or `.jsx` files next to the kit's TypeScript work as they are, because `tsconfig.json` has `allowJs`
+
+### Changed
+
+- **The account menu at the foot of the sidebar**, in the dashboard and the admin: your avatar and name, and a menu that opens upwards with your email and your plan, Settings, Billing, the theme and Log out, which was Sign out. On a phone, with no sidebar, the avatar stays top right. On the public pages a signed-in visitor gets the Dashboard button and the account menu top right
+- **Settings, opened as a modal, keeps its title and the close button in a bar fixed at the top**, and the rest scrolls under it
+- **The admin is marked by its breadcrumbs**: *Admin* in red, in place of the badge next to the logo, which a wide logo or a long product name pushed out of the sidebar
+- **The icon in front of the breadcrumbs follows the section**, the same one the sidebar highlights: the folder on Projects, the card on Billing, the gear on Settings; in the admin the shield on the overview, which the sidebar now shows too, and the person on Users. It was always the grid of the dashboard home
+- **The changelog page is as wide as the docs, with the versions on the right**: one entry per release, the version number alone, highlighted as you read; each release has its own anchor, like `/changelog#v2-4-0`. The latest release has a green dot
+- **Dependencies**: `postcss-selector-parser` 7.1.6 or later through an override, for a moderate advisory under `@tailwindcss/typography` that only runs at build time. The generated CSS is identical. The full audit, development included, is at zero
+
+### Fixed
+
+- **A search in the admin users had a single page**, however many people matched: the number of pages came from the rows on screen, not from the matches. They are counted now
+- **Two buttons said something other than what they show** to screen readers and voice control (WCAG 2.5.3): the avatar-only account button, now *Open account menu* after the initial, and the docs language switch, now *English (Change language)*
+- **The grey text of the danger zones**, in Settings and on a project, was below the 4.5:1 contrast on their red tint. It is darker there now
+- **Previous and Next of a pagination, on the first and last page, are announced as unavailable** instead of being hidden from screen readers. They look the same
+- **Dev Login shows a spinner** while it signs you in, like the other sign-in buttons
+- **Someone removed from the Resend audience by hand can sign up to the newsletter again.** Their address stayed confirmed in the database, so a new signup sent nothing. Now it sends a new confirmation, as for someone who unsubscribed from a Broadcast
+
 ## [2.4.0] - 2026-10-24
 
 🧭 **Breadcrumbs in the dashboard header, and your account behind the avatar, top right.** The sidebar keeps only navigation; where you are and who you are move up into the header, where most apps keep them. This is a MINOR: `git pull`, `npm install`. Nothing to migrate, and the one new environment variable is optional.
@@ -717,6 +750,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.5.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.0
 [2.4.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.4.0
 [2.3.7]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.7
 [2.3.6]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.3.6

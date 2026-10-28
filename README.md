@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.4.0-6366f1.svg" /></a>
+  <a href="./ROADMAP.md"><img alt="Version" src="https://img.shields.io/badge/version-2.5.0-6366f1.svg" /></a>
   <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
   <a href="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/openstarterkit/nextjs-saas-starter-kit/actions/workflows/ci.yml/badge.svg" /></a>
   <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
@@ -83,7 +83,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 ## 🧰 Tech stack
 
 - **Framework**: [Next.js 16](https://nextjs.org) with the App Router and Turbopack, on [React 19](https://react.dev) with Server Components rendering on the server by default. No compiler layer and no config DSL on top, so routing and Server Actions behave exactly as their own docs say.
-- **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, across the app, the tests and the environment schema.
+- **Language**: [TypeScript](https://www.typescriptlang.org) in strict mode, across the app, the tests and the environment schema. Your own pages and components can be plain JavaScript next to it ([Getting started](docs/getting-started.md#7-your-own-code-in-typescript-or-javascript)).
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com) with dark mode wired through CSS variables, so changing the theme is one file instead of a sweep through components.
 - **UI**: [Radix UI](https://www.radix-ui.com) primitives under a design system written for this kit (Button, Card, Badge, Input, Table and the rest). Radix handles the accessible behavior, you own the look, and both live in your codebase with no component library to upgrade around.
 - **Icons**: [Lucide](https://lucide.dev), an open source set shipped as React components, so an icon is something you import and not an asset you manage.
@@ -112,6 +112,8 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 /dashboard/billing   → Subscription management + invoice history
 /dashboard/settings  → Profile, sign-in methods, password, two-factor & active sessions
 /admin               → Admin panel (ADMIN role required)
+/admin/users         → Users: search, pagination, promote to admin
+/admin/waitlist      → Newsletter signups and the CSV export
 ```
 
 ---
@@ -334,7 +336,7 @@ Your environment is validated at boot (`src/instrumentation.ts`): a configuratio
 
 ```bash
 npm run smoke -- https://your-app.com
-npm run smoke -- https://your-app.com --expect-version 2.4.0
+npm run smoke -- https://your-app.com --expect-version 2.5.0
 ```
 
 Checks a running deployment from the outside: `/api/health` (including whether the database has every migration the build ships), home, blog index, feed, a real post, the SEO surfaces, and two routing guards (an unknown path is a 404, `/dashboard` redirects to sign in). With `--expect-version` it also compares the version the site reports with the one you are releasing, which is how you catch a deploy that succeeded while still serving the previous build.

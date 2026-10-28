@@ -2,7 +2,7 @@
 title: Primi passi
 description: Da git clone all'app che gira, in una decina di minuti.
 translated_from: getting-started.md
-source_checksum: 5f0df1f76045
+source_checksum: 1f861032965f
 ---
 
 # Primi passi
@@ -73,3 +73,27 @@ Riavvia `npm run dev` e riapri il sito. Premi **Sign in**: in sviluppo la pagina
 - Pagamenti e webhook: la sezione Stripe di [Configurazione](./configuration.md)
 - Fallo tuo: il marchio vive in `src/config/site.ts` e `src/components/logo.tsx`; cambia quei due file e tutta l'app (metadati, navbar, footer, email, pagine legali) segue
 - Mandalo in produzione: [Deployment](./deployment.md)
+
+## 7. Il tuo codice, in TypeScript o in JavaScript
+
+Il kit è scritto in TypeScript rigoroso, ed è lì che stanno i suoi controlli: il codice di accesso, pagamenti e database su cui costruisci è tipizzato e coperto dai test. Il tuo codice non deve esserlo per forza. Le pagine e i componenti che aggiungi possono essere JavaScript semplice, file `.js` o `.jsx` accanto ai `.ts` del kit. Importano i componenti del kit, `prisma` e il resto così come sono, e `npm run build`, `npm run lint` e `npx tsc --noEmit` passano anche con loro, perché il `tsconfig.json` del kit ha `allowJs`.
+
+```jsx
+// src/app/(dashboard)/dashboard/reports/page.jsx
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { prisma } from "@/lib/prisma"
+
+export default async function ReportsPage() {
+  const plans = await prisma.plan.count()
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Plans</CardTitle>
+      </CardHeader>
+      <CardContent>{plans}</CardContent>
+    </Card>
+  )
+}
+```
+
+La pagina sta nella dashboard, quindi è già protetta dall'accesso. Quando un file cresce, rinominalo in `.tsx`: TypeScript comincia a controllarlo e l'editor ti mostra cosa sistemare. Nient'altro cambia.

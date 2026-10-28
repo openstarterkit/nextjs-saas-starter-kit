@@ -51,7 +51,7 @@ The list is read from your own `Session` rows with Prisma, not through Better Au
 
 Two more details are worth knowing. What the browser sends is `revokeSession`'s **session id**, never the token: the token is the credential, and a page that prints it hands a working session to anything that can read the DOM or a screenshot. And the device line is a reading of the user agent (`src/lib/user-agent.ts`), which is a string a client chooses freely: it is there to help somebody recognise their own laptop, not to prove anything.
 
-You cannot end your own current session from the list, because the button for that is called "Sign out" and already exists.
+You cannot end your own current session from the list, because the button for that is called "Log out" and already exists.
 
 ## Changing your email address
 

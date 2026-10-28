@@ -67,7 +67,8 @@ export default async function ProjectDetailPage({
       <Card className="border-destructive/20 bg-destructive/5">
         <CardHeader>
           <CardTitle className="text-base text-destructive">{t("dangerTitle")}</CardTitle>
-          <CardDescription>{t("dangerDescription")}</CardDescription>
+          {/* Darker than the muted grey, which on the red tint came to 4.35:1. */}
+          <CardDescription className="text-foreground/75">{t("dangerDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={deleteProject}>

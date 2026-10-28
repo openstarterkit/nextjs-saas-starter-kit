@@ -125,7 +125,7 @@ Where you are and who you are, in the header, where most apps keep them.
 The paid tier, built on this kit for products where people work together. A one-time purchase with updates for life.
 
 **Dates**
-- **October 31**: the launch price for the waitlist is announced.
+- **October 31**: the launch price is public, on [openstarterkit.dev/pro](https://openstarterkit.dev/pro).
 - **November 19**: Pro and Pro Studio launch for the waitlist, at the launch price.
 - **November 27**: last day of the launch price. Anyone who joins the waitlist by then gets it.
 - **November 28**: open sale at the full price.

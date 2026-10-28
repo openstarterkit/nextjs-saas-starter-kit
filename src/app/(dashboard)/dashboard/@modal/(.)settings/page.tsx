@@ -20,7 +20,7 @@ export default async function SettingsModal({
 
   return (
     <RouteModal title={t("title")}>
-      <SettingsView searchParams={searchParams} />
+      <SettingsView searchParams={searchParams} inModal />
     </RouteModal>
   )
 }

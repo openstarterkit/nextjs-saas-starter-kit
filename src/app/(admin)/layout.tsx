@@ -1,4 +1,5 @@
 import { getCurrentUser } from "@/lib/auth"
+import { currentPlanName } from "@/lib/billing"
 import { getTranslations } from "next-intl/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
@@ -16,6 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const t = await getTranslations("admin")
   if (!user) redirect("/login")
   if (user.role !== "ADMIN") redirect("/dashboard")
+  const plan = await currentPlanName(user.id)
 
   return (
     <div className="flex min-h-screen bg-muted/20">
@@ -24,9 +26,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/" className="flex items-center gap-2 font-bold text-foreground">
             <Logo animated wordmarkClassName="sidebar-collapsed:hidden" />
           </Link>
-          <span className="ml-2 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive sidebar-collapsed:hidden">{t("badge")}</span>
         </div>
         <SidebarNav variant="admin" />
+        {/* Who you are, at the foot of the sidebar, as in the Vercel dashboard:
+            Settings, Billing and Log out open upwards from here. */}
+        <div className="border-t border-border px-3 py-2">
+          <UserMenu name={user.name} email={user.email} image={user.image} plan={plan} />
+        </div>
       </aside>
 
       {/* min-w-0: without it this flex item keeps `min-width: auto`, so any wide
@@ -36,16 +42,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <SidebarCollapseToggle />
-            <HeaderBreadcrumbs icon={<Shield className="h-4 w-4" />} base={{ name: t("badge"), href: "/admin" }} labels={{}} />
+            <HeaderBreadcrumbs menu="admin" accent icon={<Shield className="h-4 w-4" />} base={{ name: t("badge"), href: "/admin" }} labels={{ users: t("usersTitle"), waitlist: t("waitlistTitle") }} />
           </div>
           <div className="flex items-center gap-1 md:hidden">
             <MobileNav variant="admin" />
             <Logo animated wordmarkClassName="text-base font-bold text-foreground" />
-            <span className="ml-1 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive">{t("badge")}</span>
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <ThemeToggle />
-            <UserMenu name={user.name} email={user.email} image={user.image} side="bottom" inHeader />
+            {/* A phone has no sidebar: the avatar stays top right there. */}
+            <div className="md:hidden">
+              <UserMenu name={user.name} email={user.email} image={user.image} plan={plan} side="bottom" hideDetails />
+            </div>
           </div>
         </header>
         {/* Same container as the public pages and the dashboard, so the two consoles match. */}

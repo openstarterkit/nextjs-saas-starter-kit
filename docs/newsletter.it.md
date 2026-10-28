@@ -2,7 +2,7 @@
 title: Newsletter e waitlist
 description: Lista con doppio opt-in, registro del consenso, sincronizzazione con Resend ed export dall'amministrazione.
 translated_from: newsletter.md
-source_checksum: 6668ac27366f
+source_checksum: 5602aa64d1ed
 ---
 
 # Newsletter e waitlist
@@ -37,7 +37,7 @@ Imposta `RESEND_AUDIENCE_ID` per attivare la sincronizzazione. Senza, la lista n
 
 ## Amministrazione
 
-Il pannello (`/admin`) mostra il conteggio dei confermati e di quelli in attesa, le iscrizioni più recenti, e un pulsante **Export CSV** servito da `/api/admin/newsletter-export`, riservato agli amministratori.
+Il pannello mostra il conteggio dei confermati fra le schede della panoramica (`/admin`) e la lista intera su una pagina sua (`/admin/waitlist`): confermati e in attesa, ogni iscrizione dieci per pagina, e un pulsante **Export CSV** servito da `/api/admin/newsletter-export`, riservato agli amministratori.
 
 ## Modalità demo
 

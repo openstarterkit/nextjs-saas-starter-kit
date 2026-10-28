@@ -6,13 +6,15 @@ import Link from "next/link"
 import { useRenderedPathname } from "@/hooks/use-rendered-pathname"
 import {
   ArrowLeft,
-  ArrowUpRight,
   Code,
   CreditCard,
+  ExternalLink,
   FolderKanban,
   LayoutGrid,
+  Mail,
   Settings,
   Shield,
+  UserRound,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -27,7 +29,30 @@ const menus = {
     { href: "/dashboard/billing", key: "billing", icon: CreditCard },
     { href: "/dashboard/settings", key: "settings", icon: Settings },
   ],
-  admin: [{ href: "/admin", key: "overview", icon: LayoutGrid, exact: true }],
+  admin: [
+    // The shield, the admin's own sign, as on the Admin Panel link that leads here.
+    { href: "/admin", key: "overview", icon: Shield, exact: true },
+    { href: "/admin/users", key: "users", icon: UserRound },
+    { href: "/admin/waitlist", key: "waitlist", icon: Mail },
+  ],
+}
+
+type MenuItem = (typeof menus)[keyof typeof menus][number]
+
+function isActiveItem(item: Pick<MenuItem, "href"> & { exact?: boolean }, pathname: string) {
+  return item.exact
+    ? pathname === item.href
+    : pathname === item.href || pathname.startsWith(`${item.href}/`)
+}
+
+/**
+ * The entry the sidebar highlights for this path, so the header's breadcrumbs
+ * show the same icon: the folder on Projects, the card on Billing. Read from
+ * this list rather than repeated there, so a new section cannot leave the two
+ * disagreeing.
+ */
+export function activeMenuItem(variant: keyof typeof menus, pathname: string): MenuItem | undefined {
+  return (menus[variant] as readonly MenuItem[]).find((item) => isActiveItem(item, pathname))
 }
 
 /** The kit's manual, published with every release: the same text as docs/ in your clone. */
@@ -66,10 +91,7 @@ export function SidebarNav({
   // would light Settings during the modal, and would reintroduce the stale
   // path after server-action redirects that this hook exists to avoid.
   const pathname = useRenderedPathname()
-  const isActive = (item: { href: string; exact?: boolean }) =>
-    item.exact
-      ? pathname === item.href
-      : pathname === item.href || pathname.startsWith(`${item.href}/`)
+  const isActive = (item: MenuItem) => isActiveItem(item, pathname)
 
   return (
     <>
@@ -120,8 +142,10 @@ export function SidebarNav({
               <Code className="h-4 w-4 shrink-0" />
               <NavLabel>{t("devDocs")}</NavLabel>
               {/* It leaves the app, for another site in a new tab: said by the
-                  arrow, and in words for whoever does not see it. */}
-              <ArrowUpRight className="ml-auto h-3.5 w-3.5 shrink-0 sidebar-collapsed:hidden" aria-hidden="true" />
+                  arrow out of its box, and in words for whoever does not see
+                  it. The kit's sign for a link that opens elsewhere, used
+                  wherever one appears. */}
+              <ExternalLink className="ml-auto h-3.5 w-3.5 shrink-0 sidebar-collapsed:hidden" aria-hidden="true" />
               <span className="sr-only">{t("newTab")}</span>
             </a>
           )}

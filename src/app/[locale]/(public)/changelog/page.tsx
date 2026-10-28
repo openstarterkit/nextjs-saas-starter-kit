@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm"
 import { getChangelog, CHANGELOG_BASE_DIR } from "@/lib/changelog"
 import { mapRepoHref } from "@/lib/markdown-links"
 import { Badge } from "@/components/ui/badge"
+import { OnThisPage } from "@/components/docs/on-this-page"
 import { siteConfig } from "@/config/site"
 import { pageMetadata } from "@/lib/metadata"
 
@@ -45,51 +46,81 @@ function formatDate(iso: string | null) {
 // Renders the repo root CHANGELOG.md as a release timeline. The version is
 // the visual anchor of each entry: big brand-gradient pill, date beneath,
 // body subordinate on the timeline rail.
+//
+// As wide as a guide in the docs, with the same outline on the right: one
+// entry per release, the version number alone, so a reader looking for 2.3.4
+// jumps to it instead of scrolling past every release since.
+
+/** The anchor of a release: "2.4.0" becomes "v2-4-0", stable across builds. */
+const releaseId = (version: string) => `v${version.replace(/\./g, "-")}`
 export default function ChangelogPage() {
   const t = useTranslations("changelog")
   const { intro, releases } = getChangelog()
+  const outline = releases.map((release) => ({ depth: 2, text: `v${release.version}`, slug: releaseId(release.version) }))
 
   return (
     <section className="py-24">
-      <div className="mx-auto max-w-5xl px-6 lg:px-12">
-        <div className="max-w-2xl">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            {t("title")}
-          </h1>
-          {intro && (
-            <div className="prose mt-4 max-w-none text-sm prose-p:my-2">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{intro}</ReactMarkdown>
-            </div>
-          )}
-        </div>
+      {/* The docs' width and paddings (docs/[slug]/layout.tsx). */}
+      <div className="mx-auto flex w-full max-w-7xl gap-10 px-4 md:px-6 lg:px-12">
+        <div className="min-w-0 flex-1">
+          <div className="max-w-2xl">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              {t("title")}
+            </h1>
+            {intro && (
+              <div className="prose mt-4 max-w-none text-sm prose-p:my-2">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{intro}</ReactMarkdown>
+              </div>
+            )}
+          </div>
 
-        <div className="mt-16 space-y-16">
-          {releases.map((release, i) => (
-            <section
-              key={release.version}
-              className="grid grid-cols-1 gap-x-10 gap-y-4 md:grid-cols-[190px_minmax(0,1fr)]"
-            >
-              {/* top-24 + 20px: clears the sticky header also when the demo
-                  banner sits above the navbar and makes it taller. */}
-              <div className="md:sticky md:top-[116px] md:self-start">
-                <div className="flex items-center gap-2.5">
-                  <span className="inline-block rounded-full px-4 py-1.5 text-lg font-bold tracking-tight text-primary-foreground shadow-soft [background-image:var(--gradient-brand)]">
-                    v{release.version}
-                  </span>
-                  {i === 0 && <Badge variant="secondary">{t("latest")}</Badge>}
+          <div className="mt-16 space-y-16">
+            {releases.map((release, i) => (
+              <section
+                key={release.version}
+                id={releaseId(release.version)}
+                className="scroll-mt-4 grid grid-cols-1 gap-x-10 gap-y-4 md:grid-cols-[190px_minmax(0,1fr)]"
+              >
+                {/* top-24 + 20px: clears the sticky header also when the demo
+                    banner sits above the navbar and makes it taller. */}
+                <div className="md:sticky md:top-[116px] md:self-start">
+                  <div className="flex items-center gap-2.5">
+                    <span className="inline-block rounded-full px-4 py-1.5 text-lg font-bold tracking-tight text-primary-foreground shadow-soft [background-image:var(--gradient-brand)]">
+                      v{release.version}
+                    </span>
+                    {i === 0 && <Badge variant="secondary">{t("latest")}</Badge>}
+                  </div>
+                  <p className="mt-2.5 text-sm text-muted-foreground">{release.date ? formatDate(release.date) : t("unreleased")}</p>
                 </div>
-                <p className="mt-2.5 text-sm text-muted-foreground">{release.date ? formatDate(release.date) : t("unreleased")}</p>
-              </div>
 
-              <div className="relative border-l border-border pl-8 pb-2 md:pl-10">
-                <span className="absolute -left-[5px] top-2.5 h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_0_4px_var(--background)]" />
-                <article className="prose max-w-none prose-headings:tracking-tight prose-h3:mt-6 prose-h3:text-base prose-code:before:content-none prose-code:after:content-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{release.body}</ReactMarkdown>
-                </article>
-              </div>
-            </section>
-          ))}
+                <div className="relative border-l border-border pl-8 pb-2 md:pl-10">
+                  {i === 0 ? (
+                    // The latest release is the live one: green, the colour of
+                    // "running now", with a slow ring, so it reads apart from
+                    // the brand blue of the others. No ring for people who
+                    // asked for reduced motion.
+                    <span className="absolute -left-[10px] top-[5px] rounded-full bg-background p-1">
+                      <span className="block h-3 w-3 rounded-full bg-emerald-500 motion-safe:animate-live-ring" />
+                    </span>
+                  ) : (
+                    <span className="absolute -left-[5px] top-2.5 h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_0_4px_var(--background)]" />
+                  )}
+                  <article className="prose max-w-none prose-headings:tracking-tight prose-h3:mt-6 prose-h3:text-base prose-code:before:content-none prose-code:after:content-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{release.body}</ReactMarkdown>
+                  </article>
+                </div>
+              </section>
+            ))}
+          </div>
         </div>
+
+        <aside className="hidden w-40 shrink-0 xl:block">
+          {/* Pinned under the header like the docs' outline, scrolling on its
+              own when the list of releases is longer than the screen. */}
+          <div className="sticky top-[calc(var(--header-h,4.5rem)+2rem)]">
+            <OnThisPage items={outline} />
+          </div>
+        </aside>
       </div>
     </section>
   )

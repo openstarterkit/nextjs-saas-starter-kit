@@ -7,14 +7,16 @@ import { useRenderedPathname } from "@/hooks/use-rendered-pathname"
 import { KIT_DOCS_URL } from "@/components/dashboard/sidebar-nav"
 import {
   ArrowLeft,
-  ArrowUpRight,
   Code,
   CreditCard,
+  ExternalLink,
   FolderKanban,
   LayoutGrid,
+  Mail,
   Menu,
   Settings,
   Shield,
+  UserRound,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -34,7 +36,11 @@ const menus = {
     { href: "/dashboard/billing", key: "billing", icon: CreditCard },
     { href: "/dashboard/settings", key: "settings", icon: Settings },
   ],
-  admin: [{ href: "/admin", key: "overview", icon: LayoutGrid }],
+  admin: [
+    { href: "/admin", key: "overview", icon: Shield },
+    { href: "/admin/users", key: "users", icon: UserRound },
+    { href: "/admin/waitlist", key: "waitlist", icon: Mail },
+  ],
 }
 
 /** Hamburger nav for the app areas below `md`, where the sidebar is hidden. */
@@ -90,7 +96,7 @@ export function MobileNav({
                 <a href={KIT_DOCS_URL} target="_blank" rel="noreferrer">
                   <Code />
                   {t("devDocs")}
-                  <ArrowUpRight className="ml-auto" aria-hidden="true" />
+                  <ExternalLink className="ml-auto" aria-hidden="true" />
                   <span className="sr-only">{t("newTab")}</span>
                 </a>
               </DropdownMenuItem>

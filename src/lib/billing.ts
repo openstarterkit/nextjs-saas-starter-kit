@@ -41,6 +41,14 @@ export async function getEntitlement(userId: string): Promise<Entitlement> {
   return { kind: "free" }
 }
 
+/** The name of the plan the user is on, for the account menu; null on the free tier. */
+export async function currentPlanName(userId: string): Promise<string | null> {
+  const entitlement = await getEntitlement(userId)
+  if (entitlement.kind === "lifetime") return entitlement.purchase.plan.name
+  if (entitlement.kind === "subscription") return entitlement.subscription.plan.name
+  return null
+}
+
 // Subscription statuses that mean "there is a live subscription in Stripe that
 // the billing portal can manage" — in-app checkout must not create a second one.
 // INCOMPLETE (initial payment never went through) and CANCELED are not blocking.

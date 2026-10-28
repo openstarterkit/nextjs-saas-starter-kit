@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server"
 import { routing } from "@/i18n/routing"
 import { deliver } from "@/lib/email-delivery"
 import { resendClient, sendEmail } from "@/lib/email-transport"
+import { contactStateFrom, type NewsletterContactState } from "@/lib/newsletter-contact"
 
 /**
  * Subjects for the transactional emails.
@@ -338,18 +339,24 @@ export async function syncNewsletterContact(email: string) {
 }
 
 /**
- * Whether Resend has this address as unsubscribed. The link at the foot of a
- * Broadcast is Resend's, so it unsubscribes there and never touches the
- * database: without asking, a person who left that way and signs up again
- * looks confirmed and active, and gets nothing. False when there is no
- * audience, no such contact, or Resend does not answer.
+ * Where this address stands on the Resend audience. Two ways out never touch
+ * the database: the unsubscribe link at the foot of a Broadcast, which is
+ * Resend's, and a contact removed by hand from the Resend dashboard or its API.
+ * Without asking, a person who left either way and signs up again looks
+ * confirmed and active, and gets nothing.
+ *
+ * - `unsubscribed`: on the audience, and unsubscribed there;
+ * - `missing`: Resend answers that the contact is not on the audience;
+ * - `subscribed`: on the audience and receiving;
+ * - `unknown`: no audience configured, or Resend gave another error. The
+ *   caller does nothing then: with Resend down, a confirmation must not go to
+ *   someone who is already in.
  */
-export async function isNewsletterContactUnsubscribed(email: string): Promise<boolean> {
+export async function newsletterContactState(email: string): Promise<NewsletterContactState> {
   const audienceId = process.env.RESEND_AUDIENCE_ID
-  if (!audienceId) return false
+  if (!audienceId) return "unknown"
   const resend = await resendClient()
-  const { data } = await resend.contacts.get({ email, audienceId })
-  return data?.unsubscribed === true
+  return contactStateFrom(await resend.contacts.get({ email, audienceId }))
 }
 
 export async function removeNewsletterContact(email: string) {

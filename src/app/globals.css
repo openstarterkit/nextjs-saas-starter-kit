@@ -164,6 +164,8 @@
   --animate-fade-in-up: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-glow: pulse-glow 2.5s ease-in-out infinite;
+  --animate-live-ring: live-ring 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-route-progress: route-progress 8s cubic-bezier(0.1, 0.8, 0.2, 1) both;
   --animate-price-swap: price-swap 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-spin-mark: spin-mark 8s linear infinite;
 }
@@ -212,6 +214,16 @@
 @keyframes pulse-glow {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
+}
+/* The page-change bar: quick at first, then slower and slower, never full. */
+@keyframes route-progress {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+/* A ring that grows out of a dot and fades: "live", as on a status page. */
+@keyframes live-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-emerald-500) 70%, transparent); }
+  100% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-emerald-500) 0%, transparent); }
 }
 @keyframes shine {
   0% { transform: translateX(-120%) skewX(-12deg); }

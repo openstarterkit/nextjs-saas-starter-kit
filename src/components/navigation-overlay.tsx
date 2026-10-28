@@ -20,9 +20,16 @@ import { BrandLoader } from "@/components/ui/spinner"
  * Both draw the same overlay, and never two at once: while a boundary is on
  * screen the link overlay steps aside. It waits a moment before appearing, so
  * a page that is already in the cache opens without a flash.
+ *
+ * Every other page change gets a thin bar across the top instead: the public
+ * pages (docs, blog, changelog) and links that leave for another site in the
+ * same tab, like the live demo. Those are rendered on request and take from a
+ * quarter of a second to a few seconds on a cold start, and without a sign the
+ * click looks lost. A bar, not the overlay: the page you are reading stays
+ * readable while the next one comes.
  */
 
-/** Paths whose links get the overlay. The public pages are static and fast. */
+/** Paths whose links get the overlay; every other page change gets the bar. */
 const APP_PATHS = ["/dashboard", "/admin"]
 const isAppPath = (pathname: string) =>
   APP_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
@@ -38,6 +45,7 @@ const GIVE_UP_AFTER_MS = 10_000
 // so the component only reads it.
 let linkPending = false
 let linkVisible = false
+let linkKind: "overlay" | "bar" = "overlay"
 let showTimer: ReturnType<typeof setTimeout> | undefined
 let giveUpTimer: ReturnType<typeof setTimeout> | undefined
 let boundaries = 0
@@ -51,9 +59,10 @@ const subscribe = (listener: () => void) => {
   return () => listeners.delete(listener)
 }
 
-function startLink() {
+function startLink(kind: "overlay" | "bar" = "overlay") {
   if (linkPending) return
   linkPending = true
+  linkKind = kind
   showTimer = setTimeout(() => {
     linkVisible = true
     emit()
@@ -115,17 +124,40 @@ export function RouteLoading({ label }: { label?: string }) {
   return <LoadingOverlay label={label} animate={!continued} />
 }
 
-/** Whether a click on this anchor is an in-app page change we should cover. */
-function isAppNavigation(event: MouseEvent, anchor: HTMLAnchorElement): boolean {
-  if (event.defaultPrevented || event.button !== 0) return false
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false
-  if (anchor.target && anchor.target !== "_self") return false
-  if (anchor.hasAttribute("download")) return false
+/**
+ * What a click on this anchor needs: the overlay for a page of the app, the bar
+ * for any other page change in this tab, nothing when no page loads.
+ */
+function navigationKind(event: MouseEvent, anchor: HTMLAnchorElement): "overlay" | "bar" | null {
+  if (event.defaultPrevented || event.button !== 0) return null
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null
+  if (anchor.target && anchor.target !== "_self") return null
+  if (anchor.hasAttribute("download")) return null
   const url = new URL(anchor.href, window.location.href)
-  if (url.origin !== window.location.origin) return false
-  if (!isAppPath(url.pathname)) return false
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null
+  // Another site in this tab, like the demo: this page stays until it answers.
+  if (url.origin !== window.location.origin) return "bar"
   // Same page, or only the hash changes: nothing loads.
-  return url.pathname !== window.location.pathname || url.search !== window.location.search
+  if (url.pathname === window.location.pathname && url.search === window.location.search) return null
+  return isAppPath(url.pathname) ? "overlay" : "bar"
+}
+
+/**
+ * A thin bar across the top that fills while the next page comes, in the
+ * brand gradient. It slows down as it goes and never reaches the end on its
+ * own: the new page arriving is what ends it. Without motion for people who
+ * asked for less, it simply shows.
+ */
+function ProgressBar() {
+  return (
+    <div
+      role="progressbar"
+      aria-label="Loading"
+      className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[3px] overflow-hidden"
+    >
+      <div className="h-full w-[85%] origin-left [background-image:var(--gradient-brand)] shadow-[0_0_8px_var(--color-primary)] motion-safe:animate-route-progress" />
+    </div>
+  )
 }
 
 function LinkNavigationOverlay() {
@@ -139,7 +171,14 @@ function LinkNavigationOverlay() {
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       const anchor = (event.target as Element | null)?.closest?.("a[href]")
-      if (anchor instanceof HTMLAnchorElement && isAppNavigation(event, anchor)) startLink()
+      if (!(anchor instanceof HTMLAnchorElement)) return
+      const kind = navigationKind(event, anchor)
+      if (kind) startLink(kind)
+    }
+    // Back from another site restores this page from the browser's cache,
+    // with the bar still up from the click that left it.
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) endLink()
     }
     // Back and forward: the URL has already changed when this fires, and the
     // page follows. Only when the page on screen is a different one: closing
@@ -148,13 +187,15 @@ function LinkNavigationOverlay() {
     // end the wait.
     const onPopState = () => {
       const path = window.location.pathname
-      if (isAppPath(path) && path !== renderedPath) startLink()
+      if (path !== renderedPath) startLink(isAppPath(path) ? "overlay" : "bar")
     }
     document.addEventListener("click", onClick, true)
     window.addEventListener("popstate", onPopState)
+    window.addEventListener("pageshow", onPageShow)
     return () => {
       document.removeEventListener("click", onClick, true)
       window.removeEventListener("popstate", onPopState)
+      window.removeEventListener("pageshow", onPageShow)
     }
   }, [])
 
@@ -164,7 +205,9 @@ function LinkNavigationOverlay() {
     endLink()
   }, [pathname, searchParams])
 
-  return visible && !boundaryShown ? <LoadingOverlay /> : null
+  if (!visible) return null
+  if (linkKind === "bar") return <ProgressBar />
+  return boundaryShown ? null : <LoadingOverlay />
 }
 
 /** Mounted once, in the root layout. */

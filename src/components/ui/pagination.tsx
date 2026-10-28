@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { pageItems } from "@/lib/pagination"
 
 /**
  * Page navigation for a paginated list.
@@ -15,6 +16,12 @@ import { cn } from "@/lib/utils"
  * a crawler can walk the archive. The current page is a `span` with
  * `aria-current`, because a link to where you already are is noise for anyone
  * navigating by keyboard or screen reader.
+ * Previous on the first page and Next on the last are there but disabled,
+ * and say so: WCAG asks no contrast of an inactive control, and a reader
+ * hears that the way back is not available rather than nothing at all.
+ *
+ * Past seven pages the middle ones fold into a gap (`pageItems`), so a list of
+ * fifty pages, like the users of the admin panel, keeps the control one row.
  */
 export function Pagination({
   page,
@@ -31,7 +38,7 @@ export function Pagination({
 }) {
   if (totalPages <= 1) return null
 
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+  const items = pageItems(page, totalPages)
   const base =
     "inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-[var(--radius)] border px-3 text-sm transition-colors"
 
@@ -47,15 +54,19 @@ export function Pagination({
           {labels.previous}
         </Link>
       ) : (
-        <span className={cn(base, "border-transparent text-muted-foreground/40")} aria-hidden="true">
+        <span role="link" aria-disabled="true" className={cn(base, "border-transparent text-muted-foreground/40")}>
           <ChevronLeft className="h-4 w-4" />
           {labels.previous}
         </span>
       )}
 
       <ul className="flex gap-1">
-        {pages.map((n) =>
-          n === page ? (
+        {items.map((n, i) =>
+          n === "gap" ? (
+            <li key={`gap-${i}`} className="inline-flex h-9 min-w-9 items-center justify-center text-sm text-muted-foreground" aria-hidden="true">
+              …
+            </li>
+          ) : n === page ? (
             <li key={n}>
               <span
                 aria-current="page"
@@ -89,7 +100,7 @@ export function Pagination({
           <ChevronRight className="h-4 w-4" />
         </Link>
       ) : (
-        <span className={cn(base, "border-transparent text-muted-foreground/40")} aria-hidden="true">
+        <span role="link" aria-disabled="true" className={cn(base, "border-transparent text-muted-foreground/40")}>
           {labels.next}
           <ChevronRight className="h-4 w-4" />
         </span>

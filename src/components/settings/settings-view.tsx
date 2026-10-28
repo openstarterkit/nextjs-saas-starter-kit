@@ -59,8 +59,11 @@ const MESSAGE_IS_ERROR: Record<string, boolean> = {
  */
 export async function SettingsView({
   searchParams,
+  inModal = false,
 }: {
   searchParams: Promise<{ ok?: string; error?: string }>
+  /** In the modal the title is in its fixed bar, so the heading here is left out. */
+  inModal?: boolean
 }) {
   const currentUser = await requireUser()
 
@@ -108,10 +111,12 @@ export async function SettingsView({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
-      </div>
+      {!inModal && (
+        <div>
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
+        </div>
+      )}
 
       {message && (
         <p
@@ -289,12 +294,13 @@ export async function SettingsView({
       <Card className="border-destructive/20 bg-destructive/5">
         <CardHeader>
           <CardTitle className="text-base text-destructive">{t("dangerZone.title")}</CardTitle>
-          <CardDescription>{t("dangerZone.blurb")}</CardDescription>
+          {/* Darker than the muted grey, which on the red tint came to 4.35:1. */}
+          <CardDescription className="text-foreground/75">{t("dangerZone.blurb")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center justify-between gap-3">
           <div className="max-w-prose">
             <p className="text-sm font-medium text-foreground">{t("deleteAccount.heading")}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t("deleteAccount.blurb")}</p>
+            <p className="mt-0.5 text-xs text-foreground/75">{t("deleteAccount.blurb")}</p>
           </div>
           <DeleteAccount email={user.email} />
         </CardContent>

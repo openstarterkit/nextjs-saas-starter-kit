@@ -271,12 +271,10 @@ export default async function LoginPage({
               }}
             >
               <input type="hidden" name="password" value="dev" />
-              <button
-                type="submit"
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-dashed border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              >
+              {/* The same spinner as every other sign-in button while it works. */}
+              <PendingButton className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-dashed border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-80">
                 <span>🔧</span> Dev Login (Admin)
-              </button>
+              </PendingButton>
             </form>
           </>
         )}

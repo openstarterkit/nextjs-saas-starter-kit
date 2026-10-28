@@ -13,9 +13,10 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
  * local flag: the modal *is* the URL, so dismissing it has to leave that URL
  * the way the browser back button would.
  *
- * The title is passed in and visually hidden. The surface inside already shows
- * its own heading, but a dialog without an accessible name is announced as an
- * unlabelled group, so screen reader users would not be told what opened.
+ * The title sits in a bar fixed at the top, with the close button, and the
+ * rest scrolls under it: in a long surface like Settings the way out and the
+ * name of what is open stay in sight. It is also the dialog's accessible name,
+ * so the page inside leaves out its own heading (`inModal`).
  */
 export function RouteModal({
   title,
@@ -30,14 +31,15 @@ export function RouteModal({
   return (
     <Dialog defaultOpen onOpenChange={(open) => !open && router.back()}>
       {/* Two jobs, two elements. The shell keeps the rounded corners and clips
-          whatever reaches them; the scrolling happens one level in. Scrolling
+          whatever reaches them; the scrolling happens one level in, under the
+          bar with the title. Scrolling
           the shell itself paints the native scrollbar, which is a rectangle,
           over its own rounded edge and squares off the right corners.
           `scrollbar-gutter: stable` reserves the track from the start, so the
           content does not shift sideways the moment it grows past one screen. */}
       <DialogContent
         ref={contentRef}
-        className="overflow-hidden p-0 sm:max-w-3xl"
+        className="gap-0 overflow-hidden p-0 sm:max-w-3xl"
         // A dialog moves focus inside itself on open, and by default that means
         // the first field. Here the first field is the display name, already
         // filled: focused with its text selected, one keystroke replaces the
@@ -53,8 +55,13 @@ export function RouteModal({
           contentRef.current?.focus()
         }}
       >
-        <DialogTitle className="sr-only">{title}</DialogTitle>
-        <div className="max-h-[85vh] overflow-y-auto p-6 [scrollbar-color:var(--border)_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin]">
+        {/* 56px tall, so the close button the dialog places 16px from the top
+            sits on the bar's centre line; the right padding keeps a long title
+            clear of it. */}
+        <div className="flex h-14 shrink-0 items-center border-b border-border px-6 pr-14">
+          <DialogTitle className="truncate text-lg font-semibold">{title}</DialogTitle>
+        </div>
+        <div className="max-h-[calc(85vh-3.5rem)] overflow-y-auto p-6 [scrollbar-color:var(--border)_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin]">
           {children}
         </div>
       </DialogContent>

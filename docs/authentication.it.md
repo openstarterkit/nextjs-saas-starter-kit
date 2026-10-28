@@ -2,7 +2,7 @@
 title: Autenticazione
 description: OAuth, magic link, email e password, reset e collegamento degli account.
 translated_from: authentication.md
-source_checksum: 7944361e4f54
+source_checksum: 02beaf424dd8
 ---
 
 # Autenticazione
@@ -58,7 +58,7 @@ La lista viene letta dalle tue righe `Session` con Prisma, non tramite `listSess
 
 Altri due dettagli vale la pena conoscerli. Quello che il browser invia è l'**id della sessione** di `revokeSession`, mai il token: il token è la credenziale, e una pagina che lo stampa consegna una sessione funzionante a qualsiasi cosa sappia leggere il DOM o uno screenshot. E la riga del dispositivo è una lettura dello user agent (`src/lib/user-agent.ts`), che è una stringa scelta liberamente dal client: serve a far riconoscere a qualcuno il proprio portatile, non a dimostrare niente.
 
-La sessione corrente non si chiude dalla lista, perché il bottone per farlo si chiama "Esci" ed esiste già.
+La sessione corrente non si chiude dalla lista, perché il bottone per farlo si chiama "Log out" ed esiste già.
 
 ## Cambiare il proprio indirizzo email
 

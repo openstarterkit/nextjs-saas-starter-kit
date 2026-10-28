@@ -6,7 +6,7 @@ import {
   FolderKanban,
   CreditCard,
   Settings,
-  ChevronsUpDown,
+  EllipsisVertical,
   PanelLeftClose,
   Shield,
   type LucideIcon,
@@ -194,14 +194,26 @@ export function Hero() {
                     {tm("navAdmin")}
                   </div>
                 </div>
+                {/* Who is signed in, at the foot of the sidebar, as in the real
+                    dashboard since 2.5.0. */}
+                <div className="border-t border-border p-3">
+                  <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-2 text-[11px] font-semibold text-primary-foreground">
+                      AR
+                    </span>
+                    <p className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">Alex Rivera</p>
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border/70 text-muted-foreground">
+                      <EllipsisVertical className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                </div>
               </aside>
 
               {/* Main column */}
               <div className="flex-1 bg-muted/20">
                 {/* Top bar, as in the real header: the sidebar toggle and the
-                    breadcrumbs on the left, the theme switch and the account
-                    menu on the right. The switch turns only this preview light
-                    or dark. */}
+                    breadcrumbs on the left, the theme switch on the right. The
+                    switch turns only this preview light or dark. */}
                 <div className="flex h-14 items-center gap-3 border-b border-border bg-background px-5 text-xs text-muted-foreground">
                   <PanelLeftClose className="h-4 w-4 shrink-0" />
                   <span className="h-5 w-px shrink-0 bg-border" />
@@ -209,16 +221,6 @@ export function Hero() {
                   <span className="font-medium text-foreground">{tm("navDashboard")}</span>
                   <div className="ml-auto flex items-center gap-3">
                     <PreviewThemeToggle />
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-2 text-[11px] font-semibold text-primary-foreground">
-                        AR
-                      </span>
-                      <div className="hidden min-w-0 md:block">
-                        <p className="truncate text-xs font-semibold text-foreground">Alex Rivera</p>
-                        <p className="truncate text-[11px] text-muted-foreground">alex@acme.io</p>
-                      </div>
-                      <ChevronsUpDown className="hidden h-3.5 w-3.5 shrink-0 md:block" />
-                    </div>
                   </div>
                 </div>
 

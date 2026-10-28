@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 03185325be3a
+source_checksum: 60c52bb49cf7
 ---
 
 # Aggiornare
@@ -45,6 +45,12 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.5.0: gli utenti e la lista d'attesa dell'admin su pagine loro, il menu dell'account in fondo alla barra laterale
+
+Una MINOR: `git pull`, `npm install`. Niente da migrare, niente da configurare.
+
+**Dove un merge può andare in conflitto.** `src/components/dashboard/user-menu.tsx`, se hai cambiato il menu dell'account: la variante `inHeader` della 2.4.0 non c'è più, il pulsante è l'avatar col nome e il menu si apre verso l'alto, con l'email e il piano in testa, e *Upgrade plan* sul piano gratuito. I layout della dashboard e dell'admin, `src/app/(dashboard)/layout.tsx` e `src/app/(admin)/layout.tsx`, se hai cambiato l'intestazione o la barra laterale: il menu è passato dall'intestazione al fondo della barra laterale, e sul telefono resta in alto a destra. `src/components/landing/navbar.tsx`, se hai cambiato la barra delle pagine pubbliche: chi ha fatto l'accesso trova il menu dell'account accanto al pulsante Dashboard. `src/components/theme-toggle.tsx`, se hai ridisegnato il cambio di tema: ora condivide la scelta con quello del menu. `src/components/navigation-overlay.tsx` e `src/app/globals.css`, se hai ridisegnato il caricamento delle pagine o aggiunto animazioni: la barra di caricamento e due animazioni sono nuove, in fondo ai keyframe. `src/app/[locale]/(public)/changelog/page.tsx`, se hai cambiato la pagina del changelog. `src/lib/email.ts` e `src/app/api/newsletter/route.ts`, se hai cambiato l'iscrizione alla newsletter. `package.json`, per l'override: tieni le tue modifiche, aggiungilo, poi `npm install`. `src/app/(admin)/admin/page.tsx`, se hai cambiato la panoramica dell'admin: la tabella degli utenti è passata nel nuovo `src/app/(admin)/admin/users/page.tsx`, e l'avatar e la data in `src/components/admin/user-parts.tsx`; porta con lei le tue modifiche alla tabella. La tabella della lista d'attesa si è spostata allo stesso modo, in `src/app/(admin)/admin/waitlist/page.tsx`. `src/components/dashboard/sidebar-nav.tsx` e `mobile-nav.tsx`, se hai aggiunto voci: l'admin ha Users e Waitlist, e l'Overview ha lo scudo. `src/components/settings/route-modal.tsx`, `settings-view.tsx` e `active-sessions.tsx`, se hai cambiato Settings: la modale ha la barra fissa del titolo e le sessioni sono cinque. `src/components/ui/pagination.tsx`, se hai ridisegnato la paginazione del blog: oltre sette pagine ora raccoglie quelle di mezzo. `GEMINI.md` è nuovo e non può andare in conflitto.
 
 ## 2.4.0: briciole di pane nell'intestazione, il menu dell'account in alto a destra
 

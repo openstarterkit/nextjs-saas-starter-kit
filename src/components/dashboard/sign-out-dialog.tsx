@@ -46,7 +46,7 @@ export function SignOutDialog({
           </div>
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            You&apos;ll be signed out of your account and returned to the homepage.
+            You&apos;ll be logged out of your account and returned to the homepage.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

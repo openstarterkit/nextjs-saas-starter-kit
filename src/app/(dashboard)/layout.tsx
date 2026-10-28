@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/auth"
+import { currentPlanName } from "@/lib/billing"
 import { getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -13,6 +14,7 @@ import { LayoutGrid } from "lucide-react"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser()
+  const plan = await currentPlanName(user.id)
   const tNav = await getTranslations("dashboard.nav")
   // The kit's manual, for whoever is building: while developing, and in the
   // demo, where the visitor is a developer weighing the kit. Never in your
@@ -28,6 +30,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </Link>
         </div>
         <SidebarNav variant="dashboard" showAdminLink={user.role === "ADMIN"} showDevDocsLink={showDevDocs} />
+        {/* Who you are, at the foot of the sidebar, as in the Vercel dashboard:
+            Settings, Billing and Log out open upwards from here. */}
+        <div className="border-t border-border px-3 py-2">
+          <UserMenu name={user.name} email={user.email} image={user.image} plan={plan} />
+        </div>
       </aside>
 
       {/* min-w-0: without it this flex item keeps `min-width: auto`, so any wide
@@ -38,6 +45,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="flex min-w-0 items-center gap-3">
             <SidebarCollapseToggle />
             <HeaderBreadcrumbs
+              menu="dashboard"
               icon={<LayoutGrid className="h-4 w-4" />}
               base={{ name: tNav("dashboard"), href: "/dashboard" }}
               labels={{ projects: tNav("projects"), billing: tNav("billing"), settings: tNav("settings") }}
@@ -49,9 +57,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <ThemeToggle />
-            {/* Who you are, top right, where most apps keep it: the avatar opens
-                Settings, Billing and Sign out, on every screen size. */}
-            <UserMenu name={user.name} email={user.email} image={user.image} side="bottom" inHeader />
+            {/* A phone has no sidebar: the avatar stays top right there. */}
+            <div className="md:hidden">
+              <UserMenu name={user.name} email={user.email} image={user.image} plan={plan} side="bottom" hideDetails />
+            </div>
           </div>
         </header>
         {/* Narrower than the public pages on purpose. Here the sidebar already

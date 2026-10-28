@@ -11,14 +11,14 @@ const prismaMock = {
   newsletterSubscriber: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
 }
 const sendNewsletterConfirmEmail = vi.fn()
-const isNewsletterContactUnsubscribed = vi.fn()
+const newsletterContactState = vi.fn()
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }))
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: async () => true,
   rateLimitKeyFromIp: async () => "newsletter:test",
 }))
-vi.mock("@/lib/email", () => ({ sendNewsletterConfirmEmail, isNewsletterContactUnsubscribed }))
+vi.mock("@/lib/email", () => ({ sendNewsletterConfirmEmail, newsletterContactState }))
 
 const { POST } = await import("./route")
 
@@ -38,7 +38,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   prismaMock.newsletterSubscriber.create.mockResolvedValue({ confirmToken: "t" })
   prismaMock.newsletterSubscriber.update.mockResolvedValue({ confirmToken: "t" })
-  isNewsletterContactUnsubscribed.mockResolvedValue(false)
+  newsletterContactState.mockResolvedValue("subscribed")
 })
 
 describe("POST /api/newsletter: the answer never depends on the outcome", () => {
@@ -83,7 +83,7 @@ describe("POST /api/newsletter: unsubscribed through a Broadcast, signing up aga
 
   it("records the unsubscribe and sends a new confirmation", async () => {
     prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
-    isNewsletterContactUnsubscribed.mockResolvedValue(true)
+    newsletterContactState.mockResolvedValue("unsubscribed")
 
     await POST(signup("left@example.com"))
 
@@ -103,14 +103,50 @@ describe("POST /api/newsletter: unsubscribed through a Broadcast, signing up aga
 
   it("answers the same neutral 200", async () => {
     prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
-    isNewsletterContactUnsubscribed.mockResolvedValue(true)
+    newsletterContactState.mockResolvedValue("unsubscribed")
     expect(await answer(await POST(signup("left@example.com")))).toEqual({ status: 200, body: { ok: true } })
   })
 
   it("answers the same neutral 200 when Resend cannot be asked", async () => {
     prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
-    isNewsletterContactUnsubscribed.mockRejectedValue(new Error("network"))
+    newsletterContactState.mockRejectedValue(new Error("network"))
     vi.spyOn(console, "error").mockImplementation(() => {})
     expect(await answer(await POST(signup("left@example.com")))).toEqual({ status: 200, body: { ok: true } })
+  })
+})
+
+/**
+ * A contact removed from the Resend audience by hand, from the dashboard or
+ * the API, leaves the database saying confirmed and active, like the
+ * Broadcast link. Before 2.5.0 that person could not sign up again either.
+ */
+describe("POST /api/newsletter: removed from Resend by hand, signing up again", () => {
+  const confirmed = { confirmedAt: new Date(), unsubscribedAt: null }
+
+  it("records it and sends a new confirmation when Resend has no such contact", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
+    newsletterContactState.mockResolvedValue("missing")
+
+    await POST(signup("removed@example.com"))
+
+    const { data } = prismaMock.newsletterSubscriber.update.mock.calls[0][0]
+    expect(data.unsubscribedAt).toBeInstanceOf(Date)
+    expect(sendNewsletterConfirmEmail).toHaveBeenCalledOnce()
+  })
+
+  it("sends nothing when Resend cannot say", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
+    newsletterContactState.mockResolvedValue("unknown")
+
+    await POST(signup("unsure@example.com"))
+
+    expect(prismaMock.newsletterSubscriber.update).not.toHaveBeenCalled()
+    expect(sendNewsletterConfirmEmail).not.toHaveBeenCalled()
+  })
+
+  it("answers the same neutral 200", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(confirmed)
+    newsletterContactState.mockResolvedValue("missing")
+    expect(await answer(await POST(signup("removed@example.com")))).toEqual({ status: 200, body: { ok: true } })
   })
 })
