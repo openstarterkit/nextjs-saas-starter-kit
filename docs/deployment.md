@@ -109,10 +109,10 @@ Find your user in the `User` table and set `role` to `ADMIN`. Your session re-re
 
 ## Optional: a public demo deployment
 
-To offer a demo like [demo.openstarterkit.dev](https://demo.openstarterkit.dev) without collecting personal data, deploy a **second instance** of the repo against an **isolated database** and set `DEMO_MODE="true"` there (plus Stripe test keys). On your marketing deployment set `NEXT_PUBLIC_DEMO_URL` to the demo's URL so the sign-in links point at it. Fill the demo with believable fixtures:
+To offer a demo like [demo.openstarterkit.dev](https://demo.openstarterkit.dev) without asking visitors for any personal data, deploy a **second instance** of the repo against an **isolated database** and set `DEMO_MODE="true"` there (plus Stripe test keys). On your marketing deployment set `NEXT_PUBLIC_DEMO_URL` to the demo's URL so the sign-in links point at it. Fill the demo with believable fixtures:
 
 ```bash
 npm run db:seed:demo   # wipes users/projects on that database and recreates fixtures
 ```
 
-Details on what demo mode changes are in [Authentication](./authentication.md).
+Details on what demo mode changes are in [Authentication](./authentication.md). Sessions still record the IP address they come from, as on any deployment, and the nightly reset deletes them; other visitors see only part of it.

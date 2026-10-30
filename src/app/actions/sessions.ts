@@ -32,6 +32,8 @@ const SETTINGS = "/dashboard/settings"
 export async function revokeSession(formData: FormData) {
   const currentUser = await getCurrentUser()
   if (!currentUser) redirect("/login")
+  // The demo's accounts are shared: ending a session there signs a stranger out.
+  if (process.env.DEMO_MODE === "true") redirect(`${SETTINGS}?error=sessions-demo`)
 
   const id = String(formData.get("sessionId") ?? "")
   if (!id) redirect(`${SETTINGS}?error=session`)
@@ -55,6 +57,7 @@ export async function revokeSession(formData: FormData) {
 export async function revokeOtherSessions() {
   const currentUser = await getCurrentUser()
   if (!currentUser) redirect("/login")
+  if (process.env.DEMO_MODE === "true") redirect(`${SETTINGS}?error=sessions-demo`)
 
   await auth.api.revokeOtherSessions({ headers: await headers() })
   redirect(`${SETTINGS}?ok=sessions-revoked`)

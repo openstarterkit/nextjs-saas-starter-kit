@@ -39,6 +39,12 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.5.2: a public demo no longer shows its visitors each other's IP address
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure. Only deployments with `DEMO_MODE` on behave differently.
+
+**Where a merge may conflict.** `src/components/settings/active-sessions.tsx`, if you changed the session card: the demo branch sits around the list and the two forms. `src/app/(auth)/login/page.tsx`, if you changed the demo's buttons: one line follows them. Keep your changes and take the demo parts.
+
 ## 2.5.1: the seed scripts work again
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure.

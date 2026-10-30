@@ -70,3 +70,29 @@ export function formatIpAddress(ip?: string | null): string | null {
   if (loopback.includes(trimmed) || /^0+(:0+)*$/.test(trimmed)) return null
   return trimmed
 }
+
+/**
+ * Somebody else's address, cut down to the part that says "a real place" and
+ * not "this person". Only the public demo needs it: everyone there signs in to
+ * the same shared accounts, so the session list holds every visitor's address,
+ * and a full IP is personal data to show a stranger.
+ *
+ * Two blocks of an IPv4 stay (a network, a region at most), the last two do
+ * not; an IPv6 keeps its first two groups. An IPv4 written inside an IPv6
+ * (`::ffff:203.0.113.7`) is treated as the IPv4 it is. Anything else comes back
+ * fully hidden rather than guessed at.
+ */
+export function maskIpAddress(ip?: string | null): string | null {
+  const shown = formatIpAddress(ip)
+  if (!shown) return null
+  const v4 = shown.replace(/^::ffff:/i, "")
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(v4)) {
+    const [a, b] = v4.split(".")
+    return `${a}.${b}.•••.•••`
+  }
+  if (shown.includes(":")) {
+    const groups = shown.split(":").filter(Boolean)
+    if (groups.length >= 2) return `${groups[0]}:${groups[1]}:•••`
+  }
+  return "•••"
+}

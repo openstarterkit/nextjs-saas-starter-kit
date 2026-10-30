@@ -239,6 +239,15 @@ export default async function LoginPage({
               <p className="text-center text-xs text-muted-foreground">
                 {t("demoAccounts")}
               </p>
+              {/* What a visitor of a public demo shares with the others, and where the
+                  policy is. The settings page shows other visitors only part of an IP. */}
+              <p className="text-center text-xs text-muted-foreground">
+                {t.rich("demoPrivacy", {
+                  privacy: (chunks) => (
+                    <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">{chunks}</Link>
+                  ),
+                })}
+              </p>
             </div>
           </>
         )}

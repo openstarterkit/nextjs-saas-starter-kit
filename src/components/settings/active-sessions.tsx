@@ -6,11 +6,14 @@ import { prisma } from "@/lib/prisma"
 import { revokeSession, revokeOtherSessions } from "@/app/actions/sessions"
 import { Badge } from "@/components/ui/badge"
 import { PendingButton } from "@/components/auth/pending-button"
-import { formatDevice, formatIpAddress } from "@/lib/user-agent"
+import { formatDevice, formatIpAddress, maskIpAddress } from "@/lib/user-agent"
 import { ShowMoreList } from "@/components/settings/show-more-list"
 
 /** Rows shown before "Show more": this device and the four newest. */
 const VISIBLE_SESSIONS = 5
+
+/** On the demo, "right now" means signed in within the last hour. */
+const DEMO_NOW_MS = 60 * 60 * 1000
 
 /**
  * Every device currently signed in to this account.
@@ -59,9 +62,19 @@ export async function ActiveSessions() {
 
   const others = ordered.filter((s) => s.id !== currentId).length
 
+  // The public demo signs every visitor in to the same shared accounts, so this
+  // list holds strangers' sessions. They stay, because seeing other people in
+  // the demo is the point, but never with a full address: the visitor's own row
+  // shows theirs, the others only the first half (maskIpAddress), with how long
+  // ago rather than the minute, and nobody can end anyone else's session.
+  const isDemo = process.env.DEMO_MODE === "true"
+  const now = new Date()
+  const exploring = ordered.filter((s) => now.getTime() - new Date(s.createdAt).getTime() < DEMO_NOW_MS).length
+
   return (
     <div className="space-y-4 text-sm">
-      <p className="text-muted-foreground">{t("blurb")}</p>
+      {isDemo && <p className="font-medium">{t("demoNow", { count: Math.max(exploring, 1) })}</p>}
+      <p className="text-muted-foreground">{isDemo ? t("demoBlurb") : t("blurb")}</p>
 
       <ShowMoreList
         className="divide-y divide-border"
@@ -71,7 +84,7 @@ export async function ActiveSessions() {
         {ordered.map((session) => {
           const isCurrent = session.id === currentId
           const device = formatDevice(session.userAgent)
-          const ip = formatIpAddress(session.ipAddress)
+          const ip = isDemo && !isCurrent ? maskIpAddress(session.ipAddress) : formatIpAddress(session.ipAddress)
 
           return (
             <li key={session.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
@@ -81,18 +94,20 @@ export async function ActiveSessions() {
                   {isCurrent && <Badge variant="secondary">{t("thisDevice")}</Badge>}
                 </div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {format.dateTime(new Date(session.createdAt), {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {isDemo
+                    ? format.relativeTime(new Date(session.createdAt), now)
+                    : format.dateTime(new Date(session.createdAt), {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                   {ip && ` · ${ip}`}
                 </p>
               </div>
 
-              {!isCurrent && (
+              {!isCurrent && !isDemo && (
                 <form action={revokeSession}>
                   <input type="hidden" name="sessionId" value={session.id} />
                   <PendingButton className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
@@ -105,7 +120,9 @@ export async function ActiveSessions() {
         })}
       </ShowMoreList>
 
-      {others > 0 && (
+      {isDemo && others > 0 && <p className="text-xs text-muted-foreground">{t("demoRevoke")}</p>}
+
+      {others > 0 && !isDemo && (
         <form action={revokeOtherSessions}>
           <PendingButton className="rounded-full border border-destructive/30 px-4 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/5">
             {t("revokeOthers", { count: others })}

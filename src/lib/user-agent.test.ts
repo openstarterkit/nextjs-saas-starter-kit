@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { describeUserAgent, formatDevice, formatIpAddress } from "./user-agent"
+import { describeUserAgent, formatDevice, formatIpAddress, maskIpAddress } from "./user-agent"
 
 /**
  * The ordering cases are the ones worth having. Every modern user agent lies
@@ -85,5 +85,34 @@ describe("formatIpAddress", () => {
   it("treats empty and missing the same way", () => {
     expect(formatIpAddress("   ")).toBeNull()
     expect(formatIpAddress(null)).toBeNull()
+  })
+})
+
+describe("maskIpAddress", () => {
+  it("keeps the first two blocks of an IPv4 and nothing after", () => {
+    expect(maskIpAddress("203.0.113.7")).toBe("203.0.•••.•••")
+  })
+
+  it("reads an IPv4 written inside an IPv6 as the IPv4 it is", () => {
+    expect(maskIpAddress("::ffff:198.51.100.42")).toBe("198.51.•••.•••")
+  })
+
+  it("keeps the first two groups of an IPv6", () => {
+    expect(maskIpAddress("2001:db8:85a3::8a2e:370:7334")).toBe("2001:db8:•••")
+  })
+
+  it("never returns the full address it was given", () => {
+    for (const ip of ["203.0.113.7", "::ffff:198.51.100.42", "2001:db8:85a3::8a2e:370:7334"]) {
+      expect(maskIpAddress(ip)).not.toContain(ip.replace(/^::ffff:/, ""))
+    }
+  })
+
+  it("hides what it does not recognise instead of guessing", () => {
+    expect(maskIpAddress("not-an-ip")).toBe("•••")
+  })
+
+  it("stays null where formatIpAddress does", () => {
+    expect(maskIpAddress("::1")).toBeNull()
+    expect(maskIpAddress(null)).toBeNull()
   })
 })

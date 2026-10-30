@@ -2,7 +2,7 @@
 title: Deployment
 description: "In produzione su Vercel: variabili, migrazioni, webhook, e come diventare amministratore."
 translated_from: deployment.md
-source_checksum: 2a7416febd38
+source_checksum: fb3a3cd8ff7e
 ---
 
 # Deployment
@@ -116,10 +116,10 @@ Trova il tuo utente nella tabella `User` e imposta `role` su `ADMIN`. La tua ses
 
 ## Facoltativo: un deploy dimostrativo pubblico
 
-Per offrire una demo come [demo.openstarterkit.dev](https://demo.openstarterkit.dev) senza raccogliere dati personali, pubblica una **seconda istanza** del repository su un **database isolato** e lì imposta `DEMO_MODE="true"`, più le chiavi di test di Stripe. Sul deploy di marketing imposta `NEXT_PUBLIC_DEMO_URL` all'indirizzo della demo, così i link di accesso puntano lì. Riempi la demo con dati credibili:
+Per offrire una demo come [demo.openstarterkit.dev](https://demo.openstarterkit.dev) senza chiedere ai visitatori alcun dato personale, pubblica una **seconda istanza** del repository su un **database isolato** e lì imposta `DEMO_MODE="true"`, più le chiavi di test di Stripe. Sul deploy di marketing imposta `NEXT_PUBLIC_DEMO_URL` all'indirizzo della demo, così i link di accesso puntano lì. Riempi la demo con dati credibili:
 
 ```bash
 npm run db:seed:demo   # cancella utenti e progetti su quel database e ricrea i dati di esempio
 ```
 
-Cosa cambia esattamente la modalità demo è spiegato in [Autenticazione](./authentication.md).
+Cosa cambia esattamente la modalità demo è spiegato in [Autenticazione](./authentication.md). Le sessioni registrano comunque l'indirizzo IP da cui arrivano, come in ogni deploy, e il reset notturno le cancella; gli altri visitatori ne vedono solo una parte.

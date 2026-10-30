@@ -2,7 +2,7 @@
 title: Autenticazione
 description: OAuth, magic link, email e password, reset e collegamento degli account.
 translated_from: authentication.md
-source_checksum: 02beaf424dd8
+source_checksum: 1e75ff2b36d3
 ---
 
 # Autenticazione
@@ -59,6 +59,8 @@ La lista viene letta dalle tue righe `Session` con Prisma, non tramite `listSess
 Altri due dettagli vale la pena conoscerli. Quello che il browser invia è l'**id della sessione** di `revokeSession`, mai il token: il token è la credenziale, e una pagina che lo stampa consegna una sessione funzionante a qualsiasi cosa sappia leggere il DOM o uno screenshot. E la riga del dispositivo è una lettura dello user agent (`src/lib/user-agent.ts`), che è una stringa scelta liberamente dal client: serve a far riconoscere a qualcuno il proprio portatile, non a dimostrare niente.
 
 La sessione corrente non si chiude dalla lista, perché il bottone per farlo si chiama "Log out" ed esiste già.
+
+**In una demo pubblica** (`DEMO_MODE="true"`) gli account sono condivisi, quindi la lista contiene le sessioni di tutti i visitatori. Restano, perché vedere altre persone nella demo è proprio il punto, ma solo la tua riga ha l'indirizzo completo: le altre ne mostrano la prima metà (`203.0.•••.•••`, i primi due gruppi di un IPv6), tagliata sul server così l'indirizzo completo non arriva mai alla pagina, con quanto tempo fa al posto del minuto. Una riga in cima conta le persone entrate nell'ultima ora, e chiudere le sessioni è disattivato, nella pagina e nelle due azioni, perché disconnetterebbe uno sconosciuto. La pagina di accesso della demo lo dice, con il link all'informativa sulla privacy.
 
 ## Cambiare il proprio indirizzo email
 

@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.5.2] - 2026-10-30
+
+🔒 **A public demo no longer shows its visitors each other's IP address.** Everyone in a demo signs in to the same shared accounts, so *Active sessions* listed every visitor's session with its full address, and anyone could end the others' sessions. With `DEMO_MODE` on, your own session keeps its full address, the others show only the first half, and ending sessions is off. If you run a public demo of your product, update. A PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure; outside the demo nothing changes.
+
+### Fixed
+
+- **Active sessions on the demo**: other visitors' addresses are cut to their first half on the server (`203.0.•••.•••`, the first two groups of an IPv6), so the full address never reaches the page; how long ago replaces the minute; a line on top says how many people are in the demo right now; *End session* and *End all other sessions* are off, and the two actions refuse on the server too
+- **Two-factor confirmation on the demo** answers like the other three 2FA actions. Setup never starts there, so nothing could be confirmed; now the action says so itself
+
+### Added
+
+- **A line on the demo's sign-in page**: the accounts are shared and reset every night, other visitors see only part of your IP address, with a link to the privacy policy
+
 ## [2.5.1] - 2026-10-28
 
 🌱 **`npm run db:seed` and `npm run db:seed:demo` work again.** Since 2.3.3 both stopped with a usage message instead of seeding: two packages each installed a command called `dotenv`, and the one that answered did not know the option the scripts used. A PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure. `npx prisma db seed`, the command of the first steps, was never affected.
@@ -759,6 +772,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.5.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.2
 [2.5.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.1
 [2.5.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.0
 [2.4.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.4.0

@@ -53,6 +53,8 @@ Two more details are worth knowing. What the browser sends is `revokeSession`'s 
 
 You cannot end your own current session from the list, because the button for that is called "Log out" and already exists.
 
+**On a public demo** (`DEMO_MODE="true"`) the accounts are shared, so the list holds every visitor's session. They stay, because seeing other people in a demo is the point, but your own row is the only one with a full address: the others show the first half (`203.0.•••.•••`, the first two groups of an IPv6), cut on the server so the full address never reaches the page, with how long ago instead of the minute. A line on top counts the people signed in within the last hour, and ending sessions is off, on the page and in the two actions, because it would sign a stranger out. The demo's sign-in page says so, with a link to the privacy policy.
+
 ## Changing your email address
 
 Dashboard → Settings → Sign-in methods. The address does not change when the form is submitted: it changes when the link sent to the **new** address is clicked, which is the only way to know that the person asking can read mail there.

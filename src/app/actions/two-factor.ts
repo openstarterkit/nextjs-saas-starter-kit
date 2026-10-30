@@ -114,6 +114,9 @@ export async function confirmTwoFactorSetup(
 ): Promise<SetupState> {
   const currentUser = await getCurrentUser()
   if (!currentUser) redirect("/login")
+  // Nothing to confirm on the demo, since setup never starts there; said here
+  // too, so all four 2FA actions answer the demo the same way.
+  if (process.env.DEMO_MODE === "true") return { error: "demo" }
 
   const code = String(formData.get("code") ?? "").replace(/\s/g, "")
   if (!code) return { error: "code" }

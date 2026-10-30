@@ -112,7 +112,7 @@ Billing that goes past a single checkout, and a check that stops a deploy from g
 
 *Two items announced here are not part of it: plan changes with proration stay in the Stripe Customer Portal, which already prorates, and profile photo upload is not in this release.*
 
-## ✅ v2.4 - Dashboard header *(current)*
+## ✅ v2.4 - Dashboard header
 Where you are and who you are, in the header, where most apps keep them.
 
 - **Breadcrumbs** in the header of the dashboard and the admin, built from the address, with the area's icon in front
@@ -120,6 +120,15 @@ Where you are and who you are, in the header, where most apps keep them.
 - **Your product's name under the footer**, faint, behind a switch
 - **The Admin Panel and the kit's manual at the bottom of the sidebar**, the manual only while developing
 - **Sign-in buttons only for the providers you configured**, so a fresh clone never shows one that fails
+
+## ✅ v2.5 - An admin that keeps up *(current)*
+An admin panel that keeps up as users grow, and a way to upgrade for whoever is on the free tier.
+
+- **Users and the waitlist on pages of their own** in the admin, ten to a page, with a search that goes past its first page
+- **The account menu at the foot of the sidebar**, with your plan, *Upgrade plan* while you are on the free tier, and the theme; on a phone it stays top right
+- **A thin loading bar** on the public pages, and the changelog page with the versions on the right
+- **2.5.1**: `npm run db:seed` and `npm run db:seed:demo` work again
+- **2.5.2**: a public demo no longer shows its visitors each other's IP address, and nobody can end someone else's session there
 
 ## 🎯 Pro & Pro Studio - Teams *(paid, launching November 19)*
 The paid tier, built on this kit for products where people work together. A one-time purchase with updates for life.

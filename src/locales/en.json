@@ -77,6 +77,7 @@
       "exploreUser": "Explore as User",
       "exploreAdmin": "Explore as Admin",
       "demoAccounts": "One click, no email - shared accounts with fake data, reset periodically.",
+      "demoPrivacy": "The accounts are shared and reset every night, and other visitors see only part of your IP address. <privacy>Privacy policy</privacy>",
       "errors": {
         "credentials": "Invalid email or password.",
         "email": "Enter a valid email address.",
@@ -230,7 +231,10 @@
         "revoke": "End session",
         "revokeOthers": "End all other sessions ({count})",
         "showMore": "Show {count, plural, one {# more session} other {# more sessions}}",
-        "caveat": "A session you end here can survive on the other device for up to a minute, because the session is cached in a cookie for that long. Changing your password ends every other session at once, with no such delay."
+        "caveat": "A session you end here can survive on the other device for up to a minute, because the session is cached in a cookie for that long. Changing your password ends every other session at once, with no such delay.",
+        "demoNow": "{count, plural, one {# person is exploring this demo right now} other {# people are exploring this demo right now}}",
+        "demoBlurb": "Everyone in the demo shares these accounts, so other visitors' sessions show up here too. You see your own address in full; theirs only in part, as they see yours.",
+        "demoRevoke": "Ending sessions is off on the demo: the accounts are shared, so it would sign someone else out."
       },
       "accountTitle": "Account",
       "accountDescription": "Account information and metadata.",
@@ -257,7 +261,8 @@
         "email-invalid": "That does not look like an email address.",
         "email-same": "That is already your address.",
         "email-change": "The address could not be changed. Try again in a moment.",
-        "rate": "Too many attempts. Try again in a few minutes."
+        "rate": "Too many attempts. Try again in a few minutes.",
+        "sessions-demo": "Ending sessions is off on the demo: the accounts are shared, so it would sign someone else out."
       },
       "deleteAccount": {
         "heading": "Delete this account",
