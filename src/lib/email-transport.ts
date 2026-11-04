@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config/site"
-import { deliver } from "@/lib/email-delivery"
+import { deliver, maskAddresses } from "@/lib/email-delivery"
 import type { Resend } from "resend"
 
 /**
@@ -10,15 +10,20 @@ import type { Resend } from "resend"
  * set up?" asks `emailEnabled()`. Resend is the default. To use another
  * provider, SMTP through Nodemailer, Postmark, SES or anything with an API,
  * rewrite these two functions and nothing else: docs/email.md has worked
- * examples.
+ * examples. Or set EMAIL_PROVIDER="notify" and NOTIFY_API_KEY to send through
+ * Notify (https://notify.cx) instead of Resend.
  *
  * Kept free of heavy imports on purpose: src/auth.ts reads `emailEnabled()`
  * when it starts, so the Resend SDK is loaded only when an email is sent.
  */
 
+function emailProvider(): "notify" | "resend" {
+  return process.env.EMAIL_PROVIDER === "notify" ? "notify" : "resend"
+}
+
 /** Whether outgoing email is configured. Sign-in by link, password reset and every notification depend on it. */
 export function emailEnabled(): boolean {
-  return !!process.env.RESEND_API_KEY
+  return emailProvider() === "notify" ? !!process.env.NOTIFY_API_KEY : !!process.env.RESEND_API_KEY
 }
 
 /** The sender of every email. Set EMAIL_FROM to an address on your verified domain. */
@@ -43,6 +48,7 @@ export type OutgoingEmail = {
  * the provider.
  */
 export async function sendEmail(email: OutgoingEmail): Promise<boolean> {
+  if (emailProvider() === "notify") return sendViaNotify(email)
   const resend = await resendClient()
   return deliver(email.kind, () =>
     resend.emails.send({
@@ -53,6 +59,31 @@ export async function sendEmail(email: OutgoingEmail): Promise<boolean> {
       replyTo: email.replyTo,
     }),
   )
+}
+
+async function sendViaNotify(email: OutgoingEmail): Promise<boolean> {
+  const key = process.env.NOTIFY_API_KEY
+  if (!key) throw new Error("NOTIFY_API_KEY is not set")
+  const response = await fetch("https://notify.cx/api/email/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": key,
+    },
+    body: JSON.stringify({
+      from: EMAIL_FROM,
+      to: email.to,
+      subject: email.subject,
+      html: email.html,
+    }),
+  })
+  if (response.ok) return true
+  const body: { error?: string; message?: string } = await response.json().catch(() => ({}))
+  console.error(`[email] ${email.kind} rejected by Notify`, {
+    status: response.status,
+    message: maskAddresses(String(body.error ?? body.message ?? "")),
+  })
+  return false
 }
 
 let _resend: Resend | null = null

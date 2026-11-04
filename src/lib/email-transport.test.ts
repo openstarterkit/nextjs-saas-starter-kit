@@ -27,9 +27,19 @@ afterEach(() => {
 describe("emailEnabled", () => {
   it("follows the provider key", async () => {
     delete process.env.RESEND_API_KEY
+    delete process.env.NOTIFY_API_KEY
+    delete process.env.EMAIL_PROVIDER
     const { emailEnabled } = await import("./email-transport")
     expect(emailEnabled()).toBe(false)
     process.env.RESEND_API_KEY = "re_test"
+    expect(emailEnabled()).toBe(true)
+  })
+
+  it("uses NOTIFY_API_KEY when EMAIL_PROVIDER is notify", async () => {
+    delete process.env.RESEND_API_KEY
+    process.env.EMAIL_PROVIDER = "notify"
+    process.env.NOTIFY_API_KEY = "notify_test"
+    const { emailEnabled } = await import("./email-transport")
     expect(emailEnabled()).toBe(true)
   })
 })
@@ -70,10 +80,77 @@ describe("sendEmail", () => {
 
   it("throws without a key, as before: nothing can be sent", async () => {
     delete process.env.RESEND_API_KEY
+    delete process.env.EMAIL_PROVIDER
     const { sendEmail } = await import("./email-transport")
     await expect(sendEmail({ kind: "welcome", to: "a@b.test", subject: "s", html: "h" })).rejects.toThrow(
       "RESEND_API_KEY is not set"
     )
     expect(send).not.toHaveBeenCalled()
+  })
+})
+
+describe("sendEmail with Notify", () => {
+  const fetchMock = vi.fn()
+
+  beforeEach(() => {
+    fetchMock.mockReset()
+    vi.stubGlobal("fetch", fetchMock)
+    process.env.EMAIL_PROVIDER = "notify"
+    process.env.NOTIFY_API_KEY = "notify_test"
+    process.env.EMAIL_FROM = "Acme <hello@acme.test>"
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    delete process.env.EMAIL_PROVIDER
+    delete process.env.NOTIFY_API_KEY
+  })
+
+  it("POSTs to Notify with the sender, recipient, subject and html", async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200 })
+    const { sendEmail } = await import("./email-transport")
+
+    const accepted = await sendEmail({
+      kind: "magic-link",
+      to: "user@example.test",
+      subject: "Sign in",
+      html: "<p>Link</p>",
+    })
+
+    expect(accepted).toBe(true)
+    expect(fetchMock).toHaveBeenCalledWith("https://notify.cx/api/email/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": "notify_test",
+      },
+      body: JSON.stringify({
+        from: "Acme <hello@acme.test>",
+        to: "user@example.test",
+        subject: "Sign in",
+        html: "<p>Link</p>",
+      }),
+    })
+  })
+
+  it("says false when Notify refuses, without throwing", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: "domain not verified" }),
+    })
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    const { sendEmail } = await import("./email-transport")
+
+    await expect(sendEmail({ kind: "welcome", to: "a@b.test", subject: "s", html: "h" })).resolves.toBe(false)
+  })
+
+  it("throws without NOTIFY_API_KEY", async () => {
+    delete process.env.NOTIFY_API_KEY
+    const { sendEmail } = await import("./email-transport")
+    await expect(sendEmail({ kind: "welcome", to: "a@b.test", subject: "s", html: "h" })).rejects.toThrow(
+      "NOTIFY_API_KEY is not set"
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

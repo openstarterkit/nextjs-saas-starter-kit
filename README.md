@@ -66,7 +66,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 | 🛠️ | **Admin panel** | User management, search + pagination, live MRR metrics, promote users to admin |
 | 📊 | **User dashboard** | Plan status, billing history, profile & settings |
 | 📁 | **Projects CRUD** | A ready example resource with ownership checks to build on |
-| 📧 | **Transactional email** | Resend-powered welcome, subscription, magic link, password reset and email-change confirmation messages |
+| 📧 | **Transactional email** | Resend by default (or optional [Notify](https://notify.cx) via `EMAIL_PROVIDER=notify`); welcome, subscription, magic link, password reset and email-change confirmation messages |
 | 🎨 | **Design system** | Custom Tailwind v4 UI (Button, Card, Badge, Input, Table), brand-neutral by default with one-file or env rebranding |
 | 🌗 | **Dark mode** | System-aware theme with no flash of unstyled content |
 | 🧱 | **Landing page** | Hero, Features, Pricing and FAQ sections ready to edit |
@@ -91,7 +91,7 @@ Most SaaS boilerplates either cost a few hundred dollars or ship as a barebones 
 - **Auth**: [Better Auth](https://better-auth.com) with Google and GitHub OAuth, magic link, email and password, and two-factor authentication you host yourself. Sessions live in your own database, so there is no auth vendor and no per-user pricing as you grow.
 - **Database**: [Prisma 7](https://www.prisma.io) on [PostgreSQL](https://www.postgresql.org). Plain Postgres underneath keeps your data portable, and [Neon](https://neon.tech) has a free managed tier if you would rather not run one yourself.
 - **Payments**: [Stripe](https://stripe.com) with Checkout, the Customer Portal and signature-verified webhooks, in the free kit instead of behind a Pro plan.
-- **Emails**: [Resend](https://resend.com) for welcome, subscription, magic link and password reset messages, with the templates in your repository rather than in a dashboard you do not own.
+- **Emails**: [Resend](https://resend.com) by default for welcome, subscription, magic link and password reset messages, with the templates in your repository rather than in a dashboard you do not own. Optionally set `EMAIL_PROVIDER=notify` and `NOTIFY_API_KEY` to send through [Notify](https://notify.cx) instead; Resend stays the default when those are unset.
 - **Internationalization**: [next-intl](https://next-intl.dev) with plain JSON message files, plus routing, fallback and a language switch already wired.
 - **Validation**: [Zod](https://zod.dev) on forms, Server Actions and the environment schema, with the same definitions shared by client and server.
 - **Content**: the blog and docs are Markdown files with frontmatter, rendered through [MDX](https://mdxjs.com) with GitHub Flavored Markdown, so publishing a post means adding a file to the repository.

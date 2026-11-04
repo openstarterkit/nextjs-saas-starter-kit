@@ -76,6 +76,8 @@ export const envSchema = z
     RESEND_API_KEY: prefixed("re_", "RESEND_API_KEY"),
     RESEND_AUDIENCE_ID: optional,
     EMAIL_FROM: optional,
+    EMAIL_PROVIDER: blankAsUnset(z.enum(["resend", "notify"]).optional()),
+    NOTIFY_API_KEY: optional,
 
     KIT_SITE: flag,
     DEMO_MODE: flag,
@@ -105,10 +107,19 @@ export const envSchema = z
       "checkout would succeed but no payment would ever be recorded",
     )
     requireTogether("RESEND_API_KEY", "EMAIL_FROM", "every email would fail without a sender address")
+    requireTogether("NOTIFY_API_KEY", "EMAIL_FROM", "every email would fail without a sender address")
     requireTogether("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "with one key alone the Google button stays hidden, with no word why")
     requireTogether("GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_ID", "with one key alone the Google button stays hidden, with no word why")
     requireTogether("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "with one key alone the GitHub button stays hidden, with no word why")
     requireTogether("GITHUB_CLIENT_SECRET", "GITHUB_CLIENT_ID", "with one key alone the GitHub button stays hidden, with no word why")
+
+    if (env.EMAIL_PROVIDER === "notify" && !env.NOTIFY_API_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["NOTIFY_API_KEY"],
+        message: "NOTIFY_API_KEY is required when EMAIL_PROVIDER is notify",
+      })
+    }
 
     if (env.NODE_ENV === "production" && !env.AUTH_SECRET) {
       ctx.addIssue({

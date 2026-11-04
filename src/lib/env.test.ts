@@ -117,6 +117,28 @@ describe("half-configured integrations", () => {
     expect(() => parseEnv(base({ RESEND_API_KEY: "re_1" }))).toThrow(/EMAIL_FROM is required/)
   })
 
+  it("refuses a Notify key without a sender address", () => {
+    expect(() => parseEnv(base({ NOTIFY_API_KEY: "notify_1" }))).toThrow(/EMAIL_FROM is required/)
+  })
+
+  it("refuses EMAIL_PROVIDER=notify without NOTIFY_API_KEY", () => {
+    expect(() => parseEnv(base({ EMAIL_PROVIDER: "notify", EMAIL_FROM: "hello@example.com" }))).toThrow(
+      /NOTIFY_API_KEY is required when EMAIL_PROVIDER is notify/,
+    )
+  })
+
+  it("accepts Notify as the email provider", () => {
+    expect(() =>
+      parseEnv(
+        base({
+          EMAIL_PROVIDER: "notify",
+          NOTIFY_API_KEY: "notify_1",
+          EMAIL_FROM: "hello@example.com",
+        }),
+      ),
+    ).not.toThrow()
+  })
+
   it("refuses half an OAuth pair, in either direction", () => {
     expect(() => parseEnv(base({ GOOGLE_CLIENT_ID: "id" }))).toThrow(/GOOGLE_CLIENT_SECRET/)
     expect(() => parseEnv(base({ GOOGLE_CLIENT_SECRET: "secret" }))).toThrow(/GOOGLE_CLIENT_ID/)
