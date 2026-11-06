@@ -131,7 +131,7 @@ export async function sendEmail(email: OutgoingEmail): Promise<boolean> {
 }
 ```
 
-with `emailEnabled()` returning `!!process.env.POSTMARK_SERVER_TOKEN`. The same shape works for SendGrid, Mailgun, Brevo or SES: only the URL, the header and the field names change.
+with `emailEnabled()` returning `!!process.env.POSTMARK_SERVER_TOKEN`. The same shape works for SendGrid, Mailgun, Brevo, SES, Notify or any provider with an HTTP API: only the URL, the header and the field names change.
 
 ### Check it
 

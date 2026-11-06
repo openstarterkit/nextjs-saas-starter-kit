@@ -2,7 +2,7 @@
 title: Email
 description: "Resend di default, oppure il tuo provider: SMTP, Postmark, SES."
 translated_from: email.md
-source_checksum: 83024dcd145f
+source_checksum: 7401e7c6b23d
 ---
 
 # Email
@@ -138,7 +138,7 @@ export async function sendEmail(email: OutgoingEmail): Promise<boolean> {
 }
 ```
 
-con `emailEnabled()` che restituisce `!!process.env.POSTMARK_SERVER_TOKEN`. La stessa forma vale per SendGrid, Mailgun, Brevo o SES: cambiano solo l'URL, l'intestazione e i nomi dei campi.
+con `emailEnabled()` che restituisce `!!process.env.POSTMARK_SERVER_TOKEN`. La stessa forma vale per SendGrid, Mailgun, Brevo, SES, Notify o qualunque provider con un'API HTTP: cambiano solo l'URL, l'intestazione e i nomi dei campi.
 
 ### Verifica
 

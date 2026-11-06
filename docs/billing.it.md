@@ -2,7 +2,7 @@
 title: Pagamenti e abbonamenti
 description: Abbonamenti, prove gratuite, pagamenti una tantum, consumo a metrica, codici promozionali, fatture e Stripe Tax.
 translated_from: billing.md
-source_checksum: e2a143318bad
+source_checksum: ac134afdd81d
 ---
 
 # Pagamenti e abbonamenti
@@ -61,7 +61,7 @@ Un coupon che dura un certo numero di mesi li conta da quando viene applicato, p
 Un piano con `interval: "ONE_TIME"` (il piano «Lifetime» del seed) passa invece dal checkout in modalità `payment`:
 
 1. `POST /api/checkout` crea la sessione con `invoice_creation` attivo, così il pagamento compare nello storico delle fatture e nel portale come qualsiasi fattura di abbonamento.
-2. Su `checkout.session.completed` il webhook crea una riga `Purchase`. Gli eventi ripetuti trovano la riga già presente e non fanno nulla.
+2. Su `checkout.session.completed` il webhook crea una riga `Purchase`, se la sessione è pagata. Con un metodo di pagamento differito (SEPA, ACH, Bacs e simili) la sessione si completa prima che arrivino i soldi, quindi l'acquisto aspetta `checkout.session.async_payment_succeeded`; su `checkout.session.async_payment_failed` non viene concesso niente. Gli eventi ripetuti trovano la riga già presente e non fanno nulla.
 3. Parte un'email di conferma tramite Resend, quando è configurato.
 
 Rimborsi: su `charge.refunded` il webhook segna l'acquisto come `REFUNDED`, il che toglie il diritto d'accesso. I rimborsi parziali lasciano l'acquisto intatto; solo un rimborso totale lo revoca.
@@ -116,6 +116,7 @@ Cosa non fa:
 Il gestore su `/api/webhooks/stripe` tratta questi eventi; selezionali quando crei l'endpoint di produzione, con la stessa versione dell'API di `apiVersion` in `src/lib/stripe.ts` (vedi [Deployment](./deployment.md)):
 
 - `checkout.session.completed` (abbonamenti e pagamenti una tantum)
+- `checkout.session.async_payment_succeeded` e `checkout.session.async_payment_failed` (servono solo se attivi un metodo di pagamento differito)
 - `customer.subscription.updated`
 - `customer.subscription.deleted`
 - `invoice.payment_failed`

@@ -17,7 +17,10 @@ import { siteConfig } from "@/config/site"
 
 const schema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
-  source: z.string().max(40).optional(),
+  // Where the signup came from, as the kit's forms send it: "footer",
+  // "pricing-card", "post:<slug>". Anything else is dropped rather than
+  // refused, so the address still goes in, under the default.
+  source: z.string().max(40).regex(/^[a-z0-9:_-]+$/).optional().catch(undefined),
   // Honeypot: hidden field, humans leave it empty. Bots that fill it get the
   // same neutral 200 and nothing happens.
   website: z.string().optional(),

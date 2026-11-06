@@ -1,6 +1,6 @@
 {
   "name": "openstarterkit",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "private": true,
   "engines": {
     "node": ">=24"
@@ -23,7 +23,7 @@
     "db:seed:demo": "node --env-file-if-exists=.env --env-file-if-exists=.env.local -r ts-node/register prisma/seed-demo.ts"
   },
   "dependencies": {
-    "@better-auth/prisma-adapter": "^1.7.12",
+    "@better-auth/prisma-adapter": "^1.7.18",
     "@hookform/resolvers": "^5.9.2",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
@@ -46,12 +46,12 @@
     "@types/pg": "^8.23.1",
     "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.3",
-    "better-auth": "^1.7.12",
+    "better-auth": "^1.7.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.61.0",
-    "next": "16.4.3",
+    "next": "16.4.5",
     "next-intl": "^4.14.9",
     "next-mdx-remote": "^6.0.0",
     "pg": "^8.23.1",
@@ -82,7 +82,7 @@
     "@vitest/coverage-v8": "^5.0.5",
     "dotenv": "^18.0.9",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "16.4.5",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",

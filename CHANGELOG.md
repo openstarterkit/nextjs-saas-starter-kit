@@ -7,6 +7,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.5.3] - 2026-11-06
+
+🔒 **A security update: Better Auth 1.7.18, Next.js 16.4.5, and five fixes in how the kit enforces its own rules.** Several rules lived only in the server actions behind the kit's forms, so a request sent to the auth API directly did not meet them; they are now enforced where every request goes through. If you run the kit with email configured and two-factor authentication, with a public demo, or with one-time payments, update. A PATCH: `git pull`, `npm install`. Nothing to migrate. If you enable a delayed payment method in Stripe (SEPA, ACH, Bacs and the like), add the two events listed under Billing to your webhook endpoint.
+
+### Security
+
+- **Better Auth 1.7.18**, with the fixes the project published on November 3 (see its [security advisories](https://github.com/better-auth/better-auth/security/advisories)). Among them, for features the kit uses: an OAuth email the provider did not verify, email change links, and revoked sessions with the cookie cache
+- **Next.js 16.4.5**, with the fixes published on November 3 (see its [security advisories](https://github.com/vercel/next.js/security/advisories))
+- **Two-factor accounts** can no longer sign in with a magic link or with the automatic sign-in after verifying an email, whichever way the request arrives. The magic link endpoint also keeps the per-address limit when it is called directly
+- **On a public demo** (`DEMO_MODE`), what the demo's actions refuse is refused over the auth API too: listing or ending sessions, two-factor setup, deleting the account, changing its email or password, signing up and resetting a password. The Active sessions card is unchanged
+- **Names are escaped in every email** (welcome, subscription, purchase, cancellation), as the contact and invitation emails already were. A display name is capped at 100 characters wherever it is set, and may not contain a web address, which mail clients would turn into a link: the forms say so, and a name sent to the auth API directly is replaced
+- **A one-time purchase is granted once it is paid.** With a delayed payment method the checkout completes before the money arrives; the purchase now waits for `checkout.session.async_payment_succeeded`, and `checkout.session.async_payment_failed` grants nothing. Card payments behave as before
+- **The newsletter export** writes cells that start with `=`, `+`, `-` or `@` as text, and the signup's `source` keeps only the labels the kit's forms send; anything else falls back to the default and the address is still recorded
+
+---
+
 ## [2.5.2] - 2026-10-30
 
 🔒 **A public demo no longer shows its visitors each other's IP address.** Everyone in a demo signs in to the same shared accounts, so *Active sessions* listed every visitor's session with its full address, and anyone could end the others' sessions. With `DEMO_MODE` on, your own session keeps its full address, the others show only the first half, and ending sessions is off. If you run a public demo of your product, update. A PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure; outside the demo nothing changes.
@@ -772,6 +788,7 @@ We found it while checking whether the issuer format was worth reporting upstrea
 - Production build: 0 TypeScript errors, 0 ESLint errors, 14 routes
 - Stack chosen best-of-breed with **no vendor lock-in**: every component is swappable
 
+[2.5.3]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.3
 [2.5.2]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.2
 [2.5.1]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.1
 [2.5.0]: https://github.com/openstarterkit/nextjs-saas-starter-kit/releases/tag/v2.5.0

@@ -71,3 +71,20 @@ describe("email placeholders", () => {
     }
   })
 })
+
+/**
+ * The display name is whatever someone typed at sign-up, and the welcome email
+ * goes to an address nobody has verified yet. Interpolated raw, a name like
+ * `<a href="...">Confirm your account</a>` turns a genuine email from the
+ * product's own domain into somebody else's message. `t()` does not escape, so
+ * every name has to pass through escapeHtml on its way into a template.
+ */
+describe("email escaping", () => {
+  it("escapes every name that goes into an email body", () => {
+    const interpolations = [...source.matchAll(/\{\s*name:\s*([^}]+)\}/g)].map((m) => m[1].trim())
+    expect(interpolations.length).toBeGreaterThan(0)
+    for (const value of interpolations) {
+      expect(value, `unescaped name in a template: { name: ${value} }`).toMatch(/^escapeHtml\(/)
+    }
+  })
+})

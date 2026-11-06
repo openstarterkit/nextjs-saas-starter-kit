@@ -3,6 +3,7 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { APIError } from "better-auth/api"
+import { hasWebAddress } from "@/lib/display-name"
 import { z } from "zod"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
@@ -24,7 +25,7 @@ export async function signOutAction() {
 const emailSchema = z.email()
 
 const signupSchema = z.object({
-  name: z.string().trim().max(100).optional(),
+  name: z.string().trim().max(100).refine((name) => !hasWebAddress(name)).optional(),
   email: emailSchema,
   password: passwordSchema,
 })
@@ -70,8 +71,10 @@ export async function signInWithMagicLink(formData: FormData) {
   if (!parsed.success) redirect("/login?error=email")
   if (!(await checkRateLimit(`magic:${parsed.data}`, 3))) redirect("/login?error=rate")
 
-  // Two-factor accounts do not get a magic link, and this is the one place in
-  // the kit where that has to be enforced by hand.
+  // Two-factor accounts do not get a magic link. This check keeps the form's
+  // answer plain; the rule itself is enforced where the session is created
+  // (src/lib/email-only-sign-in.ts), which also covers requests sent to the
+  // auth API directly, where this action never runs.
   //
   // Better Auth applies the second factor to /sign-in/email only. A magic link
   // opens a session directly, so for an account with 2FA on it would be a way
@@ -94,7 +97,10 @@ export async function signInWithMagicLink(formData: FormData) {
   })
   if (!user?.twoFactorEnabled) {
     await auth.api.signInMagicLink({
-      body: { email: parsed.data, callbackURL: "/dashboard" },
+      // A link that cannot open a session (expired, already used, or for an
+      // account with 2FA) lands on the sign-in page with the reason, instead
+      // of on the dashboard that would bounce a signed-out visitor anyway.
+      body: { email: parsed.data, callbackURL: "/dashboard", errorCallbackURL: "/login" },
       headers: await headers(),
     })
   }

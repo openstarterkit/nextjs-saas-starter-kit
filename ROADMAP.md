@@ -129,6 +129,7 @@ An admin panel that keeps up as users grow, and a way to upgrade for whoever is 
 - **A thin loading bar** on the public pages, and the changelog page with the versions on the right
 - **2.5.1**: `npm run db:seed` and `npm run db:seed:demo` work again
 - **2.5.2**: a public demo no longer shows its visitors each other's IP address, and nobody can end someone else's session there
+- **2.5.3**: Better Auth 1.7.18, and the kit's rules on two-factor sign-in, the demo, emails, one-time payments and the newsletter export enforced wherever a request arrives
 
 ## 🎯 Pro & Pro Studio - Teams *(paid, launching November 19)*
 The paid tier, built on this kit for products where people work together. A one-time purchase with updates for life.

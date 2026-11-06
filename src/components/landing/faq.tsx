@@ -73,7 +73,8 @@ export function FAQ({ withJsonLd = false }: { withJsonLd?: boolean }) {
                 className="rounded-2xl border border-border bg-card px-5 shadow-soft transition-shadow data-[state=open]:shadow-[var(--shadow-soft-lg)]"
               >
                 <AccordionTrigger className="text-base">{faq.question}</AccordionTrigger>
-                <AccordionContent>{faq.answer}</AccordionContent>
+                {/* A blank line in an answer starts a new paragraph. */}
+                <AccordionContent className="whitespace-pre-line">{faq.answer}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>

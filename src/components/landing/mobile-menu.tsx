@@ -95,9 +95,7 @@ export function MobileMenu({
           </DropdownMenuItem>
         ) : (
           <>
-            <DropdownMenuItem asChild>
-              <Link href={signInHref}>{signInToDemo ? t("demo") : t("signIn")}</Link>
-            </DropdownMenuItem>
+            <DropdownMenuItem asChild><Link href={signInHref}>{signInToDemo ? t("demo") : t("signIn")}</Link></DropdownMenuItem>
             <DropdownMenuItem asChild>
               {starHref ? (
                 <a

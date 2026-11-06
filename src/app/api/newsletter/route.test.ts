@@ -150,3 +150,25 @@ describe("POST /api/newsletter: removed from Resend by hand, signing up again", 
     expect(await answer(await POST(signup("removed@example.com")))).toEqual({ status: 200, body: { ok: true } })
   })
 })
+
+describe("POST /api/newsletter: the source is a label, never free text", () => {
+  const withSource = (source: unknown) =>
+    new Request("http://localhost/api/newsletter", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: "new@example.com", source }),
+    })
+
+  it("keeps a source the kit's forms send", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(null)
+    await POST(withSource("post:my-first-post"))
+    expect(prismaMock.newsletterSubscriber.create.mock.calls[0][0].data.source).toBe("post:my-first-post")
+  })
+
+  it("drops a source that could become a spreadsheet formula, and still records the address", async () => {
+    prismaMock.newsletterSubscriber.findUnique.mockResolvedValue(null)
+    await POST(withSource('=HYPERLINK("https://example.com")'))
+    expect(prismaMock.newsletterSubscriber.create).toHaveBeenCalledOnce()
+    expect(prismaMock.newsletterSubscriber.create.mock.calls[0][0].data.source).toBe("waitlist")
+  })
+})

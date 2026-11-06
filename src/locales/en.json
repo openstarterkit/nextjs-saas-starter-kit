@@ -50,7 +50,7 @@
       "haveAccount": "Already have an account? <signin>Sign in</signin>",
       "legal": "By signing up, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>.",
       "errors": {
-        "invalid": "Check your details: valid email and a password of at least 8 characters.",
+        "invalid": "Check your details: valid email, a password of at least 8 characters, and a name without a web address.",
         "exists": "An account with this email already exists. Sign in instead.",
         "rate": "Too many attempts. Try again in a few minutes.",
         "generic": "Something went wrong. Try again."
@@ -85,7 +85,8 @@
         "Verification": "That sign-in link is invalid or has expired. Request a new one.",
         "generic": "Something went wrong. Try again.",
         "2fa": "This account uses two-factor authentication, so it signs in with a password and a code from your authenticator app.",
-        "two_factor_linking": "This account uses two-factor authentication, so a provider cannot attach itself to it here. Sign in with your password and a code, then connect the provider from Settings."
+        "two_factor_linking": "This account uses two-factor authentication, so a provider cannot attach itself to it here. Sign in with your password and a code, then connect the provider from Settings.",
+        "failed_to_create_session": "This link cannot sign you in. If your account uses two-factor authentication, sign in with your password and a code."
       }
     },
     "twoFactor": {
@@ -779,7 +780,7 @@
       "items": [
         {
           "question": "What exactly do I get?",
-          "answer": "You get a production-ready Next.js 16 codebase with Better Auth, Stripe, Prisma, and Tailwind pre-configured. Clone the repo, set your env variables, and deploy. Everything works out of the box."
+          "answer": "A complete SaaS you can run today, not a template to finish.\n\nThe app is plain Next.js 16 with TypeScript and Tailwind 4. Sign-in already works: Google, GitHub, magic link, password and two-factor. Payments run on Stripe, with checkout, webhooks, the Customer Portal, trials and promo codes. The admin panel shows your users, metrics and waitlist, and transactional emails go out through Resend.\n\nAround the app, what brings people to it: a landing page, pricing, a blog with RSS, docs, and SEO built in (sitemap, social previews, structured data, llms.txt).\n\nUnder it, what keeps it working: Prisma 7 with PostgreSQL, a check that your database matches the code before you deploy, unit, end-to-end and accessibility tests, a one-click Vercel deploy and a demo mode.\n\nClone it, fill in a few environment variables, and it runs. MIT licensed, client projects included."
         },
         {
           "question": "Why {site} instead of other starter kits?",
@@ -830,15 +831,18 @@
       "waitlistNote": "One short email when there is real news, and the launch price as soon as you confirm. Unsubscribe anytime, one click.",
       "formsDisabled": "Forms are disabled in the live demo.",
       "freeFeatures": [
-        "Next.js 16 + TypeScript + Tailwind 4",
-        "Better Auth: Google & GitHub OAuth",
+        "Next.js 16, React 19, TypeScript, Tailwind 4",
+        "Landing page, blog and docs, ready to make yours",
+        "Better Auth: Google, GitHub, magic link, 2FA",
+        "Stripe Checkout, webhooks, Customer Portal",
+        "Admin panel: users, metrics, roles, waitlist",
+        "SEO built in: sitemap, social previews, llms.txt",
         "Prisma 7 + PostgreSQL schema",
-        "Stripe Checkout + webhooks + Customer Portal",
-        "Admin panel (users, metrics, roles)",
-        "Transactional emails (Resend)",
+        "Transactional emails with Resend",
         "Dashboard, dark mode, route protection",
+        "Unit, end-to-end and accessibility tests",
         "1-click Vercel deploy",
-        "Demo mode: one-click sign-in, sample data, reset",
+        "Demo mode: one-click sign-in, sample data",
         "MIT license, use in client projects"
       ],
       "proFeatures": [
@@ -1039,6 +1043,7 @@
     "projectNotFound": "Project not found",
     "nameRequired": "Name is required",
     "nameTooLong": "Name too long",
+    "nameWebAddress": "A name cannot contain a web address",
     "descriptionTooLong": "Description too long",
     "invalidEmail": "Enter a valid email address",
     "messageTooShort": "Tell us a bit more (at least 10 characters)",

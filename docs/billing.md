@@ -54,7 +54,7 @@ A coupon that lasts a number of months counts from when it is applied, a trial i
 A plan with `interval: "ONE_TIME"` (the seeded "Lifetime" plan) checks out in `payment` mode instead:
 
 1. `POST /api/checkout` creates the session with `invoice_creation` enabled, so the payment shows up in the invoice history and in the portal like any subscription invoice.
-2. On `checkout.session.completed` the webhook creates a `Purchase` row. Replayed events find the existing row and no-op.
+2. On `checkout.session.completed` the webhook creates a `Purchase` row, once the session is paid. With a delayed payment method (SEPA, ACH, Bacs and the like) the session completes before the money arrives, so the purchase waits for `checkout.session.async_payment_succeeded`; on `checkout.session.async_payment_failed` nothing is granted. Replayed events find the existing row and no-op.
 3. A confirmation email goes out through Resend (when configured).
 
 Refunds: on `charge.refunded` the webhook marks the purchase `REFUNDED`, which removes the entitlement. Partial refunds keep the purchase intact; only a full refund revokes it.
@@ -109,6 +109,7 @@ What it does not do:
 The handler at `/api/webhooks/stripe` processes these events; select them when you create the production endpoint, with the same API version as `apiVersion` in `src/lib/stripe.ts` (see [Deployment](./deployment.md)):
 
 - `checkout.session.completed` (subscriptions and one-time payments)
+- `checkout.session.async_payment_succeeded` and `checkout.session.async_payment_failed` (only needed if you enable a delayed payment method)
 - `customer.subscription.updated`
 - `customer.subscription.deleted`
 - `invoice.payment_failed`

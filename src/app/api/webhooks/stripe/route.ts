@@ -28,6 +28,19 @@ export async function POST(req: NextRequest) {
         await handleCheckoutCompleted(session)
         break
       }
+      // A delayed payment method (SEPA, ACH, Bacs...) completes the checkout
+      // before the money arrives: checkout.session.completed comes with
+      // payment_status "unpaid", and one of these two follows days later.
+      case "checkout.session.async_payment_succeeded": {
+        const session = event.data.object as Stripe.Checkout.Session
+        await handleCheckoutCompleted(session)
+        break
+      }
+      case "checkout.session.async_payment_failed": {
+        const session = event.data.object as Stripe.Checkout.Session
+        console.error(`Delayed payment failed for checkout ${session.id}: nothing was granted`)
+        break
+      }
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription
         await handleSubscriptionUpdated(subscription)
@@ -154,6 +167,12 @@ async function handleOneTimeCheckout(session: Stripe.Checkout.Session) {
   // A payment session without our metadata wasn't created by /api/checkout
   // (e.g. a Payment Link): acknowledge it so Stripe doesn't retry.
   if (!paymentIntentId || !userId || !planId) return
+
+  // Completed is not paid. With a delayed payment method the session completes
+  // while the money is still on its way, and granting here would leave a
+  // lifetime purchase in place if the payment then fails. The grant waits for
+  // checkout.session.async_payment_succeeded, which carries "paid".
+  if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return
 
   const plan = await prisma.plan.findUnique({ where: { id: planId } })
   if (!plan) return

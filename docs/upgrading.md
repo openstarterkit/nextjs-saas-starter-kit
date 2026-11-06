@@ -39,6 +39,12 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.5.3: Better Auth 1.7.18, and the kit's own rules enforced wherever a request arrives
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate. If you enable a delayed payment method in Stripe, add `checkout.session.async_payment_succeeded` and `checkout.session.async_payment_failed` to your webhook endpoint, see [Billing](./billing.md).
+
+**Where a merge may conflict.** `src/auth.ts`, if you changed the auth config: `sendMagicLink` gained two checks, and there are new `hooks` and `databaseHooks.session` and `databaseHooks.user.update` blocks. `src/lib/email.ts`, if you changed the templates: the four `{ name: ... }` interpolations now go through `escapeHtml`. `src/app/actions/profile.ts` and the sign-up schema in `src/app/actions/auth.ts`, if you changed the name rules: both refuse a web address now, with the rule in `src/lib/display-name.ts`. `src/app/api/webhooks/stripe/route.ts`, if you changed the webhook: two new events, and a paid check at the top of the one-time branch. `src/app/api/newsletter/route.ts` and `src/app/api/admin/newsletter-export/route.ts`, if you changed the newsletter: the `source` pattern and the cell helper in `src/lib/csv.ts`. `package.json` and `package-lock.json`, for Better Auth and Next.js: keep your changes, take the new versions, then run `npm install`. If your own forms send a newsletter `source` with capitals or spaces, it is now stored as the default: use lowercase letters, digits, `:`, `_` and `-`.
+
 ## 2.5.2: a public demo no longer shows its visitors each other's IP address
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure. Only deployments with `DEMO_MODE` on behave differently.

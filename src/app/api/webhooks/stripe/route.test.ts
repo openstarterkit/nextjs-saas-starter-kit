@@ -139,6 +139,7 @@ describe("POST /api/webhooks/stripe: a refused email never fails the payment", (
       id: "cs_1",
       mode: "payment",
       payment_intent: "pi_1",
+      payment_status: "paid",
       amount_total: 9900,
       currency: "usd",
       metadata: { userId: "user_1", planId: "plan_1" },
@@ -167,5 +168,50 @@ describe("POST /api/webhooks/stripe: a refused email never fails the payment", (
     expect(response.status).toBe(200)
     expect(prismaMock.purchase.upsert).toHaveBeenCalledOnce()
     log.mockRestore()
+  })
+})
+
+describe("POST /api/webhooks/stripe: a one-time purchase is granted only once it is paid", () => {
+  const checkout = (type: string, payment_status: string) =>
+    event(type, {
+      id: "cs_2",
+      mode: "payment",
+      payment_intent: "pi_2",
+      payment_status,
+      amount_total: 9900,
+      currency: "usd",
+      metadata: { userId: "user_1", planId: "plan_1" },
+    })
+
+  beforeEach(() => {
+    prismaMock.plan.findUnique.mockResolvedValue({ id: "plan_1", name: "Lifetime", price: 9900 })
+    prismaMock.purchase.findUnique.mockResolvedValue(null)
+    prismaMock.purchase.upsert.mockResolvedValue({ id: "purchase_2" })
+  })
+
+  it("grants nothing when the checkout completes with the payment still on its way", async () => {
+    const response = await POST(signed(checkout("checkout.session.completed", "unpaid")) as never)
+    expect(response.status).toBe(200)
+    expect(prismaMock.purchase.upsert).not.toHaveBeenCalled()
+  })
+
+  it("grants the purchase when the delayed payment succeeds", async () => {
+    const response = await POST(signed(checkout("checkout.session.async_payment_succeeded", "paid")) as never)
+    expect(response.status).toBe(200)
+    expect(prismaMock.purchase.upsert).toHaveBeenCalledOnce()
+  })
+
+  it("grants nothing when the delayed payment fails", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {})
+    const response = await POST(signed(checkout("checkout.session.async_payment_failed", "unpaid")) as never)
+    expect(response.status).toBe(200)
+    expect(prismaMock.purchase.upsert).not.toHaveBeenCalled()
+    log.mockRestore()
+  })
+
+  it("still grants a card payment that completes paid, as before", async () => {
+    const response = await POST(signed(checkout("checkout.session.completed", "paid")) as never)
+    expect(response.status).toBe(200)
+    expect(prismaMock.purchase.upsert).toHaveBeenCalledOnce()
   })
 })

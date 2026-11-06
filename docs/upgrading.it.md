@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: fa6ac2ba5659
+source_checksum: 042e067abdd1
 ---
 
 # Aggiornare
@@ -45,6 +45,12 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.5.3: Better Auth 1.7.18, e le regole del kit valgono da qualunque parte arrivi la richiesta
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare. Se attivi su Stripe un metodo di pagamento differito, aggiungi `checkout.session.async_payment_succeeded` e `checkout.session.async_payment_failed` al tuo endpoint webhook, vedi [Billing](./billing.md).
+
+**Dove un merge può andare in conflitto.** `src/auth.ts`, se hai cambiato la configurazione dell'autenticazione: `sendMagicLink` ha due controlli in più, e ci sono i blocchi nuovi `hooks`, `databaseHooks.session` e `databaseHooks.user.update`. `src/lib/email.ts`, se hai cambiato i template: le quattro interpolazioni `{ name: ... }` ora passano da `escapeHtml`. `src/app/actions/profile.ts` e lo schema della registrazione in `src/app/actions/auth.ts`, se hai cambiato le regole sul nome: tutti e due ora rifiutano un indirizzo web, con la regola in `src/lib/display-name.ts`. `src/app/api/webhooks/stripe/route.ts`, se hai cambiato il webhook: due eventi nuovi e un controllo sul pagamento in cima al ramo una tantum. `src/app/api/newsletter/route.ts` e `src/app/api/admin/newsletter-export/route.ts`, se hai cambiato la newsletter: il formato di `source` e la funzione per le celle in `src/lib/csv.ts`. `package.json` e `package-lock.json`, per Better Auth e Next.js: tieni le tue modifiche, prendi le versioni nuove, poi `npm install`. Se i tuoi form mandano alla newsletter un `source` con maiuscole o spazi, ora viene salvato con il valore predefinito: usa lettere minuscole, cifre, `:`, `_` e `-`.
 
 ## 2.5.2: una demo pubblica non mostra più ai visitatori l'IP degli altri
 

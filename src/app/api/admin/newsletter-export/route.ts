@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { csvCell } from "@/lib/csv"
 
 /**
  * CSV export of the newsletter list, admin-only. Includes every state
@@ -15,13 +16,12 @@ export async function GET() {
 
   const subs = await prisma.newsletterSubscriber.findMany({ orderBy: { createdAt: "asc" } })
 
-  const esc = (value: string) => `"${value.replace(/"/g, '""')}"`
   const lines = ["email,source,requested_at,confirmed_at,unsubscribed_at"]
   for (const s of subs) {
     lines.push(
       [
-        esc(s.email),
-        esc(s.source),
+        csvCell(s.email),
+        csvCell(s.source),
         s.createdAt.toISOString(),
         s.confirmedAt?.toISOString() ?? "",
         s.unsubscribedAt?.toISOString() ?? "",

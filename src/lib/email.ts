@@ -146,7 +146,7 @@ function baseTemplate(content: string) {
 async function welcomeTemplate(name: string) {
   const t = await emailStrings()
   return baseTemplate(`
-    <p>${t("welcomeBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
+    <p>${t("welcomeBody.hello", { name: escapeHtml(name) || t("welcomeBody.helloFallback") })}</p>
     <p>${t("welcomeBody.intro", { site: siteConfig.name })}</p>
     <p>${t("welcomeBody.whatNext")}</p>
     <div class="highlight">
@@ -215,7 +215,7 @@ async function subscriptionTemplate(
     : `<p><strong>${t("subscriptionBody.labelRenewal")}</strong> ${renewalDate}</p>`
 
   return baseTemplate(`
-    <p>${t("subscriptionBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
+    <p>${t("subscriptionBody.hello", { name: escapeHtml(name) || t("welcomeBody.helloFallback") })}</p>
     <p>${intro}</p>
     <div class="highlight">
       <p><strong>${t("subscriptionBody.labelPlan")}</strong> ${planName}</p>
@@ -236,7 +236,7 @@ async function purchaseTemplate(name: string, planName: string, amount: number, 
   }).format(amount / 100)
 
   return baseTemplate(`
-    <p>${t("purchaseBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
+    <p>${t("purchaseBody.hello", { name: escapeHtml(name) || t("welcomeBody.helloFallback") })}</p>
     <p>${t.raw("purchaseBody.intro").replace("{plan}", planName)}</p>
     <div class="highlight">
       <p><strong>${t("purchaseBody.labelPlan")}</strong> ${planName}</p>
@@ -251,7 +251,7 @@ async function purchaseTemplate(name: string, planName: string, amount: number, 
 async function cancellationTemplate(name: string, endDate: string) {
   const t = await emailStrings()
   return baseTemplate(`
-    <p>${t("cancellationBody.hello", { name: name || t("welcomeBody.helloFallback") })}</p>
+    <p>${t("cancellationBody.hello", { name: escapeHtml(name) || t("welcomeBody.helloFallback") })}</p>
     <p>${t.raw("cancellationBody.intro").replace("{site}", siteConfig.name).replace("{date}", endDate)}</p>
     <div class="highlight">
       <p>📅 <strong>${t("cancellationBody.labelEnds")}</strong> ${endDate}</p>

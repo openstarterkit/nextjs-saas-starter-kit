@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "@better-auth/prisma-adapter"
-import { createAuthEndpoint, APIError } from "better-auth/api"
+import { createAuthEndpoint, createAuthMiddleware, APIError } from "better-auth/api"
 import { setSessionCookie } from "better-auth/cookies"
 import { magicLink, twoFactor } from "better-auth/plugins"
 import { z } from "zod"
@@ -10,6 +10,10 @@ import { prisma } from "@/lib/prisma"
 import { hashPassword, verifyPassword } from "@/lib/password"
 import { generateBackupCodes } from "@/lib/backup-codes"
 import { refusesAutomaticLink } from "@/lib/account-linking"
+import { refusesEmailOnlySession } from "@/lib/email-only-sign-in"
+import { checkRateLimit } from "@/lib/rate-limit"
+import { blockedOnDemo } from "@/lib/demo-api-paths"
+import { cleanDisplayName } from "@/lib/display-name"
 import { siteConfig } from "@/config/site"
 import { emailEnabled } from "@/lib/email-transport"
 import { enabledOAuthProviders, oauthCredentials } from "@/lib/oauth-providers"
@@ -314,15 +318,66 @@ export const auth = betterAuth({
   // until now ended on a stranger's page.
   onAPIError: { errorURL: "/login" },
 
+  // On a public demo, the endpoints its server actions refuse are refused over
+  // HTTP too. Which ones and why: src/lib/demo-api-paths.ts. Calls from the
+  // kit's own server code carry no incoming request and pass, so the sessions
+  // card keeps working with its masked addresses.
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (process.env.DEMO_MODE !== "true" || !ctx.request) return
+      if (blockedOnDemo(ctx.path)) {
+        throw new APIError("FORBIDDEN", { message: "Not available on the demo." })
+      }
+    }),
+  },
+
   databaseHooks: {
     user: {
+      // The forms refuse a name over 100 characters or with a web address in
+      // it (src/lib/display-name.ts); a request sent to the auth API directly,
+      // or an OAuth profile, never meets a form. Here the name is capped, and
+      // one with a web address is replaced, rather than the request refused,
+      // so a sign-in never fails over it.
+      update: {
+        before: async (data) => {
+          if (typeof data.name !== "string") return
+          const name = cleanDisplayName(data.name)
+          if (name !== data.name) return { data: { ...data, name } }
+        },
+      },
       create: {
+        before: async (user) => {
+          if (typeof user.name !== "string") return
+          const cleaned = cleanDisplayName(user.name)
+          // Same fallback as the sign-up form: the local part of the address.
+          const name = cleaned || (user.email ?? "").split("@")[0]
+          if (name !== user.name) return { data: { ...user, name } }
+        },
         after: async (user) => {
           if (user.email && emailEnabled()) {
             const { sendWelcomeEmail } = await import("@/lib/email")
             // Awaited for the same reason as the webhook emails: nothing
             // guarantees a promise left running after the response finishes.
             await sendWelcomeEmail(user.email, user.name ?? "").catch(console.error)
+          }
+        },
+      },
+    },
+    session: {
+      create: {
+        // No session from an emailed link alone for an account with 2FA on.
+        // The rule and why it lives here: src/lib/email-only-sign-in.ts.
+        // Returning false makes Better Auth refuse the session: the magic link
+        // lands on /login with an error, and the password plus code still works.
+        before: async (session, ctx) => {
+          const path = ctx?.path
+          if (!path) return
+          const user = await prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { twoFactorEnabled: true },
+          })
+          if (refusesEmailOnlySession({ path, twoFactorEnabled: !!user?.twoFactorEnabled })) {
+            return false
           }
         },
       },
@@ -346,7 +401,23 @@ export const auth = betterAuth({
             // hashed, the two can no longer meet in storage. Keep the global
             // `verification.storeIdentifier` unset (or "plain") for that to hold.
             storeToken: "hashed",
-            sendMagicLink: async ({ email, url }) => {
+            sendMagicLink: async ({ email, url }, ctx) => {
+              // A request sent straight to /api/auth/sign-in/magic-link never
+              // meets the server action, so its two checks are repeated here
+              // for that case: the per-address limit, and no link for a 2FA
+              // account (the session would be refused anyway, see
+              // databaseHooks.session). Both stay silent, so the endpoint
+              // answers like the form and cannot be used to learn who has 2FA.
+              // From the action (no incoming request here) both already ran.
+              if (ctx?.request) {
+                const address = email.trim().toLowerCase()
+                if (!(await checkRateLimit(`magic:${address}`, 3))) return
+                const user = await prisma.user.findUnique({
+                  where: { email: address },
+                  select: { twoFactorEnabled: true },
+                })
+                if (user?.twoFactorEnabled) return
+              }
               const { sendMagicLinkEmail } = await import("@/lib/email")
               await sendMagicLinkEmail(email, url)
             },

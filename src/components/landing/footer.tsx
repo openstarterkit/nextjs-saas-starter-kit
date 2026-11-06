@@ -38,7 +38,11 @@ export function Footer() {
         <div className="flex flex-col gap-10 md:flex-row md:justify-between md:gap-8">
           <div>
             <LogoLink className="flex items-center gap-2">
-              <Logo wordmarkClassName="text-base font-bold" />
+              {/* The navbar's mark, ring included on the kit's site in the dark theme. */}
+              <Logo
+                wordmarkClassName="text-base font-bold"
+                markClassName={isKitSite ? "dark:ring-1 dark:ring-white/15" : undefined}
+              />
             </LogoLink>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               {isKitSite ? t("blurb", { tagline: siteConfig.tagline }) : siteConfig.description}
@@ -83,11 +87,7 @@ export function Footer() {
               <li><Link href="/docs" className="transition-colors hover:text-foreground">{t("docs")}</Link></li>
               <li><Link href="/blog" className="transition-colors hover:text-foreground">{t("blog")}</Link></li>
               <li><Link href="/changelog" className="transition-colors hover:text-foreground">{t("changelog")}</Link></li>
-              <li>
-                <Link href={siteConfig.links.demo ?? "/login"} className="transition-colors hover:text-foreground">
-                  Demo
-                </Link>
-              </li>
+              <li><Link href={siteConfig.links.demo ?? "/login"} className="transition-colors hover:text-foreground">Demo</Link></li>
             </ul>
           </div>
 
@@ -146,24 +146,9 @@ export function Footer() {
                   {t("cookies")}
                 </Link>
               </li>
-              {isKitSite && (
-                <li>
-                  <a
-                    href={
-                      siteConfig.links.github
-                        ? `${siteConfig.links.github}/blob/main/LICENSE`
-                        : "https://opensource.org/license/mit"
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="transition-colors hover:text-foreground"
-                  >
-                    License
-                  </a>
-                </li>
-              )}
             </ul>
           </div>
+
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted-foreground md:flex-row">

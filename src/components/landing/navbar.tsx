@@ -38,7 +38,13 @@ export async function Navbar() {
     <NavbarWrapper>
       <div className="mx-auto flex h-14 max-w-[68.5rem] items-center justify-between gap-4 rounded-full border border-border bg-background/70 px-5 shadow-soft backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
         <LogoLink className="flex items-center gap-2">
-          <Logo animated wordmarkClassName="text-base font-bold" />
+          {/* On the kit's site the dark mark gets the hairline ring of the Demo menu's
+              Pro tile, so the two read as one family. */}
+          <Logo
+            animated
+            wordmarkClassName="text-base font-bold"
+            markClassName={isKitSite ? "dark:ring-1 dark:ring-white/15" : undefined}
+          />
         </LogoLink>
 
         <NavLinks />
@@ -56,13 +62,9 @@ export async function Navbar() {
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex">
-                <Link href={siteConfig.links.demo ?? "/login"}>
-                  {/* Where the link goes decides the word: the demo has no
-                      account of yours to sign in to. */}
-                  {siteConfig.links.demo ? t("demo") : t("signIn")}
-                </Link>
-              </Button>
+              {/* Where the link goes decides the word: the demo has no account
+                  of yours to sign in to. */}
+              <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex"><Link href={siteConfig.links.demo ?? "/login"}>{siteConfig.links.demo ? t("demo") : t("signIn")}</Link></Button>
               <Button asChild variant="gradient" size="sm" className="hidden xl:inline-flex">
                 {starHref ? (
                   <a href={starHref} target="_blank" rel="noreferrer">

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getTranslations } from "next-intl/server"
 import { z } from "zod"
+import { hasWebAddress } from "@/lib/display-name"
 
 export type ProfileState = { error?: string; success?: boolean }
 
@@ -13,7 +14,11 @@ export type ProfileState = { error?: string; success?: boolean }
 async function profileSchema() {
   const t = await getTranslations("errors")
   return z.object({
-    name: z.string().min(1, t("nameRequired")).max(50, t("nameTooLong")),
+    name: z
+      .string()
+      .min(1, t("nameRequired"))
+      .max(50, t("nameTooLong"))
+      .refine((name) => !hasWebAddress(name), t("nameWebAddress")),
   })
 }
 

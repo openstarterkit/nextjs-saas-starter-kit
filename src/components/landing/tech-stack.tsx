@@ -67,9 +67,13 @@ const stack: { name: string; path: string; viewBox?: string }[] = [
   },
 ]
 
+// Nine marks of 96px with 20px between them make 1024px, under the 1056px of
+// the sections that show them: with 24px the row filled them exactly, and
+// Firefox, rounding a fraction differently from Chrome, sent the last mark to a
+// second line.
 export function TechStack({ className }: { className?: string }) {
   return (
-    <Reveal className={cn("flex flex-wrap items-start justify-center gap-x-6 gap-y-8", className)}>
+    <Reveal className={cn("flex flex-wrap items-start justify-center gap-x-5 gap-y-8", className)}>
       {stack.map(({ name, path, viewBox }) => (
         <div key={name} className="flex w-24 flex-col items-center gap-3">
           {/* The name under it is what screen readers say; the mark is decoration. */}
