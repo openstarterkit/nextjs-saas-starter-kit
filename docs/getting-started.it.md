@@ -2,7 +2,7 @@
 title: Primi passi
 description: Da git clone all'app che gira, in una decina di minuti.
 translated_from: getting-started.md
-source_checksum: 1f861032965f
+source_checksum: 37d0076a004d
 ---
 
 # Primi passi
@@ -20,6 +20,14 @@ git clone https://github.com/openstarterkit/nextjs-saas-starter-kit.git
 cd nextjs-saas-starter-kit
 npm install
 ```
+
+GitHub non risponde, o non usi GitHub? Lo stesso repository ha un mirror su GitLab, con gli stessi commit e gli stessi tag:
+
+```bash
+git clone https://gitlab.com/openstarterkit/nextjs-saas-starter-kit.git
+```
+
+Le versioni recenti di npm chiudono l'installazione elencando gli script che hanno saltato, di Prisma e di `unrs-resolver`, e suggeriscono `npm approve-scripts`. È normale: npm non esegue più gli script d'installazione delle dipendenze se non li autorizzi, e al kit questi due non servono. Il passo che conta, `prisma generate`, parte dal `postinstall` del kit stesso. Non c'è niente da approvare.
 
 ## 2. Avvialo
 

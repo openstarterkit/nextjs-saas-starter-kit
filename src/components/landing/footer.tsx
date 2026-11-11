@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { newTab } from "@/lib/new-tab"
 import { GithubIcon } from "@/components/icons/github"
 import { PoweredBy } from "@/components/powered-by"
 import { ContactDialog } from "@/components/landing/contact-dialog"
@@ -10,6 +11,7 @@ import { isKitSite } from "@/config/kit"
 import { emailEnabled } from "@/lib/email-transport"
 import { FooterSignup } from "@/components/landing/footer-signup"
 import { FooterWordmark } from "@/components/landing/footer-wordmark"
+import { CookieSettingsLink } from "@/components/consent/cookie-settings-link"
 
 function XIcon() {
   return (
@@ -87,7 +89,7 @@ export function Footer() {
               <li><Link href="/docs" className="transition-colors hover:text-foreground">{t("docs")}</Link></li>
               <li><Link href="/blog" className="transition-colors hover:text-foreground">{t("blog")}</Link></li>
               <li><Link href="/changelog" className="transition-colors hover:text-foreground">{t("changelog")}</Link></li>
-              <li><Link href={siteConfig.links.demo ?? "/login"} className="transition-colors hover:text-foreground">Demo</Link></li>
+              <li><Link href={siteConfig.links.demo ?? "/login"} {...newTab(siteConfig.links.demo)} className="transition-colors hover:text-foreground">Demo</Link></li>
             </ul>
           </div>
 
@@ -146,6 +148,7 @@ export function Footer() {
                   {t("cookies")}
                 </Link>
               </li>
+              <CookieSettingsLink label={t("cookieSettings")} />
             </ul>
           </div>
 

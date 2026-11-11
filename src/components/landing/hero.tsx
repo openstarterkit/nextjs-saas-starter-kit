@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { newTab } from "@/lib/new-tab"
 import {
   ArrowRight,
   Sparkles,
@@ -111,7 +112,7 @@ export function Hero() {
             </a>
           </Button>
           <Button asChild variant="outline" size="xl">
-            <Link href={siteConfig.links.demo ?? "/login"}>Live demo</Link>
+            <Link href={siteConfig.links.demo ?? "/login"} {...newTab(siteConfig.links.demo)}>Live demo</Link>
           </Button>
         </div>
 

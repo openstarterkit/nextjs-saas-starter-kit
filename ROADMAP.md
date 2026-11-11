@@ -145,6 +145,9 @@ The paid tier, built on this kit for products where people work together. A one-
 - Member invitations by email, and ownership transfer
 - Roles beyond USER/ADMIN: owner, admin, member, and your own roles in code
 - Team billing with seats, with the team's own Stripe customer and portal
+- Data that belongs to each team: the example Project and your own models follow it, and each role sees what it should
+- Teams in the admin panel, with their members and subscription, read-only
+- An upgrade path from the free kit: a migration that only adds, a database check before and after, a step-by-step guide
 - Email support and private Discord access, for Pro and Pro Studio
 
 More is planned after launch, and everything that joins the Pro later is included.

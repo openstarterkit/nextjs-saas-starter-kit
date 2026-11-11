@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server"
 import Link from "next/link"
+import { newTab } from "@/lib/new-tab"
 import { getCurrentUser } from "@/lib/auth"
 import { currentPlanName } from "@/lib/billing"
 import { Button } from "@/components/ui/button"
@@ -64,7 +65,7 @@ export async function Navbar() {
             <>
               {/* Where the link goes decides the word: the demo has no account
                   of yours to sign in to. */}
-              <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex"><Link href={siteConfig.links.demo ?? "/login"}>{siteConfig.links.demo ? t("demo") : t("signIn")}</Link></Button>
+              <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex"><Link href={siteConfig.links.demo ?? "/login"} {...newTab(siteConfig.links.demo)}>{siteConfig.links.demo ? t("demo") : t("signIn")}</Link></Button>
               <Button asChild variant="gradient" size="sm" className="hidden xl:inline-flex">
                 {starHref ? (
                   <a href={starHref} target="_blank" rel="noreferrer">

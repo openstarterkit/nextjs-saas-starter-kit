@@ -14,6 +14,14 @@ cd nextjs-saas-starter-kit
 npm install
 ```
 
+GitHub down, or not on GitHub? The same repository is mirrored on GitLab, with the same commits and tags:
+
+```bash
+git clone https://gitlab.com/openstarterkit/nextjs-saas-starter-kit.git
+```
+
+Recent versions of npm end the install by listing scripts they skipped, from Prisma and `unrs-resolver`, and suggest `npm approve-scripts`. That is expected: npm no longer runs a dependency's install scripts unless you allow them, and the kit does not need these two. The step that matters, `prisma generate`, runs from the kit's own `postinstall`. There is nothing to approve.
+
 ## 2. Start it
 
 ```bash

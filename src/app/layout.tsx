@@ -7,6 +7,8 @@ import { siteConfig } from "@/config/site"
 import { brandOverrideCss } from "@/config/brand"
 import { getLocale } from "next-intl/server"
 import { NextIntlClientProvider } from "next-intl"
+import { CookieBanner } from "@/components/consent/cookie-banner"
+import { isKitSite } from "@/config/kit"
 import "./globals.css"
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
@@ -74,6 +76,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {children}
           {/* Inside the provider: the loader's screen-reader text is translated. */}
           <NavigationOverlay />
+          {/* Renders nothing unless NEXT_PUBLIC_COOKIE_CONSENT="true" (src/lib/consent.ts).
+              The policy link is decided here because KIT_SITE is server-only. */}
+          <CookieBanner policyHref={isKitSite ? "/privacy#cookies" : "/cookies"} />
         </NextIntlClientProvider>
         <Toaster />
         {/* Vercel Analytics, unless this deployment says otherwise. It ships

@@ -136,6 +136,12 @@ cd nextjs-saas-starter-kit
 npm install
 ```
 
+GitHub down, or not on GitHub? The same repository is mirrored on GitLab, with the same commits and tags:
+
+```bash
+git clone https://gitlab.com/openstarterkit/nextjs-saas-starter-kit.git
+```
+
 ### 2. Start it
 
 ```bash

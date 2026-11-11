@@ -1,4 +1,7 @@
-import { Check, Plus } from "lucide-react"
+import { Building2, Check, Plus, Rocket, Users } from "lucide-react"
+
+// Free, Pro, Pro Studio: in the order of the three questions under the cards.
+const GUIDE_ICONS = [Rocket, Building2, Users]
 import { jsonLdScript } from "@/lib/json-ld"
 import { softwareApplicationJsonLd } from "@/lib/pricing-jsonld"
 import { Button } from "@/components/ui/button"
@@ -8,6 +11,8 @@ import { Reveal } from "@/components/landing/reveal"
 import { WaitlistForm } from "@/components/landing/waitlist-form"
 import { useTranslations } from "next-intl"
 import { siteConfig } from "@/config/site"
+import { GithubIcon } from "@/components/icons/github"
+import { GitlabIcon } from "@/components/icons/gitlab"
 
 
 
@@ -44,6 +49,7 @@ export function Pricing({
   const Heading = heading
   const freeFeatures = t.raw("freeFeatures") as string[]
   const proFeatures = t.raw("proFeatures") as string[]
+  const guide = t.raw("guide") as { q: string; a: string }[]
   // The waitlist stays off until a real privacy policy is published: it
   // collects email addresses, and those need one. Off is the default, so a
   // deploy that forgets the variable ships a disabled form rather than a live
@@ -106,9 +112,22 @@ export function Pricing({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
+                    <GithubIcon />
                     {t("getOnGithub")}
                   </a>
                 </Button>
+                {siteConfig.links.gitlab && (
+                  <Button asChild variant="outline" size="lg" className="w-full">
+                    <a
+                      href={siteConfig.links.gitlab}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <GitlabIcon />
+                      {t("getOnGitlab")}
+                    </a>
+                  </Button>
+                )}
                 <p className="text-center text-xs text-muted-foreground">
                   {t("noSignup")}
                 </p>
@@ -171,6 +190,32 @@ export function Pricing({
             </Card>
           </Reveal>
         </div>
+
+        {/* Two kinds of "team" live on this page: the teams inside the SaaS
+            you build (Pro's features) and the developers working on it (Pro
+            Studio's license). Three questions keep them apart before anyone
+            has to read a license. */}
+        <Reveal delay={150}>
+          <div className="mx-auto mt-10 max-w-4xl rounded-2xl border border-border bg-card/60 p-6 sm:p-8">
+            <h3 className="text-base font-semibold text-foreground">{t("guideTitle")}</h3>
+            <ul className="mt-4 grid gap-4 sm:grid-cols-3">
+              {guide.map(({ q, a }, i) => {
+                const Icon = GUIDE_ICONS[i] ?? Rocket
+                return (
+                  <li key={q} className="flex items-start gap-3 text-sm">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span>
+                      <span className="block font-medium text-foreground">{q}</span>
+                      <span className="text-muted-foreground">{a}</span>
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </Reveal>
       </div>
     </section>
   )

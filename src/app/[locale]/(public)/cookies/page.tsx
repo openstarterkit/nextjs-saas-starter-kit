@@ -1,6 +1,7 @@
 import { siteConfig } from "@/config/site"
 import { pageMetadata } from "@/lib/metadata"
 import { isKitSite } from "@/config/kit"
+import { consentEnabled } from "@/lib/consent"
 
 export const metadata = pageMetadata({
   title: `Cookie Policy | ${siteConfig.name}`,
@@ -49,13 +50,26 @@ export default function CookiesPage() {
             </p>
           </div>
 
-          <div>
-            <h2 className="mb-2 text-lg font-semibold text-foreground">3. No tracking</h2>
-            <p>
-              We do not use advertising, profiling, or third-party tracking cookies. Because we
-              only use cookies that are strictly necessary, no consent banner is required.
-            </p>
-          </div>
+          {consentEnabled ? (
+            <div>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">3. Optional cookies and your choice</h2>
+              <p>
+                With your consent we also use cookies for analytics and marketing. They are set only
+                after you choose <strong className="text-foreground">Accept</strong> in the banner;
+                rejecting, or closing the banner, keeps them off. Your choice is saved for six months
+                in a technical cookie, <code>cookie_consent</code>, and you can change it anytime from{" "}
+                <strong className="text-foreground">Cookie settings</strong> at the bottom of every page.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">3. No tracking</h2>
+              <p>
+                We do not use advertising, profiling, or third-party tracking cookies. Because we
+                only use cookies that are strictly necessary, no consent banner is required.
+              </p>
+            </div>
+          )}
 
           <div>
             <h2 className="mb-2 text-lg font-semibold text-foreground">4. Questions</h2>

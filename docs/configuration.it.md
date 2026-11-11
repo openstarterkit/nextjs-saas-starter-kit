@@ -2,7 +2,7 @@
 title: Configurazione
 description: "Ogni variabile d'ambiente spiegata: database, OAuth, Stripe, email, marchio."
 translated_from: configuration.md
-source_checksum: b5a8e5b1e779
+source_checksum: 31c25efe1994
 ---
 
 # Configurazione
@@ -96,6 +96,8 @@ Vale la pena sapere quale limite spostare per primo, perché non proteggono la s
 | `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` toglie il badge «Built with» dal footer. È gratis, non c'è niente da sbloccare. |
 | `NEXT_PUBLIC_SHOW_FOOTER_WORDMARK` | `"true"` mostra il nome del tuo prodotto, grande e tenue, sotto il footer delle pagine pubbliche. Spenta di serie. |
 | `NEXT_PUBLIC_GITHUB_URL` | Link al repository mostrato in navbar e footer. |
+| `NEXT_PUBLIC_GITLAB_URL` | Un mirror dello stesso repository su GitLab. Aggiunge il bottone «Get it on GitLab» accanto a quello di GitHub nella pagina dei prezzi; nascosto se vuota. |
+| `NEXT_PUBLIC_COOKIE_CONSENT` | `"true"` mostra un banner per il consenso ai cookie e il link *Cookie settings* nel footer. Spenta di serie, perché il kit non imposta cookie che chiedano il consenso. Vedi [Consenso ai cookie](#consenso-ai-cookie) più sotto. |
 
 ### Due distribuzioni da un solo codice
 
@@ -106,6 +108,26 @@ Vale la pena sapere quale limite spostare per primo, perché non proteggono la s
 **Il meccanismo che ci sta sotto invece vale la pena averlo, ed è la parte che è tua.** Le sezioni che si leggono diversamente fra due distribuzioni portano entrambe le varianti sotto `$kit` e `$product` nei file dei messaggi, e il build butta via quella che non può rendere, così nessuna delle due si porta dietro il testo dell'altra. Rinomina l'interruttore, metti le tue parole sotto i marcatori, e hai un sito di marketing e un'app su due domini da un repository solo, che divergono solo dove devono. I dettagli sono in [Lingue](./i18n.md).
 
 **Se quello che vuoi è una seconda distribuzione per mostrare il prodotto, quella è `DEMO_MODE`, non questa**: account condivisi a un clic, OAuth reale spento, un ripopolamento giornaliero, e la tua app intatta sul suo dominio.
+
+### Consenso ai cookie
+
+**Di serie non c'è niente per cui chiedere il consenso**: l'unico cookie è quello della sessione, strettamente necessario, e Vercel Analytics non usa cookie. Per questo il banner parte spento, e la pagina `/cookies` d'esempio dice che non serve.
+
+**Accendilo il giorno in cui aggiungi qualcosa che imposta cookie o traccia i visitatori**: Google Analytics, un pixel pubblicitario, una chat. Imposta `NEXT_PUBLIC_COOKIE_CONSENT="true"` e carica quegli script con `<ConsentScript>` al posto di `next/script`:
+
+```tsx
+import { ConsentScript } from "@/components/consent/consent-script"
+
+<ConsentScript src="https://www.googletagmanager.com/gtag/js?id=G-XXXX" strategy="afterInteractive" />
+```
+
+Uno script avvolto così parte solo dopo che il visitatore ha scelto *Accept*. Con la variabile spenta `<ConsentScript>` è un normale `next/script`, quindi usarlo non costa niente finché non serve.
+
+![Il banner dei cookie in basso a sinistra di una pagina, con i bottoni Reject e Accept uguali e il link alla Cookie Policy](../public/media/cookie-consent.webp "Con NEXT_PUBLIC_COOKIE_CONSENT=\"true\": il banner sta sopra la pagina senza coprirla.")
+
+**Cosa fa il banner**, seguendo le linee guida 2021 del Garante, fra le più severe in Europa: *Accept* e *Reject* hanno lo stesso aspetto, chiuderlo vale come rifiuto, lo scroll non è consenso, e non copre la pagina. La scelta resta salvata per sei mesi in un cookie tecnico, `cookie_consent`, e *Cookie settings* riapre il banner. Quando un visitatore ritira il consenso la pagina si ricarica, perché uno script già partito non si può scaricare; i cookie che ha impostato tocca a lui cancellarli. Con la variabile accesa la pagina `/cookies` descrive anche i cookie facoltativi: adattala a quello che carichi davvero.
+
+**Preferisci nessun banner?** Usa analytics senza cookie, come Vercel Analytics (già nel kit) o Plausible, e lascia la variabile spenta. **Ti servono le categorie** (analytics e marketing separati)? Il banner è un sì o un no unico, adatto a una finalità sola. Se carichi script per finalità diverse o di più terze parti, il Garante chiede anche di poterli scegliere uno per uno, quindi aggiungi le categorie prima di andare online. Il banner è un solo componente in `src/components/consent/`, abbastanza piccolo da estendere; per una gestione completa del consenso, [vanilla-cookieconsent](https://github.com/orestbida/cookieconsent) è un'opzione open source matura.
 
 ## Marchio e tema
 

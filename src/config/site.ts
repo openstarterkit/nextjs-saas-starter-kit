@@ -41,7 +41,7 @@ export const siteConfig = {
    */
   llmsSummary: process.env.NEXT_PUBLIC_LLMS_SUMMARY || null,
 
-  version: "2.5.3",
+  version: "2.6.0",
   description:
     process.env.NEXT_PUBLIC_BRAND_DESCRIPTION ||
     (isKitSite
@@ -61,6 +61,14 @@ export const siteConfig = {
     github:
       process.env.NEXT_PUBLIC_GITHUB_URL ||
       (isKitSite ? "https://github.com/openstarterkit/nextjs-saas-starter-kit" : null),
+    /**
+     * A mirror of the same repository on another host, for anyone who does
+     * not use GitHub or cannot reach it. Adds a second button next to the
+     * GitHub one on the Free plan; hides when unset.
+     */
+    gitlab:
+      process.env.NEXT_PUBLIC_GITLAB_URL ||
+      (isKitSite ? "https://gitlab.com/openstarterkit/nextjs-saas-starter-kit" : null),
     /**
      * General GitHub presence (org/profile) — used by the footer icon and
      * "Open Source" link; hides when unset.

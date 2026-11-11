@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl"
 
 import { Fragment } from "react"
 import Link from "next/link"
+import { newTab } from "@/lib/new-tab"
 import { usePathname } from "@/i18n/navigation"
 import { Menu } from "lucide-react"
 import { GithubIcon } from "@/components/icons/github"
@@ -95,7 +96,7 @@ export function MobileMenu({
           </DropdownMenuItem>
         ) : (
           <>
-            <DropdownMenuItem asChild><Link href={signInHref}>{signInToDemo ? t("demo") : t("signIn")}</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild><Link href={signInHref} {...newTab(signInHref)}>{signInToDemo ? t("demo") : t("signIn")}</Link></DropdownMenuItem>
             <DropdownMenuItem asChild>
               {starHref ? (
                 <a

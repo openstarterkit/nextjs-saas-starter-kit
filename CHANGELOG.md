@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.6.0] - 2026-11-11
+
+🧩 **A cookie consent banner you can switch on, and a GitLab mirror of the kit.** The banner ships off, because the kit sets no cookies that need consent; turn it on the day you add analytics with cookies or an ad pixel, and those scripts wait for a yes. The repository is now also on GitLab, for anyone who does not use GitHub or cannot reach it. A MINOR: `git pull`, `npm install`. Nothing to migrate, and both new variables are optional: leave them unset and nothing changes.
+
+### Added
+
+- **Cookie consent, off by default**, behind `NEXT_PUBLIC_COOKIE_CONSENT="true"`: a banner with *Accept* and *Reject* that look the same, where closing counts as a rejection and the choice holds for six months; *Cookie settings* in the footer opens it again. Load scripts that set cookies through `<ConsentScript>` instead of `next/script` and they run only after *Accept*; with the variable off it is plain `next/script`. The sample `/cookies` page follows the switch. [Configuration](./docs/configuration.md#cookie-consent) has the details and a screenshot
+- **A GitLab mirror** at `gitlab.com/openstarterkit/nextjs-saas-starter-kit`, with the same commits and tags. [Getting started](./docs/getting-started.md) and the README give its clone command
+- **`NEXT_PUBLIC_GITLAB_URL`**: a second button, *Get it on GitLab*, next to the GitHub one on the pricing page, both now with their logos. Unset, the button does not show
+
+### Changed
+
+- **A live demo on another domain opens in a new tab**, from the hero, the navbar, the footer and the mobile menu, so the visitor keeps your page. The local sign-in a clone falls back to stays in the same tab
+- **Getting started explains the install scripts npm skips.** Recent npm versions list the ones from Prisma and `unrs-resolver` at the end of `npm install`: the kit does not need them, and there is nothing to approve
+- **Dependencies**: `minimatch` 11.0.1 or later through an override, for a moderate advisory under `typescript-eslint` that only runs while linting; `npm audit` is clean, development tools included. Minor updates to `lucide-react`, `resend`, `tailwindcss`, `vitest`, Playwright, `@shikijs/rehype` and `@types/node`
+
+---
+
 ## [2.5.3] - 2026-11-06
 
 🔒 **A security update: Better Auth 1.7.18, Next.js 16.4.5, and five fixes in how the kit enforces its own rules.** Several rules lived only in the server actions behind the kit's forms, so a request sent to the auth API directly did not meet them; they are now enforced where every request goes through. If you run the kit with email configured and two-factor authentication, with a public demo, or with one-time payments, update. A PATCH: `git pull`, `npm install`. Nothing to migrate. If you enable a delayed payment method in Stripe (SEPA, ACH, Bacs and the like), add the two events listed under Billing to your webhook endpoint.

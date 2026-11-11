@@ -670,6 +670,14 @@
       }
     }
   },
+  "consent": {
+    "title": "Cookies on this site",
+    "body": "We use the cookies the site needs to work. With your consent we would also use cookies for analytics and marketing. You can change your choice anytime from Cookie settings at the bottom of the page.",
+    "policy": "Cookie Policy",
+    "accept": "Accept",
+    "reject": "Reject",
+    "close": "Close and reject optional cookies"
+  },
   "footer": {
     "blurb": {
       "$kit": "{tagline}. Production-ready boilerplate in plain Next.js."
@@ -690,6 +698,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "cookies": "Cookie Policy",
+    "cookieSettings": "Cookie settings",
     "copyright": "© {year} {site}. All rights reserved.",
     "license": "MIT License · Built with Next.js",
     "signup": {
@@ -821,13 +830,29 @@
       "freeDescription": "Open source, the complete core",
       "forever": "forever",
       "getOnGithub": "Get it on GitHub",
+      "getOnGitlab": "Get it on GitLab",
       "noSignup": "Clone, star, and ship. No signup required",
-      "proTitle": "Pro · Pro Studio · Teams",
+      "proTitle": "Pro · Pro Studio",
+      "guideTitle": "Which one fits you?",
+      "guide": [
+        {
+          "q": "Launching your own SaaS?",
+          "a": "Start with the complete Free kit, from GitHub or GitLab. Move up to Pro or Pro Studio anytime."
+        },
+        {
+          "q": "Your SaaS needs organizations, team roles or team billing?",
+          "a": "That is what Pro adds, for one person and their own products."
+        },
+        {
+          "q": "Building with colleagues, or for clients?",
+          "a": "That is Pro Studio: up to five people on the repository, client projects included."
+        }
+      ],
       "statusBadge": "Waitlist open",
       "proDescription": "For apps that need teams, and for studios that build them.",
       "launchDate": "November 19",
-      "launchOffer": "Launch day, at a launch price for the waitlist. Confirm your email and the price is in your inbox right away.",
-      "waitlistCta": "Join the Pro & Pro Studio waitlist",
+      "launchOffer": "Launch day, at a launch price for the waitlist until November 27.",
+      "waitlistCta": "Get the launch price",
       "waitlistNote": "One short email when there is real news, and the launch price as soon as you confirm. Unsubscribe anytime, one click.",
       "formsDisabled": "Forms are disabled in the live demo.",
       "freeFeatures": [
@@ -851,6 +876,9 @@
         "Invitations and ownership transfer",
         "Roles: owner, admin, member, and your own",
         "Team billing with seats",
+        "Data that belongs to each team",
+        "Teams in the admin panel",
+        "Upgrade path from the free kit",
         "Email support and private Discord",
         "Everything we add after launch, included"
       ]

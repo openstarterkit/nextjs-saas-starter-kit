@@ -89,6 +89,8 @@ Worth knowing which limit to move first, because they are not protecting the sam
 | `NEXT_PUBLIC_REMOVE_BRANDING` | `"true"` removes the "Built with" footer badge. Free to use, no unlock. |
 | `NEXT_PUBLIC_SHOW_FOOTER_WORDMARK` | `"true"` shows your product's name, large and faint, under the footer of the public pages. Off by default. |
 | `NEXT_PUBLIC_GITHUB_URL` | Repo link shown in the navbar/footer. |
+| `NEXT_PUBLIC_GITLAB_URL` | A mirror of the same repo on GitLab. Adds a "Get it on GitLab" button next to the GitHub one on the pricing page; hidden when unset. |
+| `NEXT_PUBLIC_COOKIE_CONSENT` | `"true"` shows a cookie consent banner and a *Cookie settings* link in the footer. Off by default, because the kit sets no cookies that need consent. See [Cookie consent](#cookie-consent) below. |
 
 ### Two deployments from one codebase
 
@@ -99,6 +101,26 @@ Worth knowing which limit to move first, because they are not protecting the sam
 **The mechanism under it is worth having, and that part is yours.** Sections whose wording differs between two deployments carry both variants under `$kit` and `$product` in the message files, and the build drops the one that cannot render, so neither deployment ships the other's copy. Rename the flag, put your own wording under the markers, and you have a marketing site and an app on two domains from one repo, diverging only where they have to. [Languages](./i18n.md) has the details.
 
 **If what you want is a second deployment to show the product off, that is `DEMO_MODE`, not this**: shared one-click accounts, real OAuth off, a daily reseed, and your own app untouched on its own domain.
+
+### Cookie consent
+
+**Out of the box there is nothing to ask consent for**: the only cookie is the session, which is strictly necessary, and Vercel Analytics is cookieless. So the banner ships off, and the sample `/cookies` page says no banner is required.
+
+**Turn it on the day you add something that sets cookies or tracks visitors**: Google Analytics, an ad pixel, a chat widget. Set `NEXT_PUBLIC_COOKIE_CONSENT="true"` and load those scripts through `<ConsentScript>` instead of `next/script`:
+
+```tsx
+import { ConsentScript } from "@/components/consent/consent-script"
+
+<ConsentScript src="https://www.googletagmanager.com/gtag/js?id=G-XXXX" strategy="afterInteractive" />
+```
+
+A wrapped script loads only after the visitor chooses *Accept*. With the variable off, `<ConsentScript>` is plain `next/script`, so wrapping costs nothing until you need it.
+
+![The cookie banner at the bottom left of a page, with the same Reject and Accept buttons and a link to the Cookie Policy](../public/media/cookie-consent.webp "With NEXT_PUBLIC_COOKIE_CONSENT=\"true\": the banner sits over the page without covering it.")
+
+**What the banner does**, following the Italian Garante's 2021 guidelines, among the strictest in Europe: *Accept* and *Reject* look the same, closing it counts as a rejection, scrolling is not consent, and it does not cover the page. The choice is stored for six months in a technical cookie, `cookie_consent`, and *Cookie settings* opens the banner again. When a visitor withdraws consent the page reloads, because a script that already ran cannot be unloaded; cookies it set are its own to clear. With the variable on, the `/cookies` page describes the optional cookies too: adapt it to what you actually load.
+
+**Prefer no banner at all?** Use analytics that set no cookies, such as Vercel Analytics (already in the kit) or Plausible, and leave the variable off. **Need categories** (analytics, marketing, separately)? The banner is a single yes or no, which fits one purpose. If you load scripts for different purposes or from several third parties, the Italian Garante also expects a way to choose them one by one, so add categories before you go live. The banner is one component in `src/components/consent/`, small enough to extend; for a full consent manager, [vanilla-cookieconsent](https://github.com/orestbida/cookieconsent) is a mature open source option.
 
 ## Branding & theming
 
