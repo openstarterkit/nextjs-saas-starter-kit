@@ -24,6 +24,22 @@ describe("locale routing", () => {
     expect(routing.localeDetection).toBe(false)
   })
 
+  it("adds no hreflang header to every page: pages declare the languages they really have", () => {
+    // next-intl's default points every page at its /it/ twin, translated or
+    // not; the real alternates come from each page's metadata.
+    expect(routing.alternateLinks).toBe(false)
+  })
+
+  it("serves share images of localized pages outside the locale segment", async () => {
+    const { existsSync } = await import("node:fs")
+    const { join } = await import("node:path")
+    const app = join(process.cwd(), "src", "app")
+    // Inside [locale], Next writes an opengraph-image address with the internal
+    // /en/ prefix, which the proxy redirects. The blog's lives under /og.
+    expect(existsSync(join(app, "[locale]", "(public)", "blog", "[slug]", "opengraph-image.tsx"))).toBe(false)
+    expect(existsSync(join(app, "og", "blog", "[slug]", "route.tsx"))).toBe(true)
+  })
+
   it("declares exactly the locales that have a message file", async () => {
     const { existsSync } = await import("node:fs")
     const { join } = await import("node:path")

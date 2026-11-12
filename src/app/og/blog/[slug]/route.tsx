@@ -1,19 +1,34 @@
 import { ImageResponse } from "next/og"
-import { getPost, formatPostDate } from "@/lib/blog"
+import { getAllPosts, getPost, formatPostDate } from "@/lib/blog"
 import { siteConfig } from "@/config/site"
 import { ogBrand } from "@/config/brand"
 
-/** Per-post Open Graph image: category, title and date over the brand look. */
+/**
+ * Per-post Open Graph image: category, title and date over the brand look.
+ *
+ * A route of its own, outside the `[locale]` segment, and declared in the
+ * post's metadata. As an `opengraph-image` file inside `[locale]`, Next wrote
+ * its address with the internal locale (`/en/blog/<slug>/opengraph-image-…`),
+ * which the proxy answers with a redirect: every share preview, and every
+ * crawl of it, went through one. Here the address is the one the image is
+ * served at, and the proxy leaves `/og` alone.
+ */
 
 // Social card, generated at build: the alt text is read by whoever shares
 // the link, so it comes from the message file like any other visible string.
-export const alt = "Blog post"
-export const size = { width: 1200, height: 630 }
-export const contentType = "image/png"
+const OG_SIZE = { width: 1200, height: 630 }
 
-export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+// One image per post, built at build time like the post itself.
+export const dynamic = "force-static"
+
+export function generateStaticParams() {
+  return getAllPosts().map((post) => ({ slug: post.slug }))
+}
+
+export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const post = getPost(slug)
+  if (!post) return new Response("Not found", { status: 404 })
   const title = post?.title ?? "Blog"
 
   return new ImageResponse(
@@ -58,6 +73,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         </div>
       </div>
     ),
-    size
+    OG_SIZE
   )
 }

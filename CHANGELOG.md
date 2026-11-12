@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ---
 
+## [2.6.1] - 2026-11-12
+
+🔎 **Two fixes for how search engines and share previews read your pages.** Every page told search engines it had an Italian version, translated or not, and the share image of a blog post sat behind a redirect. A PATCH: `git pull`, `npm install`. Nothing to migrate and nothing to configure.
+
+### Fixed
+
+- **Pages declare only the languages they really have.** The language library added a header to every response pointing at the `/it/` version of the page, even where no translation exists, and there that address showed the English text marked as Italian. The header is off: each page declares its languages in its metadata, as the translated docs already did, and the sitemap lists them
+- **Blog share images answer without a redirect.** The image of each post was declared at an address with an internal `/en/` prefix, which redirected to the real one. It now has its own route, `/og/blog/<slug>`, declared in the post's metadata; the picture is the same
+
+---
+
 ## [2.6.0] - 2026-11-11
 
 🧩 **A cookie consent banner you can switch on, and a GitLab mirror of the kit.** The banner ships off, because the kit sets no cookies that need consent; turn it on the day you add analytics with cookies or an ad pixel, and those scripts wait for a yes. The repository is now also on GitLab, for anyone who does not use GitHub or cannot reach it. A MINOR: `git pull`, `npm install`. Nothing to migrate, and both new variables are optional: leave them unset and nothing changes.

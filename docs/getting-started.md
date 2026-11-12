@@ -1,6 +1,6 @@
 # Getting started
 
-From zero to a running app in about 10 minutes.
+From git clone to a running app in about 5 minutes.
 
 **You need:** Node 24 or newer, git, and a PostgreSQL database ([Neon](https://neon.tech) has a free tier).
 

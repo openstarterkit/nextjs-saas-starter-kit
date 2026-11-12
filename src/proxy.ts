@@ -44,6 +44,8 @@ const UNLOCALIZED = [
   "/llms.txt",
   "/icon",
   "/opengraph-image",
+  // Share images of pages under [locale], served at their own address.
+  "/og",
 ]
 
 /**

@@ -121,7 +121,7 @@ Where you are and who you are, in the header, where most apps keep them.
 - **The Admin Panel and the kit's manual at the bottom of the sidebar**, the manual only while developing
 - **Sign-in buttons only for the providers you configured**, so a fresh clone never shows one that fails
 
-## ✅ v2.5 - An admin that keeps up *(current)*
+## ✅ v2.5 - An admin that keeps up
 An admin panel that keeps up as users grow, and a way to upgrade for whoever is on the free tier.
 
 - **Users and the waitlist on pages of their own** in the admin, ten to a page, with a search that goes past its first page
@@ -130,6 +130,14 @@ An admin panel that keeps up as users grow, and a way to upgrade for whoever is 
 - **2.5.1**: `npm run db:seed` and `npm run db:seed:demo` work again
 - **2.5.2**: a public demo no longer shows its visitors each other's IP address, and nobody can end someone else's session there
 - **2.5.3**: Better Auth 1.7.18, and the kit's rules on two-factor sign-in, the demo, emails, one-time payments and the newsletter export enforced wherever a request arrives
+
+## ✅ v2.6 - Consent and a mirror *(current)*
+A cookie consent banner you can switch on, and the kit on GitLab too.
+
+- **Cookie consent, off by default**: a banner with Accept and Reject that look the same, and `<ConsentScript>` to load tracking scripts only after a yes
+- **A GitLab mirror** of the repository, and a *Get it on GitLab* button behind `NEXT_PUBLIC_GITLAB_URL`
+- **Live demos on another domain open in a new tab**
+- **2.6.1**: pages declare only the languages they really have, and blog share images answer without a redirect
 
 ## 🎯 Pro & Pro Studio - Teams *(paid, launching November 19)*
 The paid tier, built on this kit for products where people work together. A one-time purchase with updates for life.

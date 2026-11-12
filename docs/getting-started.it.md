@@ -1,13 +1,13 @@
 ---
 title: Primi passi
-description: Da git clone all'app che gira, in una decina di minuti.
+description: Da git clone all'app che gira, in circa cinque minuti.
 translated_from: getting-started.md
-source_checksum: 37d0076a004d
+source_checksum: ef59818a6544
 ---
 
 # Primi passi
 
-Da zero all'app che gira in una decina di minuti.
+Da git clone all'app che gira in circa cinque minuti.
 
 **Ti servono:** Node 24 o superiore, git e un database PostgreSQL ([Neon](https://neon.tech) ha un piano gratuito).
 

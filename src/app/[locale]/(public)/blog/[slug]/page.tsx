@@ -27,6 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = getPost(slug)
   if (!post) return {}
   const url = `${siteConfig.url}/blog/${post.slug}`
+  // Served by src/app/og/blog/[slug]/route.tsx, at the address shared here.
+  const image = `${siteConfig.url}/og/blog/${post.slug}`
   return {
     title: `${post.title} | ${siteConfig.name}`,
     description: post.description,
@@ -38,8 +40,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: post.description,
       publishedTime: `${post.date}T00:00:00Z`,
       ...(post.updated ? { modifiedTime: `${post.updated}T00:00:00Z` } : {}),
+      images: [{ url: image, width: 1200, height: 630, alt: post.title }],
     },
-    twitter: { card: "summary_large_image", title: post.title, description: post.description },
+    twitter: { card: "summary_large_image", title: post.title, description: post.description, images: [image] },
   }
 }
 

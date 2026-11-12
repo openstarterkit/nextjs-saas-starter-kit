@@ -2,7 +2,7 @@
 title: Aggiornare
 description: Prendere una versione nuova del kit senza perdere il proprio lavoro, e sapere prima quanto costa.
 translated_from: upgrading.md
-source_checksum: 042e067abdd1
+source_checksum: cd63316fc429
 ---
 
 # Aggiornare
@@ -45,6 +45,18 @@ npx prisma migrate deploy
 I conflitti nascono dove hai modificato le stesse righe toccate dalla release. È il costo onesto di possedere il codice, ed è più piccolo di quanto sembri se il tuo lavoro vive dove il kit se lo aspetta: le tue rotte sotto `src/app`, i tuoi componenti in cartelle proprie, i tuoi testi in `src/locales`. I file che vanno in conflitto più spesso sono quelli che tutti modificano: `src/config/site.ts`, i file dei messaggi, `prisma/schema.prisma`.
 
 Prima di una MAJOR leggi il [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md). Dice cosa si è spostato.
+
+## 2.6.1: niente hreflang verso pagine non tradotte, anteprime senza rimando
+
+Una PATCH: `git pull`, `npm install`. Niente da migrare, niente da configurare.
+
+**Dove un merge può andare in conflitto.** `src/i18n/routing.ts`, se hai cambiato il routing: un'opzione nuova, `alternateLinks: false`. `src/proxy.ts`, se hai cambiato i percorsi senza lingua: `/og` si aggiunge all'elenco. `src/app/[locale]/(public)/blog/[slug]/page.tsx`, se hai cambiato i metadati dell'articolo: Open Graph e Twitter ora nominano la loro immagine. L'immagine dell'articolo si è spostata da `src/app/[locale]/(public)/blog/[slug]/opengraph-image.tsx` a `src/app/og/blog/[slug]/route.tsx`: se l'avevi ridisegnata, riporta lì le tue modifiche. Un tuo `opengraph-image` dentro `src/app/[locale]/` riceve lo stesso indirizzo con `/en/` e un rimando: spostalo allo stesso modo se lo vuoi servito direttamente.
+
+## 2.6.0: un banner dei cookie da accendere, e un mirror su GitLab
+
+Una MINOR: `git pull`, `npm install`. Niente da migrare. Le due variabili nuove sono facoltative: lascia vuote `NEXT_PUBLIC_COOKIE_CONSENT` e `NEXT_PUBLIC_GITLAB_URL` e non cambia niente.
+
+**Dove un merge può andare in conflitto.** `src/app/layout.tsx`, se hai cambiato il layout principale: il banner sta dentro il provider delle lingue. `src/components/landing/footer.tsx`, se hai cambiato il footer: *Cookie settings* si aggiunge ai link legali. `src/components/landing/hero.tsx`, `navbar.tsx` e `mobile-menu.tsx`, se hai cambiato i link alle demo: usano `newTab()` da `src/lib/new-tab.ts`. `src/components/landing/pricing.tsx` e `src/config/site.ts`, se hai cambiato il piano Free o i link: il bottone GitLab e `links.gitlab`. `src/app/[locale]/(public)/cookies/page.tsx`, se hai riscritto la cookie policy: la sezione 3 segue l'interruttore. `src/locales/en.json`: le chiavi nuove `consent`, `footer.cookieSettings` e `getOnGitlab`. `package.json` e `package-lock.json`: un override di `minimatch` e aggiornamenti minori; tieni le tue modifiche, prendi le righe nuove, poi `npm install`.
 
 ## 2.5.3: Better Auth 1.7.18, e le regole del kit valgono da qualunque parte arrivi la richiesta
 

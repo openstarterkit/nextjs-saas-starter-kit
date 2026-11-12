@@ -39,6 +39,18 @@ Conflicts land where you edited the same lines the release did. That is the hone
 
 Read the [CHANGELOG](https://github.com/openstarterkit/nextjs-saas-starter-kit/blob/main/CHANGELOG.md) before a MAJOR. It says what moved.
 
+## 2.6.1: no hreflang to untranslated pages, share images without a redirect
+
+A PATCH: `git pull`, `npm install`. Nothing to migrate, nothing to configure.
+
+**Where a merge may conflict.** `src/i18n/routing.ts`, if you changed the routing: one new option, `alternateLinks: false`. `src/proxy.ts`, if you changed the unlocalized paths: `/og` joins the list. `src/app/[locale]/(public)/blog/[slug]/page.tsx`, if you changed the post's metadata: Open Graph and Twitter now name their image. The post image moved from `src/app/[locale]/(public)/blog/[slug]/opengraph-image.tsx` to `src/app/og/blog/[slug]/route.tsx`: if you restyled it, carry your changes over. An `opengraph-image` of your own inside `src/app/[locale]/` gets the same `/en/` address with a redirect; move it the same way if you want it served directly.
+
+## 2.6.0: a cookie consent banner you can switch on, and a GitLab mirror
+
+A MINOR: `git pull`, `npm install`. Nothing to migrate. Both new variables are optional: leave `NEXT_PUBLIC_COOKIE_CONSENT` and `NEXT_PUBLIC_GITLAB_URL` unset and nothing changes.
+
+**Where a merge may conflict.** `src/app/layout.tsx`, if you changed the root layout: the banner sits inside the intl provider. `src/components/landing/footer.tsx`, if you changed the footer: *Cookie settings* joins the legal links. `src/components/landing/hero.tsx`, `navbar.tsx` and `mobile-menu.tsx`, if you changed the demo links: they spread `newTab()` from `src/lib/new-tab.ts`. `src/components/landing/pricing.tsx` and `src/config/site.ts`, if you changed the Free plan or the links: the GitLab button and `links.gitlab`. `src/app/[locale]/(public)/cookies/page.tsx`, if you rewrote the cookie policy: section 3 follows the switch. `src/locales/en.json`: new `consent` keys, `footer.cookieSettings` and `getOnGitlab`. `package.json` and `package-lock.json`: a `minimatch` override and minor updates; keep your changes, take the new lines, then run `npm install`.
+
 ## 2.5.3: Better Auth 1.7.18, and the kit's own rules enforced wherever a request arrives
 
 A PATCH: `git pull`, `npm install`. Nothing to migrate. If you enable a delayed payment method in Stripe, add `checkout.session.async_payment_succeeded` and `checkout.session.async_payment_failed` to your webhook endpoint, see [Billing](./billing.md).

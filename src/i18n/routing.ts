@@ -34,6 +34,16 @@ export const routing = defineRouting({
    * and makes a shared link resolve differently for each reader.
    */
   localeDetection: false,
+
+  /**
+   * No `Link: rel="alternate"` header on every response. next-intl would add
+   * one to every page pointing at its `/it/` twin, translated or not, and an
+   * untranslated page there is the English text under `lang="it"`: a
+   * "translation" search engines can only discard. Pages declare their real
+   * languages in their metadata instead (`localeAlternates()` in
+   * src/i18n/alternates.ts), and the sitemap lists them.
+   */
+  alternateLinks: false,
 })
 
 export type Locale = (typeof routing.locales)[number]

@@ -63,7 +63,7 @@ const KIT_DOCS: DocEntry[] = [
   {
     slug: "getting-started",
     title: "Getting started",
-    description: "From git clone to a running app in about 10 minutes.",
+    description: "From git clone to a running app in about 5 minutes.",
     file: "getting-started.md",
   },
   {
